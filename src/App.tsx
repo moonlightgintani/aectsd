@@ -38,6 +38,7 @@ import { SrecLogo } from './components/SrecLogo';
 import acLogo from './assets/ac.png';
 import srecLogo from './assets/srec-logo.png';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
+import ExplorePage from './ExplorePage';
 
 // Navigation Items
 const NAV_ITEMS = [
@@ -51,8 +52,9 @@ const NAV_ITEMS = [
   { id: 'guidelines', label: 'Guidelines' },
   { id: 'paper-submission', label: 'Paper Submission' },
   { id: 'registration', label: 'Registration' },
+  { id: 'explore', label: 'Explore' },
+  { id: 'contact-us', label: 'Contact Us' }, 
   { id: 'location', label: 'Directions' },
-  { id: 'contact-us', label: 'Contact Us' },
   { id: 'ieee-sb', label: 'IEEE SB', external: true }
 ];
 
@@ -69,6 +71,7 @@ interface CommitteeMember {
   role: string | null;
   name: string;
   desc: string;
+  image_url?: string;
 }
 
 interface Speaker {
@@ -78,6 +81,7 @@ interface Speaker {
   role: string;
   talk: string;
   color: string;
+  image_url?: string;
 }
 
 interface ImportantDate {
@@ -118,425 +122,8 @@ interface Coordinator {
   phone: string;
 }
 
-// Fallback Mock Data in case Supabase is unconfigured or tables don't exist yet
-const MOCK_DEPARTMENTS: Department[] = [
-  {
-    name: "Department of Electrical and Electronics Engineering",
-    description: "The Department of Electrical and Electronics Engineering was established in 1994. It offers a four-year B.E. (Electrical and Electronics Engineering) Programme. The department also offers a Ph.D. Programme to promote research activities in the areas related to Electrical Engineering. The consultancy services are also rendered by the department. It has a distinguished team of faculty consisting of 9 Doctorates and 9 Post Graduates who have registered for Ph.D. in different areas of Electrical and Electronics Engineering and have rich industrial/research/teaching experience. The Programmes offered by the department of Electrical and Electronics Engineering are Accredited by the National Board of Accreditation, New Delhi."
-  },
-  {
-    name: "Department of Electronics and Communication Engineering",
-    description: "The Department of Electronics and Communication Engineering was established in the year 1994 offering an Undergraduate programme in Electronics and Communication Engineering and two postgraduate programmes - VLSI Design and Embedded System Technologies. The UG programme is accredited and re-accredited by the National Board of Accreditation, New Delhi, since 2007. The department enables the students to attain excellence in domain technologies of Electronics and Communication with curricula focusing on the requirements specified by industries. The department has 36 faculty members with 14 members holding doctoral degrees."
-  },
-  {
-    name: "Department of Computer Science and Engineering",
-    description: "The Department of Computer Science and Engineering (CSE) was established in 1994 and has since earned NBA accreditation on five occasions. The department offers a Post Graduate Programme on M.E. Artificial Intelligence and Data Science. The department boasts exceptional infrastructure and has secured funding from prestigious agencies such as AICTE, UGC, DRDO, ISRO, and BRNS. It has also forged strategic partnerships through Memoranda of Understanding (MoUs) with leading organizations including TNAU, L&T Technologies, GE Healthcare, Roots Industries, and more."
-  },
-  {
-    name: "Department of Information Technology",
-    description: "The Department of Information Technology was established in 1998. It is accredited by the National Board of Accreditation (NBA) since 2007 and Permanently Affiliated to Anna University, Chennai. The department has been recognized as a Research Center by Anna University, Chennai. The department has state-of-the-art infrastructure facilities with experienced faculty members. The department has received various funds from AICTE, Anna University, NABARD, CSIR & IEEE-WIE."
-  },
-  {
-    name: "Department of Electronics and Instrumentation Engineering",
-    description: "The Department of Electronics and Instrumentation Engineering (UG) was established in the year 2001. Also, the department is recognized as a Research centre for pursuing Ph.D. by Anna University, Chennai. The department is accredited by the National Board of Accreditation (NBA), New Delhi since 2007. It is equipped with a Centre of Excellence for LabVIEW by National Instruments, Bangalore and Industrial Standards Laboratories."
-  },
-  {
-    name: "Department of Biomedical Engineering",
-    description: "Biomedical engineers analyze and design solutions to problems in biology and medicine, with the goal of improving the quality and effectiveness of patient care. SREC's Biomedical Engineering department covers recent advances in the growing field of biomedical technology, instrumentation, and administration. Contributions focus on theoretical and practical problems associated with the development of medical technology."
-  }
-];
 
-const MOCK_COMMITTEE: CommitteeMember[] = [
-  // Patron
-  { category: 'organizing', role: 'Patron', name: 'Thiru. R. Sundar', desc: 'Managing Trustee, SNR Sons Charitable Trust, Coimbatore' },
-  { category: 'organizing', role: 'Patron', name: 'Thiru. S. Narendran', desc: 'Joint Managing Trustee, SNR Sons Charitable Trust, Coimbatore' },
-  
-  // General Chairs
-  { category: 'organizing', role: 'General Chair', name: 'Dr. A. Soundarrajan', desc: 'Principal, Sri Ramakrishna Engineering College' },
-  { category: 'organizing', role: 'General Chair', name: 'Dr. P. Sakthivel', desc: 'IEEE Madras Section & Professor, Department of ECE, Anna University Chennai.' },
-  
-  // Conference Chair
-  { category: 'organizing', role: 'Conference Chair & Organizing Secretary', name: 'Dr. R. Shanmugasundaram', desc: 'Professor - EEE' },
-  
-  // Session Chair
-  { category: 'organizing', role: 'Session Chair', name: 'Dr. N. Sathish Kumar', desc: 'Professor - ECE' },
-  
-  // Members
-  { category: 'organizing', role: 'Member', name: 'Mrs. N. Divya', desc: 'Asst. Prof. (Sr.G) - EEE' },
-  { category: 'organizing', role: 'Member', name: 'Mrs. R. Kiruba', desc: 'Asst. Prof. (Sr. G) - EIE' },
-  { category: 'organizing', role: 'Member', name: 'Dr. S. P. Vimal', desc: 'Asso. Prof. - ECE' },
-  { category: 'organizing', role: 'Member', name: 'Dr. J. Selva Kumar', desc: 'Professor - CSE' },
-  { category: 'organizing', role: 'Member', name: 'Mrs. R. Rajalakshmi', desc: 'Asst. Prof. (OG) - IT' },
-  { category: 'organizing', role: 'Member', name: 'Mrs. G. Lavanya', desc: 'Asst. Prof. (Sl.G) - BME' },
-  
-  // Finance Chair
-  { category: 'organizing', role: 'Finance Chair & Joint-Organizing Secretary', name: 'Dr. K. Balamurugan', desc: 'Asso. Prof - EEE' },
-  { category: 'organizing', role: 'Finance Committee Member', name: 'Mr. C. Praveenkumar', desc: 'Asst. Prof. (Sl.g) - ECE' },
-  
-  // Publication Chair
-  { category: 'organizing', role: 'Publication Chair', name: 'Dr. V. Rukkumani', desc: 'Asso. Professor - EIE' },
-  { category: 'organizing', role: 'Publication Committee Member', name: 'Mr. R. Santhoshkumar', desc: 'Asst. Prof. - EEE' },
-  { category: 'organizing', role: 'Publication Committee Member', name: 'Dr. M. Priyadharshini', desc: 'Asst. Prof. - ECE' },
-  { category: 'organizing', role: 'Publication Committee Member', name: 'Mr. I. Aravindaguru', desc: 'Asst. Prof. (Sr. G) - EIE' },
-  { category: 'organizing', role: 'Publication Committee Member', name: 'Mrs. C. Sowntharya', desc: 'Asst. Prof. (Sr.G) - CSE' },
-  { category: 'organizing', role: 'Publication Committee Member', name: 'Dr. N. Saranya', desc: 'AP (Sl.G)' },
-  { category: 'organizing', role: 'Publication Committee Member', name: 'Dr. P. Vishnu Vardhan', desc: 'Asst. Prof. (Sr.G) - BME' },
-  
-  // Local Arrangements Chair
-  { category: 'organizing', role: 'Local Arrangements Chair', name: 'Dr. Deepa B Prabhu', desc: 'Asso. Prof. - BME' },
-  { category: 'organizing', role: 'Local Arrangements Committee Member', name: 'Dr. V. Radhika', desc: 'Asso. Prof. - BME' },
-  { category: 'organizing', role: 'Local Arrangements Committee Member', name: 'Mr. B. Marisekar', desc: 'Asst. Prof. (Sl.G) - EEE' },
-  { category: 'organizing', role: 'Local Arrangements Committee Member', name: 'Dr. M. Logaprakash', desc: 'Asst. Prof. (Sl. G) - AIDS' },
-  
-  // Registration Chair
-  { category: 'organizing', role: 'Registration Chair', name: 'Mrs. S. Jansi Rani', desc: 'Asst. Prof. (Sl.G) - IT' },
-  { category: 'organizing', role: 'Registration Committee Member', name: 'Dr. H. Vidhya', desc: 'Asst. Prof. (Sr.G) - EEE' },
-  { category: 'organizing', role: 'Registration Committee Member', name: 'Mrs. T. Anitha', desc: 'Asst. Prof. (Sl.G) - EIE' },
-  { category: 'organizing', role: 'Registration Committee Member', name: 'Mrs. M. Jaishree', desc: 'Asst. Prof. (Sl.G) - ECE' },
-  { category: 'organizing', role: 'Registration Committee Member', name: 'Mrs. R. S. Ramya', desc: 'Asst. Prof. (Sr.G) - CSE' },
-  { category: 'organizing', role: 'Registration Committee Member', name: 'Mr. S. Jeevanandham', desc: 'Asst. Prof. (Sr.G) - IT' },
-  { category: 'organizing', role: 'Registration Committee Member', name: 'Mrs. L. Divyalakshmi', desc: 'Asst. Prof. (Sl.G) - BME' },
-  
-  // Conference Pre-Tutorial Sessions Chair
-  { category: 'organizing', role: 'Conference Pre-Tutorial Sessions Chair', name: 'Dr. S. P. Vimal', desc: 'Asso. Prof. - ECE' },
-  { category: 'organizing', role: 'Pre-Tutorial Sessions Committee Member', name: 'Mrs. B. Kalaimathi', desc: 'Asst. Prof. (Sr.G) - ECE' },
-  { category: 'organizing', role: 'Pre-Tutorial Sessions Committee Member', name: 'Dr. A. Vijay', desc: 'Asst. Prof. (Sr.G) - ECE' },
-  { category: 'organizing', role: 'Pre-Tutorial Sessions Committee Member', name: 'Mrs. M. Kowsalya', desc: 'Asso. Prof. - ECE & Asst. Prof. (Sr.G) - ECE' },
-  
-  // Technical Review Committee
-  { category: 'organizing', role: 'Technical Review Committee Convener', name: 'Dr. R. Shanmugasundaram', desc: 'Professor - EEE' },
-  { category: 'organizing', role: 'Technical Review Committee Member', name: 'Dr. K. Balamurugan', desc: 'Asso. Prof. - EEE' },
-  { category: 'organizing', role: 'Technical Review Committee Member', name: 'Mr. R. Mohan Kumar', desc: 'Asst. Prof. (Sl.G) - EEE' },
-  { category: 'organizing', role: 'Technical Review Committee Member', name: 'Mr. B. Sridhar', desc: 'Asst. Prof. (Sl.G) - EEE' },
-  { category: 'organizing', role: 'Technical Review Committee Member', name: 'Dr. M. Kasiselvanathan', desc: 'Asso. Prof. - ECE' },
-  { category: 'organizing', role: 'Technical Review Committee Member', name: 'Mr. C. Mathan', desc: 'Asst. Prof. (Sr. G) - EIE' },
-  { category: 'organizing', role: 'Technical Review Committee Member', name: 'Dr. P. Mathiyalagan', desc: 'Asso. Prof. - CSE' },
-  { category: 'organizing', role: 'Technical Review Committee Member', name: 'Mrs. S. S. Sugantha Mallika', desc: 'Asst. Prof. (Sl.G) - IT' },
-  { category: 'organizing', role: 'Technical Review Committee Member', name: 'Dr. M. Jeevitha Priya', desc: 'Asst. Prof. - BME' },
-  
-  // Outreach and Promotion Committee
-  { category: 'organizing', role: 'Outreach and Promotion Committee Convener', name: 'Dr. M. S. Geetha Devasena', desc: 'Professor - CSE' },
-  { category: 'organizing', role: 'Outreach and Promotion Committee Member', name: 'Dr. M. Kalaiarasu', desc: 'Asso. Prof. - IT' },
-  { category: 'organizing', role: 'Outreach and Promotion Committee Member', name: 'Dr. R. Kingsy Grace', desc: 'Asso. Prof. - CSE' },
-  { category: 'organizing', role: 'Outreach and Promotion Committee Member', name: 'Dr. R. Vijaya Kumar', desc: 'Asst. Prof. (Sl.G) - CSE' },
-  { category: 'organizing', role: 'Outreach and Promotion Committee Member', name: 'Mr. C. Praveenkumar', desc: 'Asst. Prof. (Sr.G) - EEE' },
-  { category: 'organizing', role: 'Outreach and Promotion Committee Member', name: 'Mrs. R.S. Ramya', desc: 'Asst. Prof. (Sr.G) - CSE' },
-  
-  // Website and Social Media Promotion Committee
-  { category: 'organizing', role: 'Website and Social Media Promotion Committee Chair', name: 'Dr. S. Harihara Gopalan', desc: 'Asso. Prof. - CSE' },
-  { category: 'organizing', role: 'Website and Social Media Promotion Committee Member', name: 'Mr. K. Robin Johny', desc: 'Asst. Prof. (Sr.G) - AERO' },
-  { category: 'organizing', role: 'Website and Social Media Promotion Committee Member', name: 'Mr. R. S. Vishnudurai', desc: 'Asst. Prof. (Sr.G) - CSE' },
-  { category: 'organizing', role: 'Website and Social Media Promotion Committee Member', name: 'Dr. A. Vijay', desc: 'Asst. Prof. (Sr. G) - ECE' },
-  
-  // Hospitality Committee
-  { category: 'organizing', role: 'Hospitality Committee Convener', name: 'Dr. P. Perumal', desc: 'Professor - CSE' },
-  { category: 'organizing', role: 'Hospitality Committee Member', name: 'Dr. B. Mathivanan', desc: 'Asso. Prof. - CSE' },
-  { category: 'organizing', role: 'Hospitality Committee Member', name: 'Dr. M. Nagarajapandian', desc: 'Asst. Prof. (Sl.G) - EIE' },
-  { category: 'organizing', role: 'Hospitality Committee Member', name: 'Mr. V. Krishna Kumar', desc: 'Asst. Prof. (Sl.G) - CSE' },
-  { category: 'organizing', role: 'Hospitality Committee Member', name: 'Dr. N. Suresh Kumar', desc: 'Asso. Prof. - IT' },
-  { category: 'organizing', role: 'Hospitality Committee Member', name: 'Dr. P. Sebastian Vindro Jude', desc: 'Asst. Prof. (Sl.G) - EEE' },
 
-  // Advisory / Technical
-  { category: 'advisory', role: null, name: 'Dr. Saifur Rahman', desc: 'Virginia Tech, USA (IEEE President 2023)' },
-  { category: 'advisory', role: null, name: 'Dr. Ramesh Bansal', desc: 'University of Sharjah, Sharjah, UAE' },
-  { category: 'advisory', role: null, name: 'Dr. Frede Blaabjerg', desc: 'Aalborg University, Denmark' },
-  { category: 'advisory', role: null, name: 'Dr. Subhransu Sekhar Dash', desc: 'Professor, SRM Institute, India' },
-  { category: 'advisory', role: null, name: 'Dr. Vincenzo Piuri', desc: 'University of Milan, Italy' },
-  { category: 'technical', role: null, name: 'Dr. B. Chitti Babu', desc: 'IIITD&M Kancheepuram, India' },
-  { category: 'technical', role: null, name: 'Dr. P. Karuppanan', desc: 'MNNIT Allahabad, India' },
-  { category: 'technical', role: null, name: 'Dr. S. K. Patnaik', desc: 'Anna University, Chennai, India' },
-  { category: 'technical', role: null, name: 'Dr. R. Harikumar', desc: 'GCT Coimbatore, India' }
-];
-
-const MOCK_SPEAKERS: Speaker[] = [
-  {
-    name: 'Dr. Saifur Rahman',
-    title: 'Professor, Virginia Tech, USA',
-    role: 'Former IEEE President & CEO (2023)',
-    talk: 'AI Integration in Modern Clean Energy Microgrids',
-    color: '#0f52ba'
-  },
-  {
-    name: 'Dr. Frede Blaabjerg',
-    title: 'Professor, Aalborg University, Denmark',
-    role: 'Highly Cited Researcher & Power Electronics Pioneer',
-    talk: 'Reliability and Grid Integration of Power Electronics',
-    color: '#06b6d4'
-  },
-  {
-    name: 'Dr. Rajkumar Buyya',
-    title: 'Professor, University of Melbourne, Australia',
-    role: 'Director, Cloud Computing and Distributed Systems Lab',
-    talk: 'Cognitive Cloud-Edge Computing for IoT Applications',
-    color: '#f58220'
-  }
-];
-
-const MOCK_IMPORTANT_DATES: ImportantDate[] = [
-  { title: 'Full Paper Submission Opens', event_date: 'October 15, 2026', desc: 'All draft manuscripts to be uploaded via CMT portal.' },
-  { title: 'Paper Submission Deadline', event_date: 'December 20, 2026', desc: 'Final extension date for submissions.' },
-  { title: 'Acceptance Notification', event_date: 'January 25, 2027', desc: 'Peer review comments and status delivered to corresponding author.' },
-  { title: 'Camera Ready Submission & Registration', event_date: 'February 20, 2027', desc: 'Final camera-ready version submission and author fee payment.' },
-  { title: 'Pre-Conference Workshops', event_date: 'April 03, 2027', desc: 'Hands-on intensive masterclasses on campus.' },
-  { title: 'Conference Dates', event_date: 'April 04 & 05, 2027', desc: 'Inaugural speeches, technical sessions, and networking dinner.' }
-];
-
-const MOCK_WORKSHOPS: Workshop[] = [
-  {
-    title: 'AI-Driven IoT in Smart Grids',
-    instructor: 'Dr. Ramesh Bansal, University of Sharjah, UAE',
-    duration: 'Full Day (9:00 AM - 4:00 PM)',
-    price: 'INR 1,000 / USD 40',
-    details: 'This workshop provides a complete hands-on framework to integrate machine learning models on edge IoT nodes designed for smart meter analytics, solar microgrid forecasting, and grid load management.'
-  },
-  {
-    title: 'Next-Gen VLSI Design Flow & Verification',
-    instructor: 'Industry Leads, Synopsys / SREC EDA Lab Coordinators',
-    duration: 'Full Day (9:30 AM - 4:30 PM)',
-    price: 'INR 1,250 / USD 50',
-    details: 'Explore advanced ASIC synthesis pipelines using industry standard electronic design automation (EDA) tools. Topics include functional coverage, RTL simulation methodologies, and formal verification.'
-  }
-];
-
-const MOCK_REGISTRATION_FEES: RegistrationFee[] = [
-  { member_type: 'Student & Scholar (Conference Only)', inr_reg: '7,000', inr_early: '6,000', usd_phys_reg: '200', usd_phys_early: '175', usd_virt_reg: '125', usd_virt_early: '100' },
-  { member_type: 'Student & Scholar (Conf + Tutorial)', inr_reg: '7,500', inr_early: '6,500', usd_phys_reg: '225', usd_phys_early: '200', usd_virt_reg: '150', usd_virt_early: '125' },
-  { member_type: 'Professionals (Conference Only)', inr_reg: '8,000', inr_early: '7,000', usd_phys_reg: '250', usd_phys_early: '225', usd_virt_reg: '175', usd_virt_early: '150' },
-  { member_type: 'Professionals (Conf + Tutorial)', inr_reg: '8,500', inr_early: '7,500', usd_phys_reg: '300', usd_phys_early: '275', usd_virt_reg: '225', usd_virt_early: '200' }
-];
-
-const MOCK_STATS: Stat[] = [
-  { number: '17', label: 'Trust Institutions' },
-  { number: '30+', label: 'Years Excellence' },
-  { number: '12+', label: 'UG Programmes' },
-  { number: '7+', label: 'PG Programmes' }
-];
-
-const MOCK_COORDINATORS: Coordinator[] = [
-  { name: 'Dr. M. Jagadeeswari', role: 'Publications Coordinator', phone: '+91 94435 56903' },
-  { name: 'Dr. A. Grace Selvarani', role: 'Technical Program Coordinator', phone: '+91 98427 12604' }
-];
-
-interface TouristPlace {
-  id?: any;
-  name: string;
-  category: string;
-  description: string;
-  sort_order?: number;
-}
-
-interface WeekendStay {
-  id?: any;
-  name: string;
-  category: string;
-  description: string;
-  sort_order?: number;
-}
-
-interface HotelToStay {
-  id?: any;
-  name: string;
-  category: string;
-  address: string;
-  description: string;
-  map_url: string;
-  sort_order?: number;
-}
-
-const MOCK_TOURIST_PLACES: TouristPlace[] = [
-  { name: 'Isha Yoga Center - Dhyanalinga and Adiyogi Statue', category: 'Religious site', description: 'Features the magnificent 112-foot Adiyogi Shiva bust, a world-renowned spiritual destination.' },
-  { name: 'Dhyanalinga Temple', category: 'Religious site', description: 'A unique meditative space located at the foothills of Velliangiri Mountains offering a peaceful, spiritual atmosphere.' },
-  { name: 'Marudamalai Temple', category: 'Religious site', description: 'An ancient hilltop temple dedicated to Lord Murugan, offering scenic views of the city and surroundings.' },
-  { name: 'Kovai Kutralam Water Falls', category: 'Nature / Scenic', description: 'Beautiful, serene waterfalls nestled in the Siruvani hills, famous for its refreshing natural streams.' },
-  { name: 'Brookefields Mall', category: 'Shopping / Entertainment', description: 'A modern, prime shopping mall in Coimbatore offering global brands, food courts, and multiplex theatres.' },
-  { name: 'Black Thunder Theme Park', category: 'Amusement Park', description: 'A massive, thrilling water theme park situated at the foot of Nilgiris near Mettupalayam.' },
-  { name: 'Eachanari Vinayagar Temple', category: 'Religious site', description: 'A historic temple dedicated to Lord Ganesha, famous for its grand 6-foot tall idol and architecture.' },
-  { name: 'Kovai Kondattam', category: 'Amusement Park', description: 'An eco-friendly amusement park situated on Siruvani Main Road, perfect for family entertainment.' },
-  { name: 'Horticulture Farms, Kallar', category: 'Nature / Botanical', description: 'Lush state horticultural farm near Mettupalayam showcasing diverse fruit varieties and rare plants.' }
-];
-
-const MOCK_WEEKEND_STAYS: WeekendStay[] = [
-  { name: 'Ooty Hill Station (Udhagamandalam)', category: 'Hill Station', description: 'The legendary Queen of Hill Stations, famous for its tea estates, Nilgiri Mountain Railway, and botanical gardens.' },
-  { name: 'Coonoor Hill Station', category: 'Hill Station', description: 'A quieter Nilgiri retreat famous for Sim’s Park, dolphin’s nose viewpoints, and panoramic tea valley walks.' },
-  { name: 'Valparai Hill Station', category: 'Hill Station', description: 'A pristine, misty hill station surrounded by tea plantations and rich wildlife in the Western Ghats.' },
-  { name: 'Munnar Hill Station', category: 'Hill Station', description: 'Famous destination in nearby Kerala boasting vast rolling tea estates, waterfalls, and scenic mist-filled peaks.' },
-  { name: 'Athirapally Waterfalls', category: 'Nature / Scenic', description: 'A majestic 80-foot waterfall in Kerala, often referred to as the Niagara of India, surrounded by green rainforests.' },
-  { name: 'Kodaikanal Hill Station', category: 'Hill Station', description: 'The Princess of Hill Stations, renowned for its star-shaped lake, pine forests, and cool mountain air.' },
-  { name: 'Topslip Anamalai Tiger Reserve', category: 'Wildlife Sanctuary / Nature', description: 'A famous national park and tiger reserve rich in biodiversity, offering elephant rides and forest safaris.' }
-];
-
-const MOCK_HOTELS: HotelToStay[] = [
-  { name: 'Vivanta', category: 'Luxury Hotels', address: 'Race Course Road, Coimbatore', description: '5-star luxury hotel in the heart of Coimbatore featuring premium amenities and dining.', map_url: 'https://maps.google.com/?q=Vivanta+Coimbatore' },
-  { name: 'The Residency Towers', category: 'Luxury Hotels', address: 'Avinashi Road, Coimbatore', description: 'Highly rated premium business hotel offering deluxe suites and wellness centers.', map_url: 'https://maps.google.com/?q=The+Residency+Towers+Coimbatore' },
-  { name: 'Le Meridien', category: 'Luxury Hotels', address: 'Neelambur, Coimbatore', description: 'Luxurious 5-star hotel with grand event spaces near the international airport.', map_url: 'https://maps.google.com/?q=Le+Meridien+Coimbatore' },
-  { name: 'Radisson Blu', category: 'Luxury Hotels', address: 'Avinashi Road, Coimbatore', description: 'Upscale modern business hotel featuring a roof-top pool and fine dining.', map_url: 'https://maps.google.com/?q=Radisson+Blu+Coimbatore' },
-  { name: 'Hash Six Hotel', category: 'Luxury Hotels', address: 'Saibaba Colony, Coimbatore', description: 'Sleek luxury hotel offering exceptional boutique rooms, dining, and hospitality.', map_url: 'https://maps.google.com/?q=Hash+Six+Hotel+Coimbatore' },
-  { name: 'Lemon Tree Hotel', category: 'Luxury Hotels', address: 'Avinashi Road, Coimbatore', description: 'Vibrant upscale business hotel located strategically near key commercial hubs.', map_url: 'https://maps.google.com/?q=Lemon+Tree+Hotel+Coimbatore' },
-  { name: 'Hotel CAG Pride', category: 'Mid-Range Hotels', address: 'Gandhipuram, Coimbatore', description: 'Respected corporate hotel offering warm hospitality, comfortable stays, and quality dining.', map_url: 'https://maps.google.com/?q=Hotel+CAG+Pride+Coimbatore' },
-  { name: 'City Tower', category: 'Mid-Range Hotels', address: 'Gandhipuram, Coimbatore', description: 'Classic business hotel offering spacious rooms, convenient location, and prompt services.', map_url: 'https://maps.google.com/?q=City+Tower+Coimbatore' },
-  { name: 'Hotel Alankar', category: 'Mid-Range Hotels', address: 'Gandhipuram, Coimbatore', description: 'Comfortable business hotel famous for its cozy accommodation and multi-cuisine restaurant.', map_url: 'https://maps.google.com/?q=Hotel+Alankar+Coimbatore' },
-  { name: 'Fairfield by Marriott', category: 'Mid-Range Hotels', address: 'Avinashi Road, Coimbatore', description: 'Contemporary comfort and business amenities situated close to Coimbatore Airport.', map_url: 'https://maps.google.com/?q=Fairfield+by+Marriott+Coimbatore' },
-  { name: 'Welcomhotel (ITC Hotels)', category: 'Mid-Range Hotels', address: 'Race Course, Coimbatore', description: 'Premium heritage-themed hotel offering top-class dining, wellness, and stay experiences.', map_url: 'https://maps.google.com/?q=Welcomhotel+Coimbatore' },
-  { name: 'Hotel KISCOL Grands', category: 'Mid-Range Hotels', address: 'Ramnagar, Coimbatore', description: 'Modern, high-comfort hotel featuring premium facilities in the central business area.', map_url: 'https://maps.google.com/?q=Hotel+KISCOL+Grands+Coimbatore' },
-  { name: 'Rathna Residency', category: 'Mid-Range Hotels', address: 'Town Hall, Coimbatore', description: 'Centrally located business hotel renowned for its cozy environment and great hospitality.', map_url: 'https://maps.google.com/?q=Rathna+Residency+Coimbatore' },
-  { name: 'Hotel Vijay Park Inn', category: 'Mid-Range Hotels', address: 'Ramnagar, Coimbatore', description: 'Affordable business hotel offering neat accommodation, conference halls, and dining.', map_url: 'https://maps.google.com/?q=Hotel+Vijay+Park+Inn+Coimbatore' },
-  { name: 'Sri Aarvee Hotels', category: 'Budget-Friendly Hotels', address: 'Gandhipuram, Coimbatore', description: 'Value-for-money hotel providing essential comforts and prime accessibility.', map_url: 'https://maps.google.com/?q=Sri+Aarvee+Hotels+Coimbatore' },
-  { name: 'Zone by The Park', category: 'Budget-Friendly Hotels', address: 'Avinashi Road, Coimbatore', description: 'Trendy, social hotel offering active spaces, smart amenities, and neat rooms.', map_url: 'https://maps.google.com/?q=Zone+by+The+Park+Coimbatore' },
-  { name: 'Hotel Jothi Grand', category: 'Budget-Friendly Hotels', address: 'Near KCT, Saravanampatti, Coimbatore', description: 'Pocket-friendly hotel near IT parks and educational institutions in Saravanampatti.', map_url: 'https://maps.google.com/?q=Hotel+Jothi+Grand+Coimbatore' }
-];
-
-const MOCK_INFO = {
-  about_coimbatore_desc: 'Coimbatore, often referred to as the "Manchester of South India", is a dynamic city in Tamil Nadu, India, known for its industrial prowess, pleasant climate, and cultural heritage. It is a popular destination for conferences and business events, offering excellent infrastructure and connectivity. Coimbatore International Airport connects the city to major Indian cities like Chennai, Bangalore, Mumbai, and Delhi, as well as international destinations like Singapore and Sharjah. Coimbatore Junction is a major railway hub with frequent trains to all parts of India. It is also well-connected via National Highways, making it accessible by road from nearby cities like Chennai, Bangalore, and Kochi. Coimbatore is widely recognized as an emerging education hub in South South India. The city is home to a variety of prestigious educational institutions, spanning schools, colleges, and specialized training centers. It offers a holistic educational environment with a focus on academics, innovation, and industry integration. The ideal time to visit Coimbatore is between September and March, when the weather is pleasant and conducive to travel.',
-  about_coimbatore_tour_info: 'Half-a-day tour will be arranged to visit nearest site seeing places based on number of participant’s registered for tour.',
-  about_trust: "SNR Sons Charitable Trust was founded in the year 1970 by the illustrious sons of Sri. S. N. Rangasamy Naidu namely, Late Sri Chinnasamy Naidu, Late Sri. P. R. Ramaswami Naidu, Sri. R. Doraiswami Naidu and Sevaratna Dr. R. Venkatesalu Naidu. Being an ardent devotee of Sri Ramakrishna Paramahamsa, all the institutions started by the Trust bear the name of the Holy Sage 'Sri Ramakrishna'.\n\nFollowing the Principles of Sri Ramakrishna Paramahamsa's Philosophy of 'God through man', the Trust successfully runs 15 organisations significantly catering to social causes of society focusing on Health Care, Education and Service.",
-  about_conference: "SNR Sons Charitable Trust was founded in the year 1970 by the illustrious sons of Sri. S. N. Rangasamy Naidu namely, Late Sri Chinnasamy Naidu, Late Sri. P. R. Ramaswami Naidu, Sri. R. Doraiswami Naidu and Sevaratna Dr. R. Venkatesalu Naidu. Being an ardent devotee of Sri Ramakrishna Paramahamsa, all the institutions started by the Trust bear the name of the Holy Sage 'Sri Ramakrishna'. Following the Principles of Sri Ramakrishna Paramahamsa's Philosophy of 'God through man', the Trust successfully runs 15 organisations significantly catering to social causes of society focusing on Health Care, Education and Service.",
-  about_institution: "Sri Ramakrishna Engineering College (SREC), Coimbatore, established in the year 1994 by SNR Sons Charitable Trust, is one of the 17 institutions managed by the trust. SREC is an autonomous institution offering 12 Undergraduate programmes and 7 Post Graduate programmes in Engineering and Technology, in addition to MBA. The college stands as a beacon of academic excellence in Southern India, fostering character development alongside high-quality engineering training.",
-  countdown_target: "2027-04-04T09:00:00",
-  event_date_display: "April 04 & 05, 2027",
-  event_location_display: "Sri Ramakrishna Engineering College, Coimbatore, Tamilnadu, India.",
-  cmt_id: "aectsd2027",
-  cmt_link: "https://cmt3.research.microsoft.com/",
-  bank_account_name: "Sri Ramakrishna Engineering College - AECTSD",
-  bank_name: "ICICI Bank, Coimbatore",
-  bank_account_number: "058705008310",
-  bank_ifsc_code: "ICIC0000587",
-  bank_branch_location: "SREC Campus Branch, Coimbatore",
-  bank_important_note: "Please include your Paper ID in the payment reference. Once the wire transfer transaction completes successfully, authors are requested to upload the scanned payment receipt copy in the registration form below.",
-  secretariat_address: "Department of EEE / ECE,\nSri Ramakrishna Engineering College,\nVattamalaipalayam, N.G.G.O Colony Post,\nCoimbatore, Tamilnadu - 641022, India.",
-  secretariat_email: "aectsd2027@srec.ac.in",
-  secretariat_phone: "+91 (422) 2461588 / 2460088",
-  // Logo Branding
-  logo_title: "SRI RAMAKRISHNA",
-  logo_subtitle: "Engineering College",
-  logo_tagline: "Elegance & Excellence",
-  // Navigation
-  nav_home: "Home",
-  nav_about: "About Us",
-  nav_committee: "Committee",
-  nav_speakers: "Speakers",
-  nav_call_for_papers: "Call For Papers",
-  nav_important_dates: "Important Dates",
-  nav_workshops: "Workshops",
-  nav_guidelines: "Guidelines",
-  nav_paper_submission: "Paper Submission",
-  nav_registration: "Registration",
-  nav_contact_us: "Contact Us",
-  nav_location: "Directions",
-  // Hero section
-  hero_title: "AECTSD 2027",
-  hero_subtitle: "INTERNATIONAL CONFERENCE ON ADVANCED ELECTRONICS, COMMUNICATION, TRUST, SECURITY AND DEVICES",
-  hero_countdown_title: "Countdown to Conference Launch",
-  hero_btn_submit: "Submit Your Paper",
-  hero_btn_register: "Calculate & Register",
-  // About section
-  about_badge: "About SREC",
-  about_title: "The Trust & Institution",
-  about_card_conf_title: "SNR Sons Charitable Trust",
-  about_card_inst_title: "Sri Ramakrishna Engineering College",
-  // Committee section
-  committee_badge: "Leadership",
-  committee_title: "Organizing & Advisory Committees",
-  committee_tab_org: "Organizing Committee",
-  committee_tab_adv: "International Advisory",
-  committee_tab_tech: "Technical Program Committee",
-  // Speakers section
-  speakers_badge: "Experts",
-  speakers_title: "Keynote Speakers",
-  speakers_keynote_label: "Keynote Address",
-  // Call for papers section
-  cfp_badge: "Scope",
-  cfp_title: "Call For Papers",
-  cfp_desc: "We invite researchers, scholars, and industry professionals to submit original, unpublished manuscripts representing technological advancements and theoretical developments in following areas:",
-  cfp_btn_word: "Download MS Word Template",
-  cfp_btn_latex: "Download LaTeX Template",
-  // Important dates section
-  dates_badge: "Timeline",
-  dates_title: "Important Dates",
-  // Workshops section
-  workshops_badge: "Co-Events",
-  workshops_title: "Pre-Conference Tutorials",
-  workshops_desc: "Expand your skills with pre-conference tutorials led by expert academic and industry speakers on April 3, 2027. Certificates will be awarded.",
-  workshops_btn_reg: "Register for Tutorial",
-  // Guidelines section
-  guidelines_badge: "Guidelines",
-  guidelines_title: "Registration Guidelines",
-  guidelines_sub1: "Registration Policies",
-  guidelines_sub2: "Publication & Proceedings",
-  guidelines_bullets_formatting: "At least one of the authors of each accepted paper must register for the conference for the paper to be included in the conference proceedings.\nFull registration includes the registration of one paper. Additional papers for a single registration come with an additional fee.\nThe maximum length of the paper is 6 pages including figures, tables, and references.\nA fee of Rs. 500 (or USD 20) will be applied for each additional page (with a maximum of 2 pages).",
-  guidelines_bullets_presentation: "All accepted and presented papers of AECTSD 2027 will be forwarded for possible inclusion in the IEEE Xplore digital library.\nRegistration fee covers admission to all sessions, publishing costs, welcome reception, conference kit, refreshments, working lunches, banquet dinner, and a half-a-day tour to nearby places.\nOnly presented papers will be recommended for technical indexing in IEEE Xplore.",
-  // Paper submission section
-  submission_badge: "Portal",
-  submission_title: "Paper Submission",
-  submission_card_title: "Submit via Microsoft CMT",
-  submission_card_desc: "Ready to submit your findings? Authors are requested to submit draft manuscripts via the Microsoft CMT online conference submission portal. Please ensure all author details are removed if a double-blind peer review is requested.",
-  submission_btn_cmt: "Go to CMT Submission Portal",
-  // Registration section
-  reg_badge: "Fees",
-  reg_title: "Conference Registration",
-  reg_table_header_member: "Delegate Category",
-  reg_table_header_indian: "Indian delegates (in Rupees)",
-  reg_table_header_foreign: "Foreign delegates (in US Dollars)",
-  reg_table_header_foreign_note: "*Virtual mode option is available for registration fees.",
-  reg_table_header_regular: "Regular",
-  reg_table_header_early: "Early bird",
-  reg_table_header_physical: "Physical Mode",
-  reg_table_header_virtual: "Virtual Mode",
-  reg_notice_non_presenter: "*Indian Non-Author Attendees: Students = Rs.3500 (Non-IEEE: Rs.5000) | Professionals = Rs.4500 (Non-IEEE: Rs.6000)",
-  reg_notice_certificate: "\"Early bird discounts: INR 1000 / USD 25 on conference fees. Penalty for late registration (from Nov 1, 2026) is INR 1000 / USD 25.\"",
-  reg_link_label: "Payment Mode & Instructions:",
-  reg_btn_click: "Calculate Fee & Pay",
-  reg_bank_title: "Bank Account Details",
-  reg_bank_desc: "Please find the official banking channels to process registration fees. Bank transfer references must include your Paper ID.",
-  reg_bank_label_acc_name: "Account Name",
-  reg_bank_label_bank_name: "Bank Name",
-  reg_bank_label_acc_num: "Account Number",
-  reg_bank_label_ifsc: "IFSC Code",
-  reg_bank_label_branch: "Branch Location",
-  // Contact section
-  contact_badge: "Connect",
-  contact_title: "Contact Us",
-  contact_form_title: "Send Us a Message",
-  contact_form_success_title: "Message Sent Successfully!",
-  contact_form_success_desc: "Thank you for reaching out. A coordinator will get back to you shortly.",
-  contact_form_label_name: "Your Name",
-  contact_form_label_email: "Email Address",
-  contact_form_label_subject: "Subject",
-  contact_form_label_message: "Message",
-  contact_form_btn_send: "Send Message",
-  contact_form_placeholder_name: "Enter full name",
-  contact_form_placeholder_email: "Enter email address",
-  contact_form_placeholder_subject: "How can we help?",
-  contact_form_placeholder_message: "Type details here...",
-  contact_sec_title: "Organizing Secretariat",
-  contact_coord_title: "Conference Coordinators",
-  // Footer
-  footer_copyright: "© 2027 Sri Ramakrishna Engineering College. All Rights Reserved.",
-  footer_sponsor: "Technical Co-sponsored by IEEE Section. Managed by SNR Sons Charitable Trust.",
-  // Timer Labels
-  label_days: "Days",
-  label_hours: "Hours",
-  label_mins: "Mins",
-  label_secs: "Secs",
-  // Workshop Labels
-  workshop_label: "Tutorial",
-  label_lead_instructor: "Lead Instructor:",
-  label_fee: "Price:",
-  // Submission Labels
-  label_conf_id: "Conference ID:",
-  // Alert Messages
-  alert_download_word: "Downloading AECTSD Word Template Package...",
-  alert_download_latex: "Downloading AECTSD LaTeX Template Package...",
-  alert_registration: "Scroll down to use the interactive Registration Calculator and Payment submission form."
-};
-
-const getMemberImageUrl = (name: string) => {
-  const cleanName = name
-    .replace(/^(Dr\.|Mr\.|Mrs\.|Ms\.)\s+/i, '')
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-');
-  return `/images/${cleanName}.jpg`;
-};
 
 const parseDateDisplay = (dateStr: string) => {
   const cleaned = dateStr.trim();
@@ -754,23 +341,21 @@ async function sha256(message: string): Promise<string> {
 
 export default function App() {
   const [activeSection, setActiveSection] = useState('home');
+  const [currentPage, setCurrentPage] = useState<'main' | 'explore'>('main');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [committeeTab, setCommitteeTab] = useState<'organizing' | 'advisory' | 'technical'>('organizing');
   const [showScrollTop, setShowScrollTop] = useState(false);
   
   // Database content states
-  const [departments, setDepartments] = useState<Department[]>(MOCK_DEPARTMENTS);
-  const [committeeMembers, setCommitteeMembers] = useState<CommitteeMember[]>(MOCK_COMMITTEE);
-  const [speakers, setSpeakers] = useState<Speaker[]>(MOCK_SPEAKERS);
-  const [importantDates, setImportantDates] = useState<ImportantDate[]>(MOCK_IMPORTANT_DATES);
-  const [workshops, setWorkshops] = useState<Workshop[]>(MOCK_WORKSHOPS);
-  const [registrationFees, setRegistrationFees] = useState<RegistrationFee[]>(MOCK_REGISTRATION_FEES);
-  const [stats, setStats] = useState<Stat[]>(MOCK_STATS);
-  const [coordinators, setCoordinators] = useState<Coordinator[]>(MOCK_COORDINATORS);
-  const [touristPlaces, setTouristPlaces] = useState<TouristPlace[]>(MOCK_TOURIST_PLACES);
-  const [weekendStays, setWeekendStays] = useState<WeekendStay[]>(MOCK_WEEKEND_STAYS);
-  const [hotels, setHotels] = useState<HotelToStay[]>(MOCK_HOTELS);
-  const [info, setInfo] = useState<Record<string, string>>(MOCK_INFO);
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [committeeMembers, setCommitteeMembers] = useState<CommitteeMember[]>([]);
+  const [speakers, setSpeakers] = useState<Speaker[]>([]);
+  const [importantDates, setImportantDates] = useState<ImportantDate[]>([]);
+  const [workshops, setWorkshops] = useState<Workshop[]>([]);
+  const [registrationFees, setRegistrationFees] = useState<RegistrationFee[]>([]);
+  const [stats, setStats] = useState<Stat[]>([]);
+  const [coordinators, setCoordinators] = useState<Coordinator[]>([]);
+  const [info, setInfo] = useState<Record<string, string>>({});
   const [pricing, setPricing] = useState<Record<string, number>>({});
   const [selectedDept, setSelectedDept] = useState<Department | null>(null);
   const [showCalcModal, setShowCalcModal] = useState<boolean>(false);
@@ -796,9 +381,7 @@ export default function App() {
   const [editingWorkshop, setEditingWorkshop] = useState<any | null>(null);
   const [editingCommittee, setEditingCommittee] = useState<any | null>(null);
   const [editingDept, setEditingDept] = useState<any | null>(null);
-  const [editingTouristPlace, setEditingTouristPlace] = useState<any | null>(null);
-  const [editingWeekendStay, setEditingWeekendStay] = useState<any | null>(null);
-  const [editingHotel, setEditingHotel] = useState<any | null>(null);
+
 
   // Contact form state
   const [formSubmitted, setFormSubmitted] = useState(false);
@@ -977,7 +560,8 @@ export default function App() {
         title: editingSpeaker.title,
         role: editingSpeaker.role,
         talk: editingSpeaker.talk,
-        color: editingSpeaker.color || '#0f52ba'
+        color: editingSpeaker.color || '#0f52ba',
+        image_url: editingSpeaker.image_url || null
       };
 
       if (isSupabaseConfigured && supabase) {
@@ -1114,151 +698,7 @@ export default function App() {
     }
   };
 
-  const handleSaveTouristPlace = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingTouristPlace) return;
-    try {
-      const dataToSave = {
-        name: editingTouristPlace.name,
-        category: editingTouristPlace.category,
-        description: editingTouristPlace.description,
-        sort_order: editingTouristPlace.sort_order || 0
-      };
-
-      if (isSupabaseConfigured && supabase) {
-        if (editingTouristPlace.id) {
-          await supabase.from('tourist_places').update(dataToSave).eq('id', editingTouristPlace.id);
-        } else {
-          await supabase.from('tourist_places').insert(dataToSave);
-        }
-      } else {
-        let list = [...touristPlaces];
-        if (editingTouristPlace.id) {
-          list = list.map(t => (t as any).id === editingTouristPlace.id ? editingTouristPlace : t);
-        } else {
-          list.push({ ...editingTouristPlace, id: Date.now() });
-        }
-        localStorage.setItem('srec_offline_tourist_places', JSON.stringify(list));
-      }
-      setEditingTouristPlace(null);
-      await fetchDbData();
-    } catch (err) {
-      console.error('Save tourist place failed:', err);
-    }
-  };
-
-  const handleDeleteTouristPlace = async (id: any) => {
-    if (!window.confirm('Are you sure you want to delete this tourist place?')) return;
-    try {
-      if (isSupabaseConfigured && supabase) {
-        await supabase.from('tourist_places').delete().eq('id', id);
-      } else {
-        const list = touristPlaces.filter(t => (t as any).id !== id);
-        localStorage.setItem('srec_offline_tourist_places', JSON.stringify(list));
-      }
-      await fetchDbData();
-    } catch (err) {
-      console.error('Delete tourist place failed:', err);
-    }
-  };
-
-  const handleSaveWeekendStay = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingWeekendStay) return;
-    try {
-      const dataToSave = {
-        name: editingWeekendStay.name,
-        category: editingWeekendStay.category,
-        description: editingWeekendStay.description,
-        sort_order: editingWeekendStay.sort_order || 0
-      };
-
-      if (isSupabaseConfigured && supabase) {
-        if (editingWeekendStay.id) {
-          await supabase.from('weekend_stays').update(dataToSave).eq('id', editingWeekendStay.id);
-        } else {
-          await supabase.from('weekend_stays').insert(dataToSave);
-        }
-      } else {
-        let list = [...weekendStays];
-        if (editingWeekendStay.id) {
-          list = list.map(s => (s as any).id === editingWeekendStay.id ? editingWeekendStay : s);
-        } else {
-          list.push({ ...editingWeekendStay, id: Date.now() });
-        }
-        localStorage.setItem('srec_offline_weekend_stays', JSON.stringify(list));
-      }
-      setEditingWeekendStay(null);
-      await fetchDbData();
-    } catch (err) {
-      console.error('Save weekend stay failed:', err);
-    }
-  };
-
-  const handleDeleteWeekendStay = async (id: any) => {
-    if (!window.confirm('Are you sure you want to delete this weekend stay?')) return;
-    try {
-      if (isSupabaseConfigured && supabase) {
-        await supabase.from('weekend_stays').delete().eq('id', id);
-      } else {
-        const list = weekendStays.filter(s => (s as any).id !== id);
-        localStorage.setItem('srec_offline_weekend_stays', JSON.stringify(list));
-      }
-      await fetchDbData();
-    } catch (err) {
-      console.error('Delete weekend stay failed:', err);
-    }
-  };
-
-  const handleSaveHotel = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingHotel) return;
-    try {
-      const dataToSave = {
-        name: editingHotel.name,
-        category: editingHotel.category,
-        address: editingHotel.address,
-        description: editingHotel.description,
-        map_url: editingHotel.map_url,
-        sort_order: editingHotel.sort_order || 0
-      };
-
-      if (isSupabaseConfigured && supabase) {
-        if (editingHotel.id) {
-          await supabase.from('hotels_to_stay').update(dataToSave).eq('id', editingHotel.id);
-        } else {
-          await supabase.from('hotels_to_stay').insert(dataToSave);
-        }
-      } else {
-        let list = [...hotels];
-        if (editingHotel.id) {
-          list = list.map(h => (h as any).id === editingHotel.id ? editingHotel : h);
-        } else {
-          list.push({ ...editingHotel, id: Date.now() });
-        }
-        localStorage.setItem('srec_offline_hotels', JSON.stringify(list));
-      }
-      setEditingHotel(null);
-      await fetchDbData();
-    } catch (err) {
-      console.error('Save hotel failed:', err);
-    }
-  };
-
-  const handleDeleteHotel = async (id: any) => {
-    if (!window.confirm('Are you sure you want to delete this hotel?')) return;
-    try {
-      if (isSupabaseConfigured && supabase) {
-        await supabase.from('hotels_to_stay').delete().eq('id', id);
-      } else {
-        const list = hotels.filter(h => (h as any).id !== id);
-        localStorage.setItem('srec_offline_hotels', JSON.stringify(list));
-      }
-      await fetchDbData();
-    } catch (err) {
-      console.error('Delete hotel failed:', err);
-    }
-  };
+  
 
   const handleSaveCommittee = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1268,7 +708,8 @@ export default function App() {
         category: editingCommittee.category,
         role: editingCommittee.role || null,
         name: editingCommittee.name,
-        desc: editingCommittee.desc
+        desc: editingCommittee.desc,
+        image_url: editingCommittee.image_url || null
       };
 
       if (isSupabaseConfigured && supabase) {
@@ -1575,15 +1016,6 @@ export default function App() {
     const localRegs = localStorage.getItem('srec_offline_registrations');
     if (localRegs) setSubmittedRegistrations(JSON.parse(localRegs));
 
-    const localTourist = localStorage.getItem('srec_offline_tourist_places');
-    if (localTourist) setTouristPlaces(JSON.parse(localTourist));
-
-    const localWeekend = localStorage.getItem('srec_offline_weekend_stays');
-    if (localWeekend) setWeekendStays(JSON.parse(localWeekend));
-
-    const localHotels = localStorage.getItem('srec_offline_hotels');
-    if (localHotels) setHotels(JSON.parse(localHotels));
-
     // 2. Fetch from database if Supabase is connected
     if (!isSupabaseConfigured || !supabase) {
       console.info('Supabase not fully configured. Running on localStorage data.');
@@ -1647,17 +1079,6 @@ export default function App() {
       const { data: registrationsLog, error: errReg } = await supabase.from('registrations').select('*').order('created_at', { ascending: false });
       if (!errReg && registrationsLog) setSubmittedRegistrations(registrationsLog);
 
-      // Fetch tourist places
-      const { data: touristData, error: errTourist } = await supabase.from('tourist_places').select('*').order('sort_order');
-      if (!errTourist && touristData && touristData.length > 0) setTouristPlaces(touristData);
-
-      // Fetch weekend stays
-      const { data: weekendData, error: errWeekend } = await supabase.from('weekend_stays').select('*').order('sort_order');
-      if (!errWeekend && weekendData && weekendData.length > 0) setWeekendStays(weekendData);
-
-      // Fetch hotels
-      const { data: hotelsData, error: errHotels } = await supabase.from('hotels_to_stay').select('*').order('sort_order');
-      if (!errHotels && hotelsData && hotelsData.length > 0) setHotels(hotelsData);
 
     } catch (err) {
       console.warn('Failed to load online data. Falling back to offline fallback state.', err);
@@ -1717,15 +1138,28 @@ export default function App() {
   }, []);
 
   const scrollToSection = (id: string) => {
-    const el = document.getElementById(id);
-    if (el) {
-      window.scrollTo({
-        top: el.offsetTop - 95, // Header height offset
-        behavior: 'smooth'
-      });
-      setActiveSection(id);
+    if (id === 'explore') {
+      setCurrentPage('explore');
+      setActiveSection('explore');
       setMobileMenuOpen(false);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
     }
+
+    setCurrentPage('main');
+
+    // Allow state change and DOM rendering to complete if switching back from explore page
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      if (el) {
+        window.scrollTo({
+          top: el.offsetTop - 95, // Header height offset
+          behavior: 'smooth'
+        });
+        setActiveSection(id);
+        setMobileMenuOpen(false);
+      }
+    }, currentPage === 'explore' ? 100 : 0);
   };
 
   const handleContactSubmit = (e: React.FormEvent) => {
@@ -1768,6 +1202,7 @@ export default function App() {
     guidelines: info.nav_guidelines,
     'paper-submission': info.nav_paper_submission,
     registration: info.nav_registration,
+    explore: info.nav_explore || "Explore",
     venue: info.nav_venue || "Venue",
     'contact-us': info.nav_contact_us,
     'ieee-sb': info.nav_ieee_sb || "IEEE SB"
@@ -1810,9 +1245,8 @@ export default function App() {
         justifyContent: 'space-between',
         padding: '0 2rem'
       }}>
-        {/* Logo and Institution Title (Dark Text for White Navbar) */}
         <a 
-          href={import.meta.env.VITE_SREC_URL || "https://www.srec.ac.in/"} 
+          href={info.srec_url || "https://srec.ac.in/"} 
           target="_blank" 
           rel="noopener noreferrer"
           title="Sri Ramakrishna Engineering College"
@@ -1823,37 +1257,15 @@ export default function App() {
 
         {/* Desktop Navigation Links */}
         <nav className="desktop-nav">
-          <ul style={{ display: 'flex', gap: '1.25rem', listStyle: 'none', alignItems: 'center', margin: 0, padding: 0 }}>
+          <ul style={{ display: 'flex', gap: '0.35rem', listStyle: 'none', alignItems: 'center', margin: 0, padding: 0 }}>
             {NAV_ITEMS.map((item) => (
               <li key={item.id}>
-                {item.id === 'venue' ? (
-                  <div className="nav-dropdown">
-                    <button
-                      className={`nav-link ${['venue', 'tourist-places', 'hotels-to-stay'].includes(activeSection) ? 'active' : ''}`}
-                      onClick={() => scrollToSection('venue')}
-                      style={{ display: 'inline-flex', alignItems: 'center' }}
-                    >
-                      {navLabelMap[item.id] || item.label}
-                      <span className="dropdown-arrow">▼</span>
-                    </button>
-                    <ul className="dropdown-content">
-                      <li>
-                        <button onClick={() => scrollToSection('venue')}>Venue</button>
-                      </li>
-                      <li>
-                        <button onClick={() => scrollToSection('tourist-places')}>Tourist Places</button>
-                      </li>
-                      <li>
-                        <button onClick={() => scrollToSection('hotels-to-stay')}>Hotels to Stay</button>
-                      </li>
-                    </ul>
-                  </div>
-                ) : item.external ? (
+                {item.external ? (
                   <a
                     href={
                       item.id === 'ieee-sb'
-                        ? (import.meta.env.VITE_IEEE_SB_URL || "https://srec.ac.in/")
-                        : (import.meta.env.VITE_SNR_URL || import.meta.env.VITE_SNR_TRUST_URL || "https://www.snrst.org")
+                        ? (info.ieee_sb_url || "https://ieeesrecsbs.vercel.app/")
+                        : (info.snr_url || info.snr_trust_url || "https://www.snrst.org")
                     }
                     target="_blank"
                     rel="noopener noreferrer"
@@ -1886,43 +1298,44 @@ export default function App() {
                 )}
               </li>
             ))}
-            {/* AC Logo rendered directly next to the contact link */}
-            <li style={{ marginLeft: '1.5rem', display: 'flex', alignItems: 'center' }}>
-              <img 
-                src={acLogo} 
-                alt="AECTSD Logo" 
-                onClick={() => {
-                  setShowAdminPortal(true);
-                  setAdminRegMode(false);
-                  setAdminError(null);
-                }}
-                style={{ 
-                  height: '80px', 
-                  width: 'auto', 
-                  display: 'block', 
-                  flexShrink: 0,
-                  cursor: 'pointer'
-                }} 
-              />
-            </li>
           </ul>
         </nav>
 
-        {/* Mobile Navigation Toggle */}
-        <button 
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          style={{
-            background: 'rgba(15, 23, 42, 0.05)',
-            border: '1px solid rgba(15, 23, 42, 0.1)',
-            borderRadius: '0.375rem',
-            padding: '0.5rem',
-            color: '#0f172a',
-            cursor: 'pointer'
-          }}
-          className="mobile-nav-toggle"
-        >
-          {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
+        {/* AC Logo and Mobile Navigation Toggle Container */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <img 
+            src={acLogo} 
+            alt="AECTSD Logo" 
+            onClick={() => {
+              setShowAdminPortal(true);
+              setAdminRegMode(false);
+              setAdminError(null);
+            }}
+            style={{ 
+              height: '80px', 
+              width: 'auto', 
+              display: 'block', 
+              flexShrink: 0,
+              cursor: 'pointer'
+            }} 
+          />
+
+          {/* Mobile Navigation Toggle */}
+          <button 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            style={{
+              background: 'rgba(15, 23, 42, 0.05)',
+              border: '1px solid rgba(15, 23, 42, 0.1)',
+              borderRadius: '0.375rem',
+              padding: '0.5rem',
+              color: '#0f172a',
+              cursor: 'pointer'
+            }}
+            className="mobile-nav-toggle"
+          >
+            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
       </header>
 
       {/* Mobile Drawer Menu */}
@@ -1955,8 +1368,8 @@ export default function App() {
                   key={item.id}
                   href={
                     item.id === 'ieee-sb'
-                      ? (import.meta.env.VITE_IEEE_SB_URL || "https://srec.ac.in/")
-                      : (import.meta.env.VITE_SNR_URL || import.meta.env.VITE_SNR_TRUST_URL || "https://www.snrst.org")
+                      ? (info.ieee_sb_url || "https://ieeesrecsbs.vercel.app/")
+                      : (info.snr_url || info.snr_trust_url || "https://www.snrst.org")
                   }
                   target="_blank"
                   rel="noopener noreferrer"
@@ -1978,69 +1391,6 @@ export default function App() {
                 >
                   {navLabelMap[item.id] || item.label}
                 </a>
-              ) : item.id === 'venue' ? (
-                <div key={item.id} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                  <div style={{ 
-                    color: '#1e293b', 
-                    padding: '0.75rem 1rem 0.25rem',
-                    fontSize: '1rem', 
-                    fontWeight: '700',
-                    borderBottom: '1px solid rgba(0,0,0,0.05)'
-                  }}>
-                    {navLabelMap[item.id] || item.label}
-                  </div>
-                  <button
-                    onClick={() => { scrollToSection('venue'); setMobileMenuOpen(false); }}
-                    style={{
-                      background: activeSection === 'venue' ? 'rgba(59, 130, 246, 0.08)' : 'transparent',
-                      border: 'none',
-                      color: activeSection === 'venue' ? '#3b82f6' : '#475569',
-                      textAlign: 'left',
-                      padding: '0.55rem 1.5rem',
-                      borderRadius: '0.5rem',
-                      fontSize: '0.9rem',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      width: '100%'
-                    }}
-                  >
-                    • Map & Directions
-                  </button>
-                  <button
-                    onClick={() => { scrollToSection('tourist-places'); setMobileMenuOpen(false); }}
-                    style={{
-                      background: activeSection === 'tourist-places' ? 'rgba(59, 130, 246, 0.08)' : 'transparent',
-                      border: 'none',
-                      color: activeSection === 'tourist-places' ? '#3b82f6' : '#475569',
-                      textAlign: 'left',
-                      padding: '0.55rem 1.5rem',
-                      borderRadius: '0.5rem',
-                      fontSize: '0.9rem',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      width: '100%'
-                    }}
-                  >
-                    • Tourist Places
-                  </button>
-                  <button
-                    onClick={() => { scrollToSection('hotels-to-stay'); setMobileMenuOpen(false); }}
-                    style={{
-                      background: activeSection === 'hotels-to-stay' ? 'rgba(59, 130, 246, 0.08)' : 'transparent',
-                      border: 'none',
-                      color: activeSection === 'hotels-to-stay' ? '#3b82f6' : '#475569',
-                      textAlign: 'left',
-                      padding: '0.55rem 1.5rem',
-                      borderRadius: '0.5rem',
-                      fontSize: '0.9rem',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      width: '100%'
-                    }}
-                  >
-                    • Hotels to Stay
-                  </button>
-                </div>
               ) : (
                 <button
                   key={item.id}
@@ -2069,9 +1419,13 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* Hero Section */}
-      <section 
-        id="home" 
+      {currentPage === 'explore' ? (
+        <ExplorePage adminUser={adminUser} />
+      ) : (
+        <>
+          {/* Hero Section */}
+          <section 
+            id="home" 
         style={{
           minHeight: '100vh',
           display: 'flex',
@@ -2080,7 +1434,7 @@ export default function App() {
           alignItems: 'center',
           position: 'relative',
           padding: '8rem 1.5rem 6rem',
-          backgroundImage: `url(${import.meta.env.VITE_HERO_BG_URL || '/kct_campus_hero.png'})`,
+          backgroundImage: `url(${info.hero_bg_url || 'https://images.shiksha.com/mediadata/images/1488263707phpWPR1Pb.jpeg'})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           textAlign: 'center',
@@ -2147,9 +1501,9 @@ export default function App() {
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem', color: '#475569', fontSize: '1.05rem', fontWeight: 500 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <MapPin size={18} className="text-blue-600" />
-                <span>{info.event_location_display.includes(',') ? info.event_location_display.split(',')[0] + ',' : info.event_location_display}</span>
+                <span>{(info.event_location_display || '').includes(',') ? info.event_location_display.split(',')[0] + ',' : (info.event_location_display || '')}</span>
               </div>
-              {info.event_location_display.includes(',') && (
+              {(info.event_location_display || '').includes(',') && (
                 <span>{info.event_location_display.split(',').slice(1).join(',').trim()}</span>
               )}
             </div>
@@ -2357,7 +1711,7 @@ export default function App() {
                             >
                               {showPic && (
                                 <img 
-                                  src={getMemberImageUrl(member.name)}
+                                  src={member.image_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`}
                                   onError={(e) => {
                                     (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`;
                                   }}
@@ -2405,7 +1759,7 @@ export default function App() {
                             >
                               {showPic && (
                                 <img 
-                                  src={getMemberImageUrl(member.name)}
+                                  src={member.image_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`}
                                   onError={(e) => {
                                     (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`;
                                   }}
@@ -2456,7 +1810,7 @@ export default function App() {
                             >
                               {showPic && (
                                 <img 
-                                  src={getMemberImageUrl(member.name)}
+                                  src={member.image_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`}
                                   onError={(e) => {
                                     (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`;
                                   }}
@@ -2504,7 +1858,7 @@ export default function App() {
                             >
                               {showPic && (
                                 <img 
-                                  src={getMemberImageUrl(member.name)}
+                                  src={member.image_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`}
                                   onError={(e) => {
                                     (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`;
                                   }}
@@ -2570,7 +1924,7 @@ export default function App() {
                               >
                                 {showPic && (
                                   <img 
-                                    src={getMemberImageUrl(member.name)}
+                                    src={member.image_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`}
                                     onError={(e) => {
                                       (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`;
                                     }}
@@ -2615,7 +1969,7 @@ export default function App() {
                                 >
                                   {showPic && (
                                     <img 
-                                      src={getMemberImageUrl(member.name)}
+                                      src={member.image_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`}
                                       onError={(e) => {
                                         (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`;
                                       }}
@@ -2754,9 +2108,18 @@ export default function App() {
                   alignItems: 'center', 
                   justifyContent: 'center', 
                   border: `2px solid ${speaker.color}`,
-                  marginBottom: '1.25rem'
+                  marginBottom: '1.25rem',
+                  overflow: 'hidden'
                 }}>
-                  <User size={45} style={{ color: speaker.color }} />
+                  {speaker.image_url ? (
+                    <img 
+                      src={speaker.image_url} 
+                      alt={speaker.name} 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    />
+                  ) : (
+                    <User size={45} style={{ color: speaker.color }} />
+                  )}
                 </div>
                 <h3 style={{ fontSize: '1.35rem', color: 'white', marginBottom: '0.25rem' }}>{speaker.name}</h3>
                 <span style={{ fontSize: '0.85rem', color: speaker.color, fontWeight: 700, textTransform: 'uppercase' }}>{speaker.title}</span>
@@ -3411,7 +2774,7 @@ export default function App() {
                   className="qr-card"
                 >
                   <a 
-                    href={import.meta.env.VITE_SREC_URL || "https://www.srec.ac.in/"}
+                    href={info.srec_url || "https://srec.ac.in/"}
                     target="_blank"
                     rel="noopener noreferrer"
                     title="Sri Ramakrishna Engineering College"
@@ -3452,214 +2815,9 @@ export default function App() {
           </div>
         </div>
       </section>
-
-      {/* Tourist Places & Coimbatore Getaways Section */}
-      <section id="tourist-places" className="section" style={{ background: 'var(--bg-deep)', borderTop: '1px solid rgba(255, 255, 255, 0.05)' }}>
-        <div className="container">
-          <motion.div 
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeInUp}
-            style={{ textAlign: 'center', marginBottom: '4rem' }}
-          >
-            <span style={{ color: '#3b82f6', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '0.1em' }}>Explore</span>
-            <h2 style={{ fontSize: '2.5rem', color: 'white', marginTop: '0.5rem' }}>About Coimbatore & Tourist Attractions</h2>
-            <div style={{ height: '3px', width: '60px', background: '#3b82f6', margin: '1rem auto 0' }} />
-          </motion.div>
-
-          {/* About Coimbatore intro */}
-          <div className="glass-card" style={{ marginBottom: '3.5rem', textAlign: 'left' }}>
-            <h3 style={{ fontSize: '1.6rem', color: 'white', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <BookOpen size={24} className="text-blue-400" style={{ marginRight: '0.5rem' }} /> About Coimbatore
-            </h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '1.02rem', lineHeight: '1.7', marginBottom: '1.5rem' }}>
-              {info.about_coimbatore_desc || MOCK_INFO.about_coimbatore_desc}
-            </p>
-            
-            {/* Tour Arrangement Notice */}
-            <div style={{ 
-              background: 'rgba(59, 130, 246, 0.08)', 
-              borderLeft: '4px solid #3b82f6', 
-              borderRadius: '0.5rem', 
-              padding: '1.25rem 1.5rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '1rem',
-              marginTop: '1.5rem'
-            }}>
-              <Award size={24} style={{ color: '#3b82f6', flexShrink: 0 }} />
-              <p style={{ color: 'white', fontSize: '0.95rem', fontWeight: 600, margin: 0 }}>
-                {info.about_coimbatore_tour_info || MOCK_INFO.about_coimbatore_tour_info}
-              </p>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '3.5rem' }}>
-            {/* Local Tourist Attractions */}
-            {touristPlaces && touristPlaces.length > 0 && (
-              <div>
-                <h3 style={{ fontSize: '1.75rem', color: 'white', marginBottom: '2rem', textAlign: 'left', borderBottom: '2px solid rgba(255,255,255,0.05)', paddingBottom: '0.75rem' }}>
-                  Local Sightseeing Places
-                </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
-                  {touristPlaces.map((place, pidx) => (
-                    <motion.div
-                      key={pidx}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.4, delay: pidx * 0.05 }}
-                      className="tourist-card"
-                      style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.05)' }}
-                    >
-                      <span className={`card-category-badge badge-${(place.category || '').toLowerCase().includes('religious') ? 'religious' : (place.category || '').toLowerCase().includes('nature') ? 'nature' : (place.category || '').toLowerCase().includes('shopping') ? 'shopping' : 'amusement'}`}>
-                        {place.category || 'Sightseeing'}
-                      </span>
-                      <h4 style={{ fontSize: '1.15rem', color: 'white', fontWeight: 700, margin: '0 0 0.5rem' }}>{place.name}</h4>
-                      <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
-                        {place.description || 'Sightseeing landmark in Coimbatore.'}
-                      </p>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Weekend getaways */}
-            {weekendStays && weekendStays.length > 0 && (
-              <div>
-                <h3 style={{ fontSize: '1.75rem', color: 'white', marginBottom: '2rem', textAlign: 'left', borderBottom: '2px solid rgba(255,255,255,0.05)', paddingBottom: '0.75rem' }}>
-                  Weekend Stays & Getaways
-                </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
-                  {weekendStays.map((stay, sidx) => (
-                    <motion.div
-                      key={sidx}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.4, delay: sidx * 0.05 }}
-                      className="tourist-card"
-                      style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.05)' }}
-                    >
-                      <span className={`card-category-badge badge-${(stay.category || '').toLowerCase().includes('hill') ? 'hillstation' : (stay.category || '').toLowerCase().includes('wildlife') ? 'wildlife' : 'nature'}`}>
-                        {stay.category || 'Getaway'}
-                      </span>
-                      <h4 style={{ fontSize: '1.15rem', color: 'white', fontWeight: 700, margin: '0 0 0.5rem' }}>{stay.name}</h4>
-                      <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
-                        {stay.description || 'Wonderful weekend getaway option close to Coimbatore.'}
-                      </p>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Hotels to Stay Section */}
-      {hotels && hotels.length > 0 && (
-        <section id="hotels-to-stay" className="section" style={{ background: '#ffffff' }}>
-          <div className="container">
-            <motion.div 
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={fadeInUp}
-              style={{ textAlign: 'center', marginBottom: '4rem' }}
-            >
-              <span style={{ color: '#3b82f6', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '0.1em' }}>Accommodation</span>
-              <h2 style={{ fontSize: '2.5rem', color: '#091d36', marginTop: '0.5rem' }}>Hotels for Stay</h2>
-              <div style={{ height: '3px', width: '60px', background: '#3b82f6', margin: '1rem auto 0' }} />
-            </motion.div>
-
-            <div className="glass-card" style={{ marginBottom: '3.5rem', textAlign: 'left', background: '#f8fafc', border: '1px solid #e2e8f0' }}>
-              <h3 style={{ fontSize: '1.5rem', color: '#091d36', marginBottom: '1rem' }}>Important Notice</h3>
-              <p style={{ color: '#475569', fontSize: '1rem', lineHeight: '1.6', margin: 0 }}>
-                Participants are requested to book their accommodation well in advance through online booking platforms. Some of the best hotels are listed below.
-              </p>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '3.5rem' }}>
-              {['Luxury Hotels', 'Mid-Range Hotels', 'Budget-Friendly Hotels'].map((catName) => {
-                const catHotels = hotels.filter(h => h.category === catName);
-                if (catHotels.length === 0) return null;
-                
-                const badgeClass = catName.includes('Luxury') ? 'luxury' : catName.includes('Mid') ? 'midrange' : 'budget';
-                
-                return (
-                  <div key={catName}>
-                    <h3 style={{ fontSize: '1.6rem', color: '#091d36', marginBottom: '1.75rem', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <span className={`card-category-badge badge-${badgeClass}`} style={{ margin: 0, fontSize: '0.85rem', padding: '0.35rem 0.85rem' }}>
-                        {catName}
-                      </span>
-                    </h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
-                      {catHotels.map((hotel, hidx) => (
-                        <motion.div
-                          key={hidx}
-                          initial={{ opacity: 0, y: 20 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          viewport={{ once: true }}
-                          transition={{ duration: 0.4, delay: hidx * 0.05 }}
-                          className="hotel-card"
-                          style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}
-                        >
-                          <h4 style={{ fontSize: '1.2rem', color: '#0f172a', fontWeight: 700, margin: '0 0 0.5rem' }}>{hotel.name}</h4>
-                          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', color: '#64748b', fontSize: '0.82rem', marginBottom: '0.75rem' }}>
-                            <MapPin size={14} style={{ flexShrink: 0, marginTop: '0.15rem', color: '#3b82f6' }} />
-                            <span>{hotel.address}</span>
-                          </div>
-                          <p style={{ fontSize: '0.9rem', color: '#475569', lineHeight: 1.5, margin: '0 0 1.5rem', flex: 1 }}>
-                            {hotel.description || 'Comfortable and quality stay in Coimbatore.'}
-                          </p>
-                          <a 
-                            href={hotel.map_url || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(hotel.name + ' ' + hotel.address)}`}
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="btn btn-secondary"
-                            style={{ 
-                              fontSize: '0.82rem', 
-                              padding: '0.5rem 1rem', 
-                              width: 'fit-content', 
-                              display: 'inline-flex', 
-                              alignItems: 'center', 
-                              gap: '0.25rem',
-                              textDecoration: 'none',
-                              background: '#ffffff',
-                              border: '1px solid #cbd5e1',
-                              color: '#0f172a',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            View Map <ExternalLink size={12} />
-                          </a>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div style={{ marginTop: '4rem', textAlign: 'center' }}>
-              <p style={{ color: '#475569', fontSize: '0.95rem' }}>
-                Want to search more hotels in Coimbatore?{' '}
-                <a 
-                  href="https://www.google.com/travel/hotels/Coimbatore" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  style={{ color: '#3b82f6', fontWeight: 700, textDecoration: 'underline' }}
-                >
-                  For more hotels, visit here
-                </a>
-              </p>
-            </div>
-          </div>
-        </section>
+        </>
       )}
+
 
       {/* Footer */}
       <footer style={{
@@ -3672,7 +2830,7 @@ export default function App() {
       }}>
         <div className="container">
           <a 
-            href={import.meta.env.VITE_SREC_URL || "https://www.srec.ac.in/"} 
+            href={info.srec_url || "https://srec.ac.in/"} 
             target="_blank" 
             rel="noopener noreferrer"
             title="Sri Ramakrishna Engineering College"
@@ -4233,47 +3391,6 @@ export default function App() {
                             </div>
                           </div>
 
-                          {/* Tour Registration Options */}
-                          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '0.375rem', padding: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                              <input 
-                                id="reg_tour_opt"
-                                type="checkbox"
-                                checked={regRegisterForTour}
-                                onChange={(e) => {
-                                  setRegRegisterForTour(e.target.checked);
-                                  if (!e.target.checked) setRegPreferredTourPlace('');
-                                }}
-                                style={{ cursor: 'pointer', width: '1rem', height: '1rem', accentColor: '#0f52ba' }}
-                              />
-                              <label htmlFor="reg_tour_opt" style={{ fontSize: '0.8rem', color: '#1e293b', fontWeight: 600, cursor: 'pointer' }}>
-                                Register for the half-a-day tour to nearby places
-                              </label>
-                            </div>
-
-                            {regRegisterForTour && (
-                              <div style={{ marginTop: '0.25rem' }}>
-                                <label htmlFor="reg_tour_place" style={{ fontSize: '0.72rem', color: '#475569', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>
-                                  Preferred Sightseeing Destination
-                                </label>
-                                <select
-                                  id="reg_tour_place"
-                                  className="form-input"
-                                  style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem', width: '100%', background: 'white' }}
-                                  value={regPreferredTourPlace}
-                                  onChange={(e) => setRegPreferredTourPlace(e.target.value)}
-                                  title="Preferred Sightseeing Destination"
-                                >
-                                  <option value="">-- Choose a sightseeing place --</option>
-                                  {touristPlaces.map((place, idx) => (
-                                    <option key={place.id || idx} value={place.name}>
-                                      {place.name} ({place.category})
-                                    </option>
-                                  ))}
-                                </select>
-                              </div>
-                            )}
-                          </div>
 
                           {/* Screenshot */}
                           <div>
@@ -4519,9 +3636,7 @@ export default function App() {
                       { id: 'departments', label: 'Academic Tracks' },
                       { id: 'committee', label: 'Committee List' },
                       { id: 'dates', label: 'Timeline Dates' },
-                      { id: 'workshops', label: 'Tutorial Workshops' },
-                      { id: 'tourist_places', label: 'Tourist Sites' },
-                      { id: 'hotels', label: 'Hotels to Stay' }
+                      { id: 'workshops', label: 'Tutorial Workshops' }
                     ].map(t => (
                       <button
                         key={t.id}
@@ -4711,6 +3826,73 @@ export default function App() {
                                 title="CMT Portal Link"
                               />
                             </div>
+                          </div>
+
+                          <div className="admin-form-row">
+                            <div className="admin-form-group">
+                              <label htmlFor="info_srec_url">SREC Website URL</label>
+                              <input 
+                                id="info_srec_url"
+                                type="text" 
+                                className="form-input" 
+                                value={info.srec_url || ''} 
+                                onChange={(e) => handleSaveInfoSetting('srec_url', e.target.value)} 
+                                placeholder="Enter SREC Website URL"
+                                title="SREC Website URL"
+                              />
+                            </div>
+                            <div className="admin-form-group">
+                              <label htmlFor="info_ieee_sb_url">IEEE SB Website URL</label>
+                              <input 
+                                id="info_ieee_sb_url"
+                                type="text" 
+                                className="form-input" 
+                                value={info.ieee_sb_url || ''} 
+                                onChange={(e) => handleSaveInfoSetting('ieee_sb_url', e.target.value)} 
+                                placeholder="Enter IEEE SB Website URL"
+                                title="IEEE SB Website URL"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="admin-form-row">
+                            <div className="admin-form-group">
+                              <label htmlFor="info_snr_url">SNR Sons Website URL</label>
+                              <input 
+                                id="info_snr_url"
+                                type="text" 
+                                className="form-input" 
+                                value={info.snr_url || ''} 
+                                onChange={(e) => handleSaveInfoSetting('snr_url', e.target.value)} 
+                                placeholder="Enter SNR Sons Website URL"
+                                title="SNR Sons Website URL"
+                              />
+                            </div>
+                            <div className="admin-form-group">
+                              <label htmlFor="info_snr_trust_url">SNR Trust Website URL</label>
+                              <input 
+                                id="info_snr_trust_url"
+                                type="text" 
+                                className="form-input" 
+                                value={info.snr_trust_url || ''} 
+                                onChange={(e) => handleSaveInfoSetting('snr_trust_url', e.target.value)} 
+                                placeholder="Enter SNR Trust Website URL"
+                                title="SNR Trust Website URL"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="admin-form-group">
+                            <label htmlFor="info_hero_bg_url">Hero Background Image URL</label>
+                            <input 
+                              id="info_hero_bg_url"
+                              type="text" 
+                              className="form-input" 
+                              value={info.hero_bg_url || ''} 
+                              onChange={(e) => handleSaveInfoSetting('hero_bg_url', e.target.value)} 
+                              placeholder="Enter Hero Background Image URL"
+                              title="Hero Background Image URL"
+                            />
                           </div>
 
                           <div className="admin-form-row">
@@ -4908,6 +4090,19 @@ export default function App() {
                                     title="Theme Card Color (Hex)"
                                   />
                                 </div>
+                              </div>
+
+                              <div className="admin-form-group">
+                                <label htmlFor="speaker_image">Speaker Image URL</label>
+                                <input 
+                                  id="speaker_image"
+                                  type="text" 
+                                  className="form-input"
+                                  value={editingSpeaker.image_url || ''}
+                                  onChange={(e) => setEditingSpeaker({ ...editingSpeaker, image_url: e.target.value })}
+                                  placeholder="Enter Speaker Image URL (or leave blank)"
+                                  title="Speaker Image URL"
+                                />
                               </div>
 
                               <div className="admin-form-group">
@@ -5130,6 +4325,19 @@ export default function App() {
                                     title="Institution / Bio Description"
                                   />
                                 </div>
+                              </div>
+
+                              <div className="admin-form-group">
+                                <label htmlFor="committee_image">Image URL / Path</label>
+                                <input 
+                                  id="committee_image"
+                                  type="text" 
+                                  className="form-input"
+                                  value={editingCommittee.image_url || ''}
+                                  onChange={(e) => setEditingCommittee({ ...editingCommittee, image_url: e.target.value })}
+                                  placeholder="e.g. /images/name.jpg or full URL (optional)"
+                                  title="Image URL / Path"
+                                />
                               </div>
 
                               <div style={{ display: 'flex', gap: '0.75rem' }}>
@@ -5392,312 +4600,6 @@ export default function App() {
                                   Edit
                                 </button>
                                 <button onClick={() => handleDeleteWorkshop(w.id)} className="btn btn-secondary" style={{ color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '0.35rem 0.75rem', fontSize: '0.75rem' }}>
-                                  Delete
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* TAB: Tourist Sites */}
-                    {adminTab === 'tourist_places' && (
-                      <div>
-                        {/* Section 1: Tourist Places */}
-                        <div className="admin-control-bar">
-                          <h4 style={{ fontSize: '1.25rem', margin: 0, fontWeight: 700 }}>Local Tourist Attractions ({touristPlaces.length})</h4>
-                          {!editingTouristPlace && (
-                            <button onClick={() => setEditingTouristPlace({ name: '', category: 'Religious site', description: '' })} className="btn btn-primary">
-                              <Plus size={16} /> Add Attraction
-                            </button>
-                          )}
-                        </div>
-
-                        {editingTouristPlace && (
-                          <div className="glass-card" style={{ marginBottom: '2rem', background: '#f8fafc', borderColor: '#3b82f6' }}>
-                            <h5 style={{ fontSize: '1.1rem', marginBottom: '1rem', fontWeight: 700 }}>{editingTouristPlace.id ? 'Edit Attraction Details' : 'Add New Attraction'}</h5>
-                            <form onSubmit={handleSaveTouristPlace} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                              <div className="admin-form-row">
-                                <div className="admin-form-group">
-                                  <label htmlFor="tourist_name">Name</label>
-                                  <input 
-                                    id="tourist_name"
-                                    type="text" 
-                                    required 
-                                    className="form-input"
-                                    value={editingTouristPlace.name}
-                                    onChange={(e) => setEditingTouristPlace({ ...editingTouristPlace, name: e.target.value })}
-                                    placeholder="e.g. Marudamalai Temple"
-                                    title="Name"
-                                  />
-                                </div>
-                                <div className="admin-form-group">
-                                  <label htmlFor="tourist_category">Category</label>
-                                  <input 
-                                    id="tourist_category"
-                                    type="text" 
-                                    required 
-                                    className="form-input"
-                                    value={editingTouristPlace.category}
-                                    onChange={(e) => setEditingTouristPlace({ ...editingTouristPlace, category: e.target.value })}
-                                    placeholder="e.g. Religious site"
-                                    title="Category"
-                                  />
-                                </div>
-                              </div>
-
-                              <div className="admin-form-group">
-                                <label htmlFor="tourist_desc">Description</label>
-                                <textarea 
-                                  id="tourist_desc"
-                                  rows={3} 
-                                  required 
-                                  className="form-input"
-                                  value={editingTouristPlace.description}
-                                  onChange={(e) => setEditingTouristPlace({ ...editingTouristPlace, description: e.target.value })}
-                                  placeholder="Brief description of the sightseeing spot"
-                                  title="Description"
-                                />
-                              </div>
-
-                              <div style={{ display: 'flex', gap: '0.75rem' }}>
-                                <button type="submit" className="btn btn-primary">
-                                  <Save size={16} /> Save Attraction
-                                </button>
-                                <button type="button" onClick={() => setEditingTouristPlace(null)} className="btn btn-secondary">
-                                  Cancel
-                                </button>
-                              </div>
-                            </form>
-                          </div>
-                        )}
-
-                        <div className="admin-card-grid" style={{ marginBottom: '3rem' }}>
-                          {touristPlaces.map((place, idx) => (
-                            <div key={place.id || idx} className="admin-editor-card">
-                              <h5 style={{ fontSize: '1.1rem', color: '#091d36', margin: '0 0 0.25rem', fontWeight: 800 }}>{place.name}</h5>
-                              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#f59e0b' }}>{place.category}</span>
-                              <p style={{ fontSize: '0.82rem', color: '#475569', marginTop: '0.5rem', lineHeight: '1.5' }}>{place.description}</p>
-                              
-                              <div className="admin-action-row">
-                                <button onClick={() => setEditingTouristPlace(place)} className="btn btn-secondary" style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem' }}>
-                                  Edit
-                                </button>
-                                <button onClick={() => handleDeleteTouristPlace(place.id)} className="btn btn-secondary" style={{ color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '0.35rem 0.75rem', fontSize: '0.75rem' }}>
-                                  Delete
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Section 2: Weekend Getaways */}
-                        <div className="admin-control-bar" style={{ borderTop: '1px solid #e2e8f0', paddingTop: '2rem' }}>
-                          <h4 style={{ fontSize: '1.25rem', margin: 0, fontWeight: 700 }}>Weekend Stays & Getaways ({weekendStays.length})</h4>
-                          {!editingWeekendStay && (
-                            <button onClick={() => setEditingWeekendStay({ name: '', category: 'Hill Station', description: '' })} className="btn btn-primary">
-                              <Plus size={16} /> Add Getaway
-                            </button>
-                          )}
-                        </div>
-
-                        {editingWeekendStay && (
-                          <div className="glass-card" style={{ marginBottom: '2rem', background: '#f8fafc', borderColor: '#3b82f6' }}>
-                            <h5 style={{ fontSize: '1.1rem', marginBottom: '1rem', fontWeight: 700 }}>{editingWeekendStay.id ? 'Edit Getaway Details' : 'Add New Getaway'}</h5>
-                            <form onSubmit={handleSaveWeekendStay} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                              <div className="admin-form-row">
-                                <div className="admin-form-group">
-                                  <label htmlFor="weekend_name">Name</label>
-                                  <input 
-                                    id="weekend_name"
-                                    type="text" 
-                                    required 
-                                    className="form-input"
-                                    value={editingWeekendStay.name}
-                                    onChange={(e) => setEditingWeekendStay({ ...editingWeekendStay, name: e.target.value })}
-                                    placeholder="e.g. Ooty Hill Station (Udhagamandalam)"
-                                    title="Name"
-                                  />
-                                </div>
-                                <div className="admin-form-group">
-                                  <label htmlFor="weekend_category">Category</label>
-                                  <input 
-                                    id="weekend_category"
-                                    type="text" 
-                                    required 
-                                    className="form-input"
-                                    value={editingWeekendStay.category}
-                                    onChange={(e) => setEditingWeekendStay({ ...editingWeekendStay, category: e.target.value })}
-                                    placeholder="e.g. Hill Station"
-                                    title="Category"
-                                  />
-                                </div>
-                              </div>
-
-                              <div className="admin-form-group">
-                                <label htmlFor="weekend_desc">Description</label>
-                                <textarea 
-                                  id="weekend_desc"
-                                  rows={3} 
-                                  required 
-                                  className="form-input"
-                                  value={editingWeekendStay.description}
-                                  onChange={(e) => setEditingWeekendStay({ ...editingWeekendStay, description: e.target.value })}
-                                  placeholder="Brief description of the getaway place"
-                                  title="Description"
-                                />
-                              </div>
-
-                              <div style={{ display: 'flex', gap: '0.75rem' }}>
-                                <button type="submit" className="btn btn-primary">
-                                  <Save size={16} /> Save Getaway
-                                </button>
-                                <button type="button" onClick={() => setEditingWeekendStay(null)} className="btn btn-secondary">
-                                  Cancel
-                                </button>
-                              </div>
-                            </form>
-                          </div>
-                        )}
-
-                        <div className="admin-card-grid">
-                          {weekendStays.map((stay, idx) => (
-                            <div key={stay.id || idx} className="admin-editor-card">
-                              <h5 style={{ fontSize: '1.1rem', color: '#091d36', margin: '0 0 0.25rem', fontWeight: 800 }}>{stay.name}</h5>
-                              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0ea5e9' }}>{stay.category}</span>
-                              <p style={{ fontSize: '0.82rem', color: '#475569', marginTop: '0.5rem', lineHeight: '1.5' }}>{stay.description}</p>
-                              
-                              <div className="admin-action-row">
-                                <button onClick={() => setEditingWeekendStay(stay)} className="btn btn-secondary" style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem' }}>
-                                  Edit
-                                </button>
-                                <button onClick={() => handleDeleteWeekendStay(stay.id)} className="btn btn-secondary" style={{ color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '0.35rem 0.75rem', fontSize: '0.75rem' }}>
-                                  Delete
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* TAB: Hotels to Stay */}
-                    {adminTab === 'hotels' && (
-                      <div>
-                        <div className="admin-control-bar">
-                          <h4 style={{ fontSize: '1.25rem', margin: 0, fontWeight: 700 }}>Recommended Hotels for Stay ({hotels.length})</h4>
-                          {!editingHotel && (
-                            <button onClick={() => setEditingHotel({ name: '', category: 'Luxury Hotels', address: '', description: '', map_url: '' })} className="btn btn-primary">
-                              <Plus size={16} /> Add Hotel
-                            </button>
-                          )}
-                        </div>
-
-                        {editingHotel && (
-                          <div className="glass-card" style={{ marginBottom: '2rem', background: '#f8fafc', borderColor: '#3b82f6' }}>
-                            <h5 style={{ fontSize: '1.1rem', marginBottom: '1rem', fontWeight: 700 }}>{editingHotel.id ? 'Edit Hotel Details' : 'Add New Hotel'}</h5>
-                            <form onSubmit={handleSaveHotel} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                              <div className="admin-form-row">
-                                <div className="admin-form-group">
-                                  <label htmlFor="hotel_name">Hotel Name</label>
-                                  <input 
-                                    id="hotel_name"
-                                    type="text" 
-                                    required 
-                                    className="form-input"
-                                    value={editingHotel.name}
-                                    onChange={(e) => setEditingHotel({ ...editingHotel, name: e.target.value })}
-                                    placeholder="e.g. Vivanta"
-                                    title="Hotel Name"
-                                  />
-                                </div>
-                                <div className="admin-form-group">
-                                  <label htmlFor="hotel_category">Tariff Category</label>
-                                  <select 
-                                    id="hotel_category"
-                                    required 
-                                    className="form-input"
-                                    value={editingHotel.category}
-                                    onChange={(e) => setEditingHotel({ ...editingHotel, category: e.target.value })}
-                                    title="Tariff Category"
-                                  >
-                                    <option value="Luxury Hotels">Luxury Hotels</option>
-                                    <option value="Mid-Range Hotels">Mid-Range Hotels</option>
-                                    <option value="Budget-Friendly Hotels">Budget-Friendly Hotels</option>
-                                  </select>
-                                </div>
-                              </div>
-
-                              <div className="admin-form-row">
-                                <div className="admin-form-group">
-                                  <label htmlFor="hotel_address">Address / Location</label>
-                                  <input 
-                                    id="hotel_address"
-                                    type="text" 
-                                    required 
-                                    className="form-input"
-                                    value={editingHotel.address}
-                                    onChange={(e) => setEditingHotel({ ...editingHotel, address: e.target.value })}
-                                    placeholder="e.g. Race Course Road, Coimbatore"
-                                    title="Address / Location"
-                                  />
-                                </div>
-                                <div className="admin-form-group">
-                                  <label htmlFor="hotel_map_url">Google Maps URL</label>
-                                  <input 
-                                    id="hotel_map_url"
-                                    type="url" 
-                                    className="form-input"
-                                    value={editingHotel.map_url || ''}
-                                    onChange={(e) => setEditingHotel({ ...editingHotel, map_url: e.target.value })}
-                                    placeholder="https://maps.google.com/..."
-                                    title="Google Maps URL"
-                                  />
-                                </div>
-                              </div>
-
-                              <div className="admin-form-group">
-                                <label htmlFor="hotel_desc">Brief Description</label>
-                                <textarea 
-                                  id="hotel_desc"
-                                  rows={2} 
-                                  required 
-                                  className="form-input"
-                                  value={editingHotel.description}
-                                  onChange={(e) => setEditingHotel({ ...editingHotel, description: e.target.value })}
-                                  placeholder="e.g. 5-star luxury hotel in the heart of Coimbatore featuring premium amenities and dining."
-                                  title="Brief Description"
-                                />
-                              </div>
-
-                              <div style={{ display: 'flex', gap: '0.75rem' }}>
-                                <button type="submit" className="btn btn-primary">
-                                  <Save size={16} /> Save Hotel
-                                </button>
-                                <button type="button" onClick={() => setEditingHotel(null)} className="btn btn-secondary">
-                                  Cancel
-                                </button>
-                              </div>
-                            </form>
-                          </div>
-                        )}
-
-                        <div className="admin-card-grid">
-                          {hotels.map((hotel, idx) => (
-                            <div key={hotel.id || idx} className="admin-editor-card">
-                              <h5 style={{ fontSize: '1.1rem', color: '#091d36', margin: '0 0 0.25rem', fontWeight: 800 }}>{hotel.name}</h5>
-                              <span className={`card-category-badge badge-${hotel.category.includes('Luxury') ? 'luxury' : hotel.category.includes('Mid') ? 'midrange' : 'budget'}`} style={{ fontSize: '0.65rem' }}>
-                                {hotel.category}
-                              </span>
-                              <p style={{ fontSize: '0.8rem', color: '#64748b', margin: '0.25rem 0' }}><strong>Address:</strong> {hotel.address}</p>
-                              <p style={{ fontSize: '0.82rem', color: '#475569', marginTop: '0.5rem', lineHeight: '1.5' }}>{hotel.description}</p>
-                              
-                              <div className="admin-action-row">
-                                <button onClick={() => setEditingHotel(hotel)} className="btn btn-secondary" style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem' }}>
-                                  Edit
-                                </button>
-                                <button onClick={() => handleDeleteHotel(hotel.id)} className="btn btn-secondary" style={{ color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '0.35rem 0.75rem', fontSize: '0.75rem' }}>
                                   Delete
                                 </button>
                               </div>

@@ -194,6 +194,13 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+@media (min-width: 1024px) and (max-width: 1280px) {
+  .nav-link {
+    font-size: 0.74rem;
+    padding: 0.4rem 0.45rem;
+  }
+}
+
 /* Nav Link Styles */
 .nav-link {
   background: none;
@@ -202,11 +209,12 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 0.82rem;
   cursor: pointer;
   position: relative;
-  padding: 0.4rem 0.1rem;
+  padding: 0.4rem 0.65rem;
   transition: all 0.2s ease;
   font-family: var(--font-sans);
   color: #334155;
   text-transform: capitalize;
+  white-space: nowrap;
 }
 
 .nav-link:hover {

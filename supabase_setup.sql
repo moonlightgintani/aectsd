@@ -22,7 +22,8 @@ CREATE TABLE IF NOT EXISTS committee (
     category VARCHAR(50) NOT NULL, -- 'organizing', 'advisory', 'technical'
     role VARCHAR(100),
     name VARCHAR(255) NOT NULL,
-    "desc" TEXT NOT NULL
+    "desc" TEXT NOT NULL,
+    image_url TEXT
 );
 
 -- 3. Speakers table
@@ -32,7 +33,8 @@ CREATE TABLE IF NOT EXISTS speakers (
     title VARCHAR(255) NOT NULL,
     role VARCHAR(255) NOT NULL,
     talk TEXT NOT NULL,
-    color VARCHAR(50) NOT NULL
+    color VARCHAR(50) NOT NULL,
+    image_url TEXT
 );
 
 -- 4. Important Dates table
@@ -151,83 +153,83 @@ INSERT INTO departments (name, description, sort_order) VALUES
 
 -- Seed Data: Insert SREC Committee members
 -- Seed Data: Insert SREC Committee members
-INSERT INTO committee (category, role, name, "desc") VALUES
-('organizing', 'Patron', 'Thiru. R. Sundar', 'Managing Trustee, SNR Sons Charitable Trust, Coimbatore'),
-('organizing', 'Patron', 'Thiru. S. Narendran', 'Joint Managing Trustee, SNR Sons Charitable Trust, Coimbatore'),
-('organizing', 'General Chair', 'Dr. A. Soundarrajan', 'Principal, Sri Ramakrishna Engineering College'),
-('organizing', 'General Chair', 'Dr. P. Sakthivel', 'IEEE Madras Section & Professor, Department of ECE, Anna University Chennai.'),
-('organizing', 'Conference Chair & Organizing Secretary', 'Dr. R. Shanmugasundaram', 'Professor - EEE'),
-('organizing', 'Session Chair', 'Dr. N. Sathish Kumar', 'Professor - ECE'),
-('organizing', 'Member', 'Mrs. N. Divya', 'Asst. Prof. (Sr.G) - EEE'),
-('organizing', 'Member', 'Mrs. R. Kiruba', 'Asst. Prof. (Sr. G) - EIE'),
-('organizing', 'Member', 'Dr. S. P. Vimal', 'Asso. Prof. - ECE'),
-('organizing', 'Member', 'Dr. J. Selva Kumar', 'Professor - CSE'),
-('organizing', 'Member', 'Mrs. R. Rajalakshmi', 'Asst. Prof. (OG) - IT'),
-('organizing', 'Member', 'Mrs. G. Lavanya', 'Asst. Prof. (Sl.G) - BME'),
-('organizing', 'Finance Chair & Joint-Organizing Secretary', 'Dr. K. Balamurugan', 'Asso. Prof - EEE'),
-('organizing', 'Finance Committee Member', 'Mr. C. Praveenkumar', 'Asst. Prof. (Sl.g) - ECE'),
-('organizing', 'Publication Chair', 'Dr. V. Rukkumani', 'Asso. Professor - EIE'),
-('organizing', 'Publication Committee Member', 'Mr. R. Santhoshkumar', 'Asst. Prof. - EEE'),
-('organizing', 'Publication Committee Member', 'Dr. M. Priyadharshini', 'Asst. Prof. - ECE'),
-('organizing', 'Publication Committee Member', 'Mr. I. Aravindaguru', 'Asst. Prof. (Sr. G) - EIE'),
-('organizing', 'Publication Committee Member', 'Mrs. C. Sowntharya', 'Asst. Prof. (Sr.G) - CSE'),
-('organizing', 'Publication Committee Member', 'Dr. N. Saranya', 'AP (Sl.G)'),
-('organizing', 'Publication Committee Member', 'Dr. P. Vishnu Vardhan', 'Asst. Prof. (Sr.G) - BME'),
-('organizing', 'Local Arrangements Chair', 'Dr. Deepa B Prabhu', 'Asso. Prof. - BME'),
-('organizing', 'Local Arrangements Committee Member', 'Dr. V. Radhika', 'Asso. Prof. - BME'),
-('organizing', 'Local Arrangements Committee Member', 'Mr. B. Marisekar', 'Asst. Prof. (Sl.G) - EEE'),
-('organizing', 'Local Arrangements Committee Member', 'Dr. M. Logaprakash', 'Asst. Prof. (Sl. G) - AIDS'),
-('organizing', 'Registration Chair', 'Mrs. S. Jansi Rani', 'Asst. Prof. (Sl.G) - IT'),
-('organizing', 'Registration Committee Member', 'Dr. H. Vidhya', 'Asst. Prof. (Sr.G) - EEE'),
-('organizing', 'Registration Committee Member', 'Mrs. T. Anitha', 'Asst. Prof. (Sl.G) - EIE'),
-('organizing', 'Registration Committee Member', 'Mrs. M. Jaishree', 'Asst. Prof. (Sl.G) - ECE'),
-('organizing', 'Registration Committee Member', 'Mrs. R. S. Ramya', 'Asst. Prof. (Sr.G) - CSE'),
-('organizing', 'Registration Committee Member', 'Mr. S. Jeevanandham', 'Asst. Prof. (Sr.G) - IT'),
-('organizing', 'Registration Committee Member', 'Mrs. L. Divyalakshmi', 'Asst. Prof. (Sl.G) - BME'),
-('organizing', 'Conference Pre-Tutorial Sessions Chair', 'Dr. S. P. Vimal', 'Asso. Prof. - ECE'),
-('organizing', 'Pre-Tutorial Sessions Committee Member', 'Mrs. B. Kalaimathi', 'Asst. Prof. (Sr.G) - ECE'),
-('organizing', 'Pre-Tutorial Sessions Committee Member', 'Dr. A. Vijay', 'Asst. Prof. (Sr.G) - ECE'),
-('organizing', 'Pre-Tutorial Sessions Committee Member', 'Mrs. M. Kowsalya', 'Asso. Prof. - ECE & Asst. Prof. (Sr.G) - ECE'),
-('organizing', 'Technical Review Committee Convener', 'Dr. R. Shanmugasundaram', 'Professor - EEE'),
-('organizing', 'Technical Review Committee Member', 'Dr. K. Balamurugan', 'Asso. Prof. - EEE'),
-('organizing', 'Technical Review Committee Member', 'Mr. R. Mohan Kumar', 'Asst. Prof. (Sl.G) - EEE'),
-('organizing', 'Technical Review Committee Member', 'Mr. B. Sridhar', 'Asst. Prof. (Sl.G) - EEE'),
-('organizing', 'Technical Review Committee Member', 'Dr. M. Kasiselvanathan', 'Asso. Prof. - ECE'),
-('organizing', 'Technical Review Committee Member', 'Mr. C. Mathan', 'Asst. Prof. (Sr. G) - EIE'),
-('organizing', 'Technical Review Committee Member', 'Dr. P. Mathiyalagan', 'Asso. Prof. - CSE'),
-('organizing', 'Technical Review Committee Member', 'Mrs. S. S. Sugantha Mallika', 'Asst. Prof. (Sl.G) - IT'),
-('organizing', 'Technical Review Committee Member', 'Dr. M. Jeevitha Priya', 'Asst. Prof. - BME'),
-('organizing', 'Outreach and Promotion Committee Convener', 'Dr. M. S. Geetha Devasena', 'Professor - CSE'),
-('organizing', 'Outreach and Promotion Committee Member', 'Dr. M. Kalaiarasu', 'Asso. Prof. - IT'),
-('organizing', 'Outreach and Promotion Committee Member', 'Dr. R. Kingsy Grace', 'Asso. Prof. - CSE'),
-('organizing', 'Outreach and Promotion Committee Member', 'Dr. R. Vijaya Kumar', 'Asst. Prof. (Sl.G) - CSE'),
-('organizing', 'Outreach and Promotion Committee Member', 'Mr. C. Praveenkumar', 'Asst. Prof. (Sr.G) - EEE'),
-('organizing', 'Outreach and Promotion Committee Member', 'Mrs. R.S. Ramya', 'Asst. Prof. (Sr.G) - CSE'),
-('organizing', 'Website and Social Media Promotion Committee Chair', 'Dr. S. Harihara Gopalan', 'Asso. Prof. - CSE'),
-('organizing', 'Website and Social Media Promotion Committee Member', 'Mr. K. Robin Johny', 'Asst. Prof. (Sr.G) - AERO'),
-('organizing', 'Website and Social Media Promotion Committee Member', 'Mr. R. S. Vishnudurai', 'Asst. Prof. (Sr.G) - CSE'),
-('organizing', 'Website and Social Media Promotion Committee Member', 'Dr. A. Vijay', 'Asst. Prof. (Sr. G) - ECE'),
-('organizing', 'Hospitality Committee Convener', 'Dr. P. Perumal', 'Professor - CSE'),
-('organizing', 'Hospitality Committee Member', 'Dr. B. Mathivanan', 'Asso. Prof. - CSE'),
-('organizing', 'Hospitality Committee Member', 'Dr. M. Nagarajapandian', 'Asst. Prof. (Sl.G) - EIE'),
-('organizing', 'Hospitality Committee Member', 'Mr. V. Krishna Kumar', 'Asst. Prof. (Sl.G) - CSE'),
-('organizing', 'Hospitality Committee Member', 'Dr. N. Suresh Kumar', 'Asso. Prof. - IT'),
-('organizing', 'Hospitality Committee Member', 'Dr. P. Sebastian Vindro Jude', 'Asst. Prof. (Sl.G) - EEE'),
-('advisory', null, 'Dr. Saifur Rahman', 'Virginia Tech, USA (IEEE President 2023)'),
-('advisory', null, 'Dr. Ramesh Bansal', 'University of Sharjah, Sharjah, UAE'),
-('advisory', null, 'Dr. Frede Blaabjerg', 'Aalborg University, Denmark'),
-('advisory', null, 'Dr. Subhransu Sekhar Dash', 'Professor, SRM Institute, India'),
-('advisory', null, 'Dr. Vincenzo Piuri', 'University of Milan, Italy'),
-('technical', null, 'Dr. B. Chitti Babu', 'IIITD&M Kancheepuram, India'),
-('technical', null, 'Dr. P. Karuppanan', 'MNNIT Allahabad, India'),
-('technical', null, 'Dr. S. K. Patnaik', 'Anna University, Chennai, India'),
-('technical', null, 'Dr. R. Harikumar', 'GCT Coimbatore, India');
+INSERT INTO committee (category, role, name, "desc", image_url) VALUES
+('organizing', 'Patron', 'Thiru. R. Sundar', 'Managing Trustee, SNR Sons Charitable Trust, Coimbatore', '/images/thiru-r-sundar.jpg'),
+('organizing', 'Patron', 'Thiru. S. Narendran', 'Joint Managing Trustee, SNR Sons Charitable Trust, Coimbatore', '/images/thiru-s-narendran.jpg'),
+('organizing', 'General Chair', 'Dr. A. Soundarrajan', 'Principal, Sri Ramakrishna Engineering College', '/images/a-soundarrajan.jpg'),
+('organizing', 'General Chair', 'Dr. P. Sakthivel', 'IEEE Madras Section & Professor, Department of ECE, Anna University Chennai.', '/images/p-sakthivel.jpg'),
+('organizing', 'Conference Chair & Organizing Secretary', 'Dr. R. Shanmugasundaram', 'Professor - EEE', '/images/r-shanmugasundaram.jpg'),
+('organizing', 'Session Chair', 'Dr. N. Sathish Kumar', 'Professor - ECE', '/images/n-sathish-kumar.jpg'),
+('organizing', 'Member', 'Mrs. N. Divya', 'Asst. Prof. (Sr.G) - EEE', '/images/n-divya.jpg'),
+('organizing', 'Member', 'Mrs. R. Kiruba', 'Asst. Prof. (Sr. G) - EIE', '/images/r-kiruba.jpg'),
+('organizing', 'Member', 'Dr. S. P. Vimal', 'Asso. Prof. - ECE', '/images/s-p-vimal.jpg'),
+('organizing', 'Member', 'Dr. J. Selva Kumar', 'Professor - CSE', '/images/j-selva-kumar.jpg'),
+('organizing', 'Member', 'Mrs. R. Rajalakshmi', 'Asst. Prof. (OG) - IT', '/images/r-rajalakshmi.jpg'),
+('organizing', 'Member', 'Mrs. G. Lavanya', 'Asst. Prof. (Sl.G) - BME', '/images/g-lavanya.jpg'),
+('organizing', 'Finance Chair & Joint-Organizing Secretary', 'Dr. K. Balamurugan', 'Asso. Prof - EEE', '/images/k-balamurugan.jpg'),
+('organizing', 'Finance Committee Member', 'Mr. C. Praveenkumar', 'Asst. Prof. (Sl.g) - ECE', '/images/c-praveenkumar.jpg'),
+('organizing', 'Publication Chair', 'Dr. V. Rukkumani', 'Asso. Professor - EIE', '/images/v-rukkumani.jpg'),
+('organizing', 'Publication Committee Member', 'Mr. R. Santhoshkumar', 'Asst. Prof. - EEE', '/images/r-santhoshkumar.jpg'),
+('organizing', 'Publication Committee Member', 'Dr. M. Priyadharshini', 'Asst. Prof. - ECE', '/images/m-priyadharshini.jpg'),
+('organizing', 'Publication Committee Member', 'Mr. I. Aravindaguru', 'Asst. Prof. (Sr. G) - EIE', '/images/i-aravindaguru.jpg'),
+('organizing', 'Publication Committee Member', 'Mrs. C. Sowntharya', 'Asst. Prof. (Sr.G) - CSE', '/images/c-sowntharya.jpg'),
+('organizing', 'Publication Committee Member', 'Dr. N. Saranya', 'AP (Sl.G)', '/images/n-saranya.jpg'),
+('organizing', 'Publication Committee Member', 'Dr. P. Vishnu Vardhan', 'Asst. Prof. (Sr.G) - BME', '/images/p-vishnu-vardhan.jpg'),
+('organizing', 'Local Arrangements Chair', 'Dr. Deepa B Prabhu', 'Asso. Prof. - BME', '/images/deepa-b-prabhu.jpg'),
+('organizing', 'Local Arrangements Committee Member', 'Dr. V. Radhika', 'Asso. Prof. - BME', '/images/v-radhika.jpg'),
+('organizing', 'Local Arrangements Committee Member', 'Mr. B. Marisekar', 'Asst. Prof. (Sl.G) - EEE', '/images/b-marisekar.jpg'),
+('organizing', 'Local Arrangements Committee Member', 'Dr. M. Logaprakash', 'Asst. Prof. (Sl. G) - AIDS', '/images/m-logaprakash.jpg'),
+('organizing', 'Registration Chair', 'Mrs. S. Jansi Rani', 'Asst. Prof. (Sl.G) - IT', '/images/s-jansi-rani.jpg'),
+('organizing', 'Registration Committee Member', 'Dr. H. Vidhya', 'Asst. Prof. (Sr.G) - EEE', '/images/h-vidhya.jpg'),
+('organizing', 'Registration Committee Member', 'Mrs. T. Anitha', 'Asst. Prof. (Sl.G) - EIE', '/images/t-anitha.jpg'),
+('organizing', 'Registration Committee Member', 'Mrs. M. Jaishree', 'Asst. Prof. (Sl.G) - ECE', '/images/m-jaishree.jpg'),
+('organizing', 'Registration Committee Member', 'Mrs. R. S. Ramya', 'Asst. Prof. (Sr.G) - CSE', '/images/r-s-ramya.jpg'),
+('organizing', 'Registration Committee Member', 'Mr. S. Jeevanandham', 'Asst. Prof. (Sr.G) - IT', '/images/s-jeevanandham.jpg'),
+('organizing', 'Registration Committee Member', 'Mrs. L. Divyalakshmi', 'Asst. Prof. (Sl.G) - BME', '/images/l-divyalakshmi.jpg'),
+('organizing', 'Conference Pre-Tutorial Sessions Chair', 'Dr. S. P. Vimal', 'Asso. Prof. - ECE', '/images/s-p-vimal.jpg'),
+('organizing', 'Pre-Tutorial Sessions Committee Member', 'Mrs. B. Kalaimathi', 'Asst. Prof. (Sr.G) - ECE', '/images/b-kalaimathi.jpg'),
+('organizing', 'Pre-Tutorial Sessions Committee Member', 'Dr. A. Vijay', 'Asst. Prof. (Sr.G) - ECE', '/images/a-vijay.jpg'),
+('organizing', 'Pre-Tutorial Sessions Committee Member', 'Mrs. M. Kowsalya', 'Asso. Prof. - ECE & Asst. Prof. (Sr.G) - ECE', '/images/m-kowsalya.jpg'),
+('organizing', 'Technical Review Committee Convener', 'Dr. R. Shanmugasundaram', 'Professor - EEE', '/images/r-shanmugasundaram.jpg'),
+('organizing', 'Technical Review Committee Member', 'Dr. K. Balamurugan', 'Asso. Prof. - EEE', '/images/k-balamurugan.jpg'),
+('organizing', 'Technical Review Committee Member', 'Mr. R. Mohan Kumar', 'Asst. Prof. (Sl.G) - EEE', '/images/r-mohan-kumar.jpg'),
+('organizing', 'Technical Review Committee Member', 'Mr. B. Sridhar', 'Asst. Prof. (Sl.G) - EEE', '/images/b-sridhar.jpg'),
+('organizing', 'Technical Review Committee Member', 'Dr. M. Kasiselvanathan', 'Asso. Prof. - ECE', '/images/m-kasiselvanathan.jpg'),
+('organizing', 'Technical Review Committee Member', 'Mr. C. Mathan', 'Asst. Prof. (Sr. G) - EIE', '/images/c-mathan.jpg'),
+('organizing', 'Technical Review Committee Member', 'Dr. P. Mathiyalagan', 'Asso. Prof. - CSE', '/images/p-mathiyalagan.jpg'),
+('organizing', 'Technical Review Committee Member', 'Mrs. S. S. Sugantha Mallika', 'Asst. Prof. (Sl.G) - IT', '/images/s-s-sugantha-mallika.jpg'),
+('organizing', 'Technical Review Committee Member', 'Dr. M. Jeevitha Priya', 'Asst. Prof. - BME', '/images/m-jeevitha-priya.jpg'),
+('organizing', 'Outreach and Promotion Committee Convener', 'Dr. M. S. Geetha Devasena', 'Professor - CSE', '/images/m-s-geetha-devasena.jpg'),
+('organizing', 'Outreach and Promotion Committee Member', 'Dr. M. Kalaiarasu', 'Asso. Prof. - IT', '/images/m-kalaiarasu.jpg'),
+('organizing', 'Outreach and Promotion Committee Member', 'Dr. R. Kingsy Grace', 'Asso. Prof. - CSE', '/images/r-kingsy-grace.jpg'),
+('organizing', 'Outreach and Promotion Committee Member', 'Dr. R. Vijaya Kumar', 'Asst. Prof. (Sl.G) - CSE', '/images/r-vijaya-kumar.jpg'),
+('organizing', 'Outreach and Promotion Committee Member', 'Mr. C. Praveenkumar', 'Asst. Prof. (Sr.G) - EEE', '/images/c-praveenkumar.jpg'),
+('organizing', 'Outreach and Promotion Committee Member', 'Mrs. R.S. Ramya', 'Asst. Prof. (Sr.G) - CSE', '/images/r-s-ramya.jpg'),
+('organizing', 'Website and Social Media Promotion Committee Chair', 'Dr. S. Harihara Gopalan', 'Asso. Prof. - CSE', '/images/s-harihara-gopalan.jpg'),
+('organizing', 'Website and Social Media Promotion Committee Member', 'Mr. K. Robin Johny', 'Asst. Prof. (Sr.G) - AERO', '/images/k-robin-johny.jpg'),
+('organizing', 'Website and Social Media Promotion Committee Member', 'Mr. R. S. Vishnudurai', 'Asst. Prof. (Sr.G) - CSE', '/images/r-s-vishnudurai.jpg'),
+('organizing', 'Website and Social Media Promotion Committee Member', 'Dr. A. Vijay', 'Asst. Prof. (Sr. G) - ECE', '/images/a-vijay.jpg'),
+('organizing', 'Hospitality Committee Convener', 'Dr. P. Perumal', 'Professor - CSE', '/images/p-perumal.jpg'),
+('organizing', 'Hospitality Committee Member', 'Dr. B. Mathivanan', 'Asso. Prof. - CSE', '/images/b-mathivanan.jpg'),
+('organizing', 'Hospitality Committee Member', 'Dr. M. Nagarajapandian', 'Asst. Prof. (Sl.G) - EIE', '/images/m-nagarajapandian.jpg'),
+('organizing', 'Hospitality Committee Member', 'Mr. V. Krishna Kumar', 'Asst. Prof. (Sl.G) - CSE', '/images/v-krishna-kumar.jpg'),
+('organizing', 'Hospitality Committee Member', 'Dr. N. Suresh Kumar', 'Asso. Prof. - IT', '/images/n-suresh-kumar.jpg'),
+('organizing', 'Hospitality Committee Member', 'Dr. P. Sebastian Vindro Jude', 'Asst. Prof. (Sl.G) - EEE', '/images/p-sebastian-vindro-jude.jpg'),
+('advisory', null, 'Dr. Saifur Rahman', 'Virginia Tech, USA (IEEE President 2023)', null),
+('advisory', null, 'Dr. Ramesh Bansal', 'University of Sharjah, Sharjah, UAE', null),
+('advisory', null, 'Dr. Frede Blaabjerg', 'Aalborg University, Denmark', null),
+('advisory', null, 'Dr. Subhransu Sekhar Dash', 'Professor, SRM Institute, India', null),
+('advisory', null, 'Dr. Vincenzo Piuri', 'University of Milan, Italy', null),
+('technical', null, 'Dr. B. Chitti Babu', 'IIITD&M Kancheepuram, India', null),
+('technical', null, 'Dr. P. Karuppanan', 'MNNIT Allahabad, India', null),
+('technical', null, 'Dr. S. K. Patnaik', 'Anna University, Chennai, India', null),
+('technical', null, 'Dr. R. Harikumar', 'GCT Coimbatore, India', null);
 
 -- Seed Data: Insert speakers
-INSERT INTO speakers (name, title, role, talk, color) VALUES
-('Dr. Saifur Rahman', 'Professor, Virginia Tech, USA', 'Former IEEE President & CEO (2023)', 'AI Integration in Modern Clean Energy Microgrids', '#0f52ba'),
-('Dr. Frede Blaabjerg', 'Professor, Aalborg University, Denmark', 'Highly Cited Researcher & Power Electronics Pioneer', 'Reliability and Grid Integration of Power Electronics', '#06b6d4'),
-('Dr. Rajkumar Buyya', 'Professor, University of Melbourne, Australia', 'Director, Cloud Computing and Distributed Systems Lab', 'Cognitive Cloud-Edge Computing for IoT Applications', '#f58220');
+INSERT INTO speakers (name, title, role, talk, color, image_url) VALUES
+('Dr. Saifur Rahman', 'Professor, Virginia Tech, USA', 'Former IEEE President & CEO (2023)', 'AI Integration in Modern Clean Energy Microgrids', '#0f52ba', null),
+('Dr. Frede Blaabjerg', 'Professor, Aalborg University, Denmark', 'Highly Cited Researcher & Power Electronics Pioneer', 'Reliability and Grid Integration of Power Electronics', '#06b6d4', null),
+('Dr. Rajkumar Buyya', 'Professor, University of Melbourne, Australia', 'Director, Cloud Computing and Distributed Systems Lab', 'Cognitive Cloud-Edge Computing for IoT Applications', '#f58220', null);
 
 -- Seed Data: Insert important dates
 INSERT INTO important_dates (title, event_date, "desc", sort_order) VALUES
@@ -440,7 +442,17 @@ Only presented papers will be recommended for technical indexing in IEEE Xplore.
 ('label_conf_id', 'Conference ID:'),
 ('alert_download_word', 'Downloading AECTSD Word Template Package...'),
 ('alert_download_latex', 'Downloading AECTSD LaTeX Template Package...'),
-('alert_registration', 'Scroll down to use the interactive Registration Calculator and Payment submission form.');
+('alert_registration', 'Scroll down to use the interactive Registration Calculator and Payment submission form.'),
+('about_conference', 'SNR Sons Charitable Trust was founded in the year 1970 by the illustrious sons of Sri. S. N. Rangasamy Naidu namely, Late Sri Chinnasamy Naidu, Late Sri. P. R. Ramaswami Naidu, Sri. R. Doraiswami Naidu and Sevaratna Dr. R. Venkatesalu Naidu. Being an ardent devotee of Sri Ramakrishna Paramahamsa, all the institutions started by the Trust bear the name of the Holy Sage ''Sri Ramakrishna''. Following the Principles of Sri Ramakrishna Paramahamsa''s Philosophy of ''God through man'', the Trust successfully runs 15 organisations significantly catering to social causes of society focusing on Health Care, Education and Service.'),
+('nav_location', 'Directions'),
+('nav_explore', 'Explore'),
+('nav_venue', 'Venue'),
+('nav_ieee_sb', 'IEEE SB'),
+('srec_url', 'https://srec.ac.in/'),
+('ieee_sb_url', 'https://ieeesrecsbs.vercel.app/'),
+('snr_url', 'https://www.snrst.org'),
+('snr_trust_url', 'https://www.snrst.org'),
+('hero_bg_url', 'https://images.shiksha.com/mediadata/images/1488263707phpWPR1Pb.jpeg');
 
 -- 12. website_admins table
 CREATE TABLE IF NOT EXISTS website_admins (
@@ -506,6 +518,8 @@ CREATE TABLE IF NOT EXISTS tourist_places (
     name VARCHAR(255) NOT NULL,
     category VARCHAR(255) NOT NULL,
     description TEXT,
+    image_url TEXT,
+    map_url TEXT,
     sort_order INT DEFAULT 0
 );
 
@@ -521,6 +535,8 @@ CREATE TABLE IF NOT EXISTS weekend_stays (
     name VARCHAR(255) NOT NULL,
     category VARCHAR(255) NOT NULL,
     description TEXT,
+    image_url TEXT,
+    map_url TEXT,
     sort_order INT DEFAULT 0
 );
 
@@ -538,6 +554,7 @@ CREATE TABLE IF NOT EXISTS hotels_to_stay (
     address VARCHAR(255) NOT NULL,
     description TEXT,
     map_url TEXT,
+    image_url TEXT,
     sort_order INT DEFAULT 0
 );
 
@@ -554,49 +571,49 @@ INSERT INTO conference_info (key, value) VALUES
 ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
 
 -- Seed tourist places
-INSERT INTO tourist_places (name, category, description, sort_order) VALUES
-('Isha Yoga Center - Dhyanalinga and Adiyogi Statue', 'Religious site', 'Features the magnificent 112-foot Adiyogi Shiva bust, a world-renowned spiritual destination.', 1),
-('Dhyanalinga Temple', 'Religious site', 'A unique meditative space located at the foothills of Velliangiri Mountains offering a peaceful, spiritual atmosphere.', 2),
-('Marudamalai Temple', 'Religious site', 'An ancient hilltop temple dedicated to Lord Murugan, offering scenic views of the city and surroundings.', 3),
-('Kovai Kutralam Water Falls', 'Nature / Scenic', 'Beautiful, serene waterfalls nestled in the Siruvani hills, famous for its refreshing natural streams.', 4),
-('Brookefields Mall', 'Shopping / Entertainment', 'A modern, prime shopping mall in Coimbatore offering global brands, food courts, and multiplex theatres.', 5),
-('Black Thunder Theme Park', 'Amusement Park', 'A massive, thrilling water theme park situated at the foot of Nilgiris near Mettupalayam.', 6),
-('Eachanari Vinayagar Temple', 'Religious site', 'A historic temple dedicated to Lord Ganesha, famous for its grand 6-foot tall idol and architecture.', 7),
-('Kovai Kondattam', 'Amusement Park', 'An eco-friendly amusement park situated on Siruvani Main Road, perfect for family entertainment.', 8),
-('Horticulture Farms, Kallar', 'Nature / Botanical', 'Lush state horticultural farm near Mettupalayam showcasing diverse fruit varieties and rare plants.', 9);
+INSERT INTO tourist_places (name, category, description, image_url, map_url, sort_order) VALUES
+('Isha Yoga Center - Dhyanalinga and Adiyogi Statue', 'Religious site', 'Features the magnificent 112-foot Adiyogi Shiva bust, a world-renowned spiritual destination.', 'https://lh3.googleusercontent.com/gps-cs-s/APNQkAEMlOakFgT7WvRoBKhBbZ0kg-C5SpNIWBIaEmf-kR0-SPAKPn-BavJQeuDcz_vgNuC-K7csINCMCBy-nkQdsc6ZZC29jCs5ht-481TuO0W3Y4xwTmtj2fttMsZ18fubqhXedUc=s1360-w1360-h1020-rw', 'https://www.google.com/maps/dir/?api=1&destination=Isha+Yoga+Center+Coimbatore', 1),
+('Dhyanalinga Temple', 'Religious site', 'A unique meditative space located at the foothills of Velliangiri Mountains offering a peaceful, spiritual atmosphere.', 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/08/58/71/56/dhyanalinga-temple.jpg?w=800&h=500&s=1', 'https://www.google.com/maps/dir/?api=1&destination=Dhyanalinga+Temple+Coimbatore', 2),
+('Marudamalai Temple', 'Religious site', 'An ancient hilltop temple dedicated to Lord Murugan, offering scenic views of the city and surroundings.', 'https://images.unsplash.com/photo-1608976451631-0734005c93c1?auto=format&fit=crop&w=600&q=80', 'https://www.google.com/maps/dir/?api=1&destination=Marudamalai+Temple+Coimbatore', 3),
+('Kovai Kutralam Water Falls', 'Nature / Scenic', 'Beautiful, serene waterfalls nestled in the Siruvani hills, famous for its refreshing natural streams.', 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/17/4a/f9/c2/kovai-kutralam-water.jpg?w=1200&h=-1&s=1', 'https://www.google.com/maps/dir/?api=1&destination=Kovai+Kutralam+Water+Falls', 4),
+('Brookefields Mall', 'Shopping / Entertainment', 'A modern, prime shopping mall in Coimbatore offering global brands, food courts, and multiplex theatres.', 'https://res.cloudinary.com/dyiffrkzh/image/upload/c_fill,f_auto,fl_progressive.strip_profile,g_center,h_400,q_auto,w_700/v1692700582/bbj/kvwsmkhxaamjghnlfc1u.webp', 'https://www.google.com/maps/dir/?api=1&destination=Brookefields+Mall+Coimbatore', 5),
+('Black Thunder Theme Park', 'Amusement Park', 'A massive, thrilling water theme park situated at the foot of Nilgiris near Mettupalayam.', 'https://assets.simplotel.com/simplotel/image/upload/w_5000,h_3750/x_0,y_0,w_5000,h_2810,c_crop,q_80,fl_progressive/w_900,h_506,f_auto,c_fit/black-thunder---water-theme-park/Lucky_Ariel_vttsit', 'https://www.google.com/maps/dir/?api=1&destination=Black+Thunder+Theme+Park+Mettupalayam', 6),
+('Eachanari Vinayagar Temple', 'Religious site', 'A historic temple dedicated to Lord Ganesha, famous for its grand 6-foot tall idol and architecture.', 'https://images.unsplash.com/photo-1561361058-c24cecae35ca?auto=format&fit=crop&w=600&q=80', 'https://www.google.com/maps/dir/?api=1&destination=Eachanari+Vinayagar+Temple', 7),
+('Kovai Kondattam', 'Amusement Park', 'An eco-friendly amusement park situated on Siruvani Main Road, perfect for family entertainment.', 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80', 'https://www.google.com/maps/dir/?api=1&destination=Kovai+Kondattam', 8),
+('Horticulture Farms, Kallar', 'Nature / Botanical', 'Lush state horticultural farm near Mettupalayam showcasing diverse fruit varieties and rare plants.', 'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=600&q=80', 'https://www.google.com/maps/dir/?api=1&destination=Horticulture+Farms+Kallar', 9);
 
 -- Seed weekend stays
-INSERT INTO weekend_stays (name, category, description, sort_order) VALUES
-('Ooty Hill Station (Udhagamandalam)', 'Hill Station', 'The legendary Queen of Hill Stations, famous for its tea estates, Nilgiri Mountain Railway, and botanical gardens.', 1),
-('Coonoor Hill Station', 'Hill Station', 'A quieter Nilgiri retreat famous for Sim’s Park, dolphin’s nose viewpoints, and panoramic tea valley walks.', 2),
-('Valparai Hill Station', 'Hill Station', 'A pristine, misty hill station surrounded by tea plantations and rich wildlife in the Western Ghats.', 3),
-('Munnar Hill Station', 'Hill Station', 'Famous destination in nearby Kerala boasting vast rolling tea estates, waterfalls, and scenic mist-filled peaks.', 4),
-('Athirapally Waterfalls', 'Nature / Scenic', 'A majestic 80-foot waterfall in Kerala, often referred to as the Niagara of India, surrounded by green rainforests.', 5),
-('Kodaikanal Hill Station', 'Hill Station', 'The Princess of Hill Stations, renowned for its star-shaped lake, pine forests, and cool mountain air.', 6),
-('Topslip Anamalai Tiger Reserve', 'Wildlife Sanctuary / Nature', 'A famous national park and tiger reserve rich in biodiversity, offering elephant rides and forest safaris.', 7);
+INSERT INTO weekend_stays (name, category, description, image_url, map_url, sort_order) VALUES
+('Ooty Hill Station (Udhagamandalam)', 'Hill Station', 'The legendary Queen of Hill Stations, famous for its tea estates, Nilgiri Mountain Railway, and botanical gardens.', 'https://images.unsplash.com/photo-1590050752117-238cb0612b1b?auto=format&fit=crop&w=600&q=80', 'https://www.google.com/maps/dir/?api=1&destination=Ooty+Tamil+Nadu', 1),
+('Coonoor Hill Station', 'Hill Station', 'A quieter Nilgiri retreat famous for Sim’s Park, dolphin’s nose viewpoints, and panoramic tea valley walks.', 'https://images.unsplash.com/photo-1597481499750-3e6b22637e12?auto=format&fit=crop&w=600&q=80', 'https://www.google.com/maps/dir/?api=1&destination=Coonoor+Tamil+Nadu', 2),
+('Valparai Hill Station', 'Hill Station', 'A pristine, misty hill station surrounded by tea plantations and rich wildlife in the Western Ghats.', 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80', 'https://www.google.com/maps/dir/?api=1&destination=Valparai+Tamil+Nadu', 3),
+('Munnar Hill Station', 'Hill Station', 'Famous destination in nearby Kerala boasting vast rolling tea estates, waterfalls, and scenic mist-filled peaks.', 'https://images.unsplash.com/photo-1593693397690-362cb9666fc2?auto=format&fit=crop&w=600&q=80', 'https://www.google.com/maps/dir/?api=1&destination=Munnar+Kerala', 4),
+('Athirapally Waterfalls', 'Nature / Scenic', 'A majestic 80-foot waterfall in Kerala, often referred to as the Niagara of India, surrounded by green rainforests.', 'https://images.unsplash.com/photo-1588421357574-87938a86fa28?auto=format&fit=crop&w=600&q=80', 'https://www.google.com/maps/dir/?api=1&destination=Athirapally+Waterfalls', 5),
+('Kodaikanal Hill Station', 'Hill Station', 'The Princess of Hill Stations, renowned for its star-shaped lake, pine forests, and cool mountain air.', 'https://images.unsplash.com/photo-1472396961693-142e6e269027?auto=format&fit=crop&w=600&q=80', 'https://www.google.com/maps/dir/?api=1&destination=Kodaikanal+Tamil+Nadu', 6),
+('Topslip Anamalai Tiger Reserve', 'Wildlife Sanctuary / Nature', 'A famous national park and tiger reserve rich in biodiversity, offering elephant rides and forest safaris.', 'https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?auto=format&fit=crop&w=600&q=80', 'https://www.google.com/maps/dir/?api=1&destination=Topslip+Anamalai+Tiger+Reserve', 7);
 
 -- Seed hotels
-INSERT INTO hotels_to_stay (name, category, address, description, map_url, sort_order) VALUES
+INSERT INTO hotels_to_stay (name, category, address, description, map_url, image_url, sort_order) VALUES
 -- Luxury Hotels
-('Vivanta', 'Luxury Hotels', 'Race Course Road, Coimbatore', '5-star luxury hotel in the heart of Coimbatore featuring premium amenities and dining.', 'https://maps.google.com/?q=Vivanta+Coimbatore', 1),
-('The Residency Towers', 'Luxury Hotels', 'Avinashi Road, Coimbatore', 'Highly rated premium business hotel offering deluxe suites and wellness centers.', 'https://maps.google.com/?q=The+Residency+Towers+Coimbatore', 2),
-('Le Meridien', 'Luxury Hotels', 'Neelambur, Coimbatore', 'Luxurious 5-star hotel with grand event spaces near the international airport.', 'https://maps.google.com/?q=Le+Meridien+Coimbatore', 3),
-('Radisson Blu', 'Luxury Hotels', 'Avinashi Road, Coimbatore', 'Upscale modern business hotel featuring a roof-top pool and fine dining.', 'https://maps.google.com/?q=Radisson+Blu+Coimbatore', 4),
-('Hash Six Hotel', 'Luxury Hotels', 'Saibaba Colony, Coimbatore', 'Sleek luxury hotel offering exceptional boutique rooms, dining, and hospitality.', 'https://maps.google.com/?q=Hash+Six+Hotel+Coimbatore', 5),
-('Lemon Tree Hotel', 'Luxury Hotels', 'Avinashi Road, Coimbatore', 'Vibrant upscale business hotel located strategically near key commercial hubs.', 'https://maps.google.com/?q=Lemon+Tree+Hotel+Coimbatore', 6),
+('Vivanta', 'Luxury Hotels', 'Race Course Road, Coimbatore', '5-star luxury hotel in the heart of Coimbatore featuring premium amenities and dining.', 'https://maps.google.com/?q=Vivanta+Coimbatore', 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80', 1),
+('The Residency Towers', 'Luxury Hotels', 'Avinashi Road, Coimbatore', 'Highly rated premium business hotel offering deluxe suites and wellness centers.', 'https://maps.google.com/?q=The+Residency+Towers+Coimbatore', 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=600&q=80', 2),
+('Le Meridien', 'Luxury Hotels', 'Neelambur, Coimbatore', 'Luxurious 5-star hotel with grand event spaces near the international airport.', 'https://maps.google.com/?q=Le+Meridien+Coimbatore', 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=600&q=80', 3),
+('Radisson Blu', 'Luxury Hotels', 'Avinashi Road, Coimbatore', 'Upscale modern business hotel featuring a roof-top pool and fine dining.', 'https://maps.google.com/?q=Radisson+Blu+Coimbatore', 'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=600&q=80', 4),
+('Hash Six Hotel', 'Luxury Hotels', 'Saibaba Colony, Coimbatore', 'Sleek luxury hotel offering exceptional boutique rooms, dining, and hospitality.', 'https://maps.google.com/?q=Hash+Six+Hotel+Coimbatore', 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80', 5),
+('Lemon Tree Hotel', 'Luxury Hotels', 'Avinashi Road, Coimbatore', 'Vibrant upscale business hotel located strategically near key commercial hubs.', 'https://maps.google.com/?q=Lemon+Tree+Hotel+Coimbatore', 'https://images.unsplash.com/photo-1445019980597-93fa8acb246c?auto=format&fit=crop&w=600&q=80', 6),
 -- Mid-Range Hotels
-('Hotel CAG Pride', 'Mid-Range Hotels', 'Gandhipuram, Coimbatore', 'Respected corporate hotel offering warm hospitality, comfortable stays, and quality dining.', 'https://maps.google.com/?q=Hotel+CAG+Pride+Coimbatore', 7),
-('City Tower', 'Mid-Range Hotels', 'Gandhipuram, Coimbatore', 'Classic business hotel offering spacious rooms, convenient location, and prompt services.', 'https://maps.google.com/?q=City+Tower+Coimbatore', 8),
-('Hotel Alankar', 'Mid-Range Hotels', 'Gandhipuram, Coimbatore', 'Comfortable business hotel famous for its cozy accommodation and multi-cuisine restaurant.', 'https://maps.google.com/?q=Hotel+Alankar+Coimbatore', 9),
-('Fairfield by Marriott', 'Mid-Range Hotels', 'Avinashi Road, Coimbatore', 'Contemporary comfort and business amenities situated close to Coimbatore Airport.', 'https://maps.google.com/?q=Fairfield+by+Marriott+Coimbatore', 10),
-('Welcomhotel (ITC Hotels)', 'Mid-Range Hotels', 'Race Course, Coimbatore', 'Premium heritage-themed hotel offering top-class dining, wellness, and stay experiences.', 'https://maps.google.com/?q=Welcomhotel+Coimbatore', 11),
-('Hotel KISCOL Grands', 'Mid-Range Hotels', 'Ramnagar, Coimbatore', 'Modern, high-comfort hotel featuring premium facilities in the central business area.', 'https://maps.google.com/?q=Hotel+KISCOL+Grands+Coimbatore', 12),
-('Rathna Residency', 'Mid-Range Hotels', 'Town Hall, Coimbatore', 'Centrally located business hotel renowned for its cozy environment and great hospitality.', 'https://maps.google.com/?q=Rathna+Residency+Coimbatore', 13),
-('Hotel Vijay Park Inn', 'Mid-Range Hotels', 'Ramnagar, Coimbatore', 'Affordable business hotel offering neat accommodation, conference halls, and dining.', 'https://maps.google.com/?q=Hotel+Vijay+Park+Inn+Coimbatore', 14),
+('Hotel CAG Pride', 'Mid-Range Hotels', 'Gandhipuram, Coimbatore', 'Respected corporate hotel offering warm hospitality, comfortable stays, and quality dining.', 'https://maps.google.com/?q=Hotel+CAG+Pride+Coimbatore', 'https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=600&q=80', 7),
+('City Tower', 'Mid-Range Hotels', 'Gandhipuram, Coimbatore', 'Classic business hotel offering spacious rooms, convenient location, and prompt services.', 'https://maps.google.com/?q=City+Tower+Coimbatore', 'https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?auto=format&fit=crop&w=600&q=80', 8),
+('Hotel Alankar', 'Mid-Range Hotels', 'Gandhipuram, Coimbatore', 'Comfortable business hotel famous for its cozy accommodation and multi-cuisine restaurant.', 'https://maps.google.com/?q=Hotel+Alankar+Coimbatore', 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=600&q=80', 9),
+('Fairfield by Marriott', 'Mid-Range Hotels', 'Avinashi Road, Coimbatore', 'Contemporary comfort and business amenities situated close to Coimbatore Airport.', 'https://maps.google.com/?q=Fairfield+by+Marriott+Coimbatore', 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80', 10),
+('Welcomhotel (ITC Hotels)', 'Mid-Range Hotels', 'Race Course, Coimbatore', 'Premium heritage-themed hotel offering top-class dining, wellness, and stay experiences.', 'https://maps.google.com/?q=Welcomhotel+Coimbatore', 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80', 11),
+('Hotel KISCOL Grands', 'Mid-Range Hotels', 'Ramnagar, Coimbatore', 'Modern, high-comfort hotel featuring premium facilities in the central business area.', 'https://maps.google.com/?q=Hotel+KISCOL+Grands+Coimbatore', 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=600&q=80', 12),
+('Rathna Residency', 'Mid-Range Hotels', 'Town Hall, Coimbatore', 'Centrally located business hotel renowned for its cozy environment and great hospitality.', 'https://maps.google.com/?q=Rathna+Residency+Coimbatore', 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=600&q=80', 13),
+('Hotel Vijay Park Inn', 'Mid-Range Hotels', 'Ramnagar, Coimbatore', 'Affordable business hotel offering neat accommodation, conference halls, and dining.', 'https://maps.google.com/?q=Hotel+Vijay+Park+Inn+Coimbatore', 'https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=600&q=80', 14),
 -- Budget-Friendly Hotels
-('Sri Aarvee Hotels', 'Budget-Friendly Hotels', 'Gandhipuram, Coimbatore', 'Value-for-money hotel providing essential comforts and prime accessibility.', 'https://maps.google.com/?q=Sri+Aarvee+Hotels+Coimbatore', 15),
-('Zone by The Park', 'Budget-Friendly Hotels', 'Avinashi Road, Coimbatore', 'Trendy, social hotel offering active spaces, smart amenities, and neat rooms.', 'https://maps.google.com/?q=Zone+by+The+Park+Coimbatore', 16),
-('Hotel Jothi Grand', 'Budget-Friendly Hotels', 'Near KCT, Saravanampatti, Coimbatore', 'Pocket-friendly hotel near IT parks and educational institutions in Saravanampatti.', 'https://maps.google.com/?q=Hotel+Jothi+Grand+Coimbatore', 17);
+('Sri Aarvee Hotels', 'Budget-Friendly Hotels', 'Gandhipuram, Coimbatore', 'Value-for-money hotel providing essential comforts and prime accessibility.', 'https://maps.google.com/?q=Sri+Aarvee+Hotels+Coimbatore', 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=600&q=80', 15),
+('Zone by The Park', 'Budget-Friendly Hotels', 'Avinashi Road, Coimbatore', 'Trendy, social hotel offering active spaces, smart amenities, and neat rooms.', 'https://maps.google.com/?q=Zone+by+The+Park+Coimbatore', 'https://images.unsplash.com/photo-1445019980597-93fa8acb246c?auto=format&fit=crop&w=600&q=80', 16),
+('Hotel Jothi Grand', 'Budget-Friendly Hotels', 'Near KCT, Saravanampatti, Coimbatore', 'Pocket-friendly hotel near IT parks and educational institutions in Saravanampatti.', 'https://maps.google.com/?q=Hotel+Jothi+Grand+Coimbatore', 'https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?auto=format&fit=crop&w=600&q=80', 17);
 
 -- 13. Restore necessary permissions to API gateway roles (anon, authenticated, service_role)
 -- Dropping and recreating the public schema revokes default permissions for these roles.
