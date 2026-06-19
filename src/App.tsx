@@ -37,6 +37,7 @@ import {
 import { SrecLogo } from './components/SrecLogo';
 import acLogo from './assets/ac.png';
 import srecLogo from './assets/srec-logo.png';
+import chatbotIcon from './assets/chatbot.gif';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 import ExplorePage from './ExplorePage';
 
@@ -55,8 +56,7 @@ const NAV_ITEMS = [
   { id: 'explore', label: 'Explore' },
   { id: 'contact-us', label: 'Contact Us' }, 
   { id: 'location', label: 'Directions' },
-  { id: 'ieee-sb', label: 'IEEE SB', external: true },
-  { id: 'nexus-agent', label: 'Nexus Agent' }
+  { id: 'ieee-sb', label: 'IEEE SB', external: true }
 ];
 
 const DESKTOP_NAV_ITEMS = [
@@ -88,8 +88,7 @@ const DESKTOP_NAV_ITEMS = [
   { id: 'registration', label: 'Registration' },
   { id: 'explore', label: 'Explore' },
   { id: 'contact-us', label: 'Contact Us' },
-  { id: 'ieee-sb', label: 'IEEE SB', external: true },
-  { id: 'nexus-agent', label: 'Nexus Agent' }
+  { id: 'ieee-sb', label: 'IEEE SB', external: true }
 ];
 
 interface Department {
@@ -4715,8 +4714,17 @@ export default function App() {
         className="nexus-chat-trigger" 
         onClick={() => setShowNexusChat(!showNexusChat)}
         title="Chat with Nexus AI Agent"
+        style={{ overflow: 'hidden', padding: 0 }}
       >
-        {showNexusChat ? <X size={24} /> : <Terminal size={24} />}
+        {showNexusChat ? (
+          <X size={24} />
+        ) : (
+          <img 
+            src={chatbotIcon} 
+            alt="Nexus Agent" 
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} 
+          />
+        )}
       </div>
 
       <AnimatePresence>
@@ -4730,8 +4738,12 @@ export default function App() {
           >
             {/* Header */}
             <div className="nexus-chat-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Terminal size={18} style={{ color: '#f58220' }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                <img 
+                  src={chatbotIcon} 
+                  alt="Nexus Agent Avatar" 
+                  style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover', border: '1px solid rgba(255, 255, 255, 0.2)', display: 'block' }} 
+                />
                 <div>
                   <h4 style={{ fontSize: '0.95rem', fontWeight: 800, margin: 0 }}>Nexus AI Assistant</h4>
                   <span style={{ fontSize: '0.7rem', opacity: 0.8, display: 'block' }}>SREC Conference Agent</span>
