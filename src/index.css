@@ -783,6 +783,23 @@ h2, h3, h4, h5, h6, td {
   color: #3b82f6 !important;
 }
 
+.dropdown-content a {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.6rem 1rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #334155;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.dropdown-content a:hover {
+  background-color: rgba(59, 130, 246, 0.06);
+  color: #3b82f6 !important;
+}
+
 /* Tourist & Hotels Styles */
 .tourist-card, .hotel-card {
   background: #ffffff;

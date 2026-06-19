@@ -58,6 +58,38 @@ const NAV_ITEMS = [
   { id: 'ieee-sb', label: 'IEEE SB', external: true }
 ];
 
+const DESKTOP_NAV_ITEMS = [
+  { id: 'home', label: 'Home' },
+  {
+    label: 'About',
+    dropdown: [
+      { id: 'about', label: 'About Us' },
+      { id: 'committee', label: 'Committee' },
+      { id: 'location', label: 'Directions' }
+    ]
+  },
+  { id: 'speakers', label: 'Speakers' },
+  {
+    label: 'Authors',
+    dropdown: [
+      { id: 'call-for-papers', label: 'Call For Papers' },
+      { id: 'guidelines', label: 'Guidelines' },
+      { id: 'paper-submission', label: 'Paper Submission' }
+    ]
+  },
+  {
+    label: 'Timeline & Events',
+    dropdown: [
+      { id: 'important-dates', label: 'Important Dates' },
+      { id: 'workshops', label: 'Workshops' }
+    ]
+  },
+  { id: 'registration', label: 'Registration' },
+  { id: 'explore', label: 'Explore' },
+  { id: 'contact-us', label: 'Contact Us' },
+  { id: 'ieee-sb', label: 'IEEE SB', external: true }
+];
+
 interface Department {
   id?: any;
   name: string;
@@ -1266,47 +1298,76 @@ export default function App() {
 
         {/* Desktop Navigation Links */}
         <nav className="desktop-nav">
-          <ul style={{ display: 'flex', gap: '0.35rem', listStyle: 'none', alignItems: 'center', margin: 0, padding: 0 }}>
-            {NAV_ITEMS.map((item) => (
-              <li key={item.id}>
-                {item.external ? (
-                  <a
-                    href={
-                      item.id === 'ieee-sb'
-                        ? (info.ieee_sb_url || "https://ieeesrecsbs.vercel.app/")
-                        : (info.snr_url || info.snr_trust_url || "https://www.snrst.org")
-                    }
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="nav-link"
-                    style={{ textDecoration: 'none', display: 'inline-block' }}
-                  >
-                    {navLabelMap[item.id] || item.label}
-                  </a>
-                ) : (
-                  <button
-                    onClick={() => scrollToSection(item.id)}
-                    className={`nav-link ${activeSection === item.id ? 'active' : ''}`}
-                  >
-                    {navLabelMap[item.id] || item.label}
-                    {activeSection === item.id && (
-                      <motion.div 
-                        layoutId="activeIndicator"
-                        style={{
-                          position: 'absolute',
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          height: '2.5px',
-                          background: '#3b82f6',
-                          borderRadius: '2px'
-                        }}
-                      />
-                    )}
-                  </button>
-                )}
-              </li>
-            ))}
+          <ul style={{ display: 'flex', gap: '0.65rem', listStyle: 'none', alignItems: 'center', margin: 0, padding: 0 }}>
+            {DESKTOP_NAV_ITEMS.map((item: any, idx) => {
+              if (item.dropdown) {
+                const isAnyDropdownActive = item.dropdown.some((sub: any) => activeSection === sub.id);
+                return (
+                  <li key={idx} className="nav-dropdown">
+                    <button
+                      className={`nav-link ${isAnyDropdownActive ? 'active' : ''}`}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
+                    >
+                      {item.label}
+                      <span className="dropdown-arrow">▼</span>
+                    </button>
+                    <ul className="dropdown-content">
+                      {item.dropdown.map((subItem: any) => (
+                        <li key={subItem.id}>
+                          <button
+                            onClick={() => scrollToSection(subItem.id)}
+                            style={activeSection === subItem.id ? { color: '#3b82f6' } : undefined}
+                          >
+                            {navLabelMap[subItem.id] || subItem.label}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                );
+              }
+
+              return (
+                <li key={item.id}>
+                  {item.external ? (
+                    <a
+                      href={
+                        item.id === 'ieee-sb'
+                          ? (info.ieee_sb_url || "https://ieeesrecsbs.vercel.app/")
+                          : (info.snr_url || info.snr_trust_url || "https://www.snrst.org")
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="nav-link"
+                      style={{ textDecoration: 'none', display: 'inline-block' }}
+                    >
+                      {navLabelMap[item.id] || item.label}
+                    </a>
+                  ) : (
+                    <button
+                      onClick={() => scrollToSection(item.id)}
+                      className={`nav-link ${activeSection === item.id ? 'active' : ''}`}
+                    >
+                      {navLabelMap[item.id] || item.label}
+                      {activeSection === item.id && (
+                        <motion.div 
+                          layoutId="activeIndicator"
+                          style={{
+                            position: 'absolute',
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            height: '2.5px',
+                            background: '#3b82f6',
+                            borderRadius: '2px'
+                          }}
+                        />
+                      )}
+                    </button>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </nav>
 
