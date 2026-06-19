@@ -176,6 +176,19 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
+.form-input:user-invalid,
+.form-input.is-invalid {
+  border-color: #dc2626 !important;
+  background-color: #fef2f2 !important;
+}
+
+.form-input:user-invalid:focus,
+.form-input.is-invalid:focus {
+  border-color: #dc2626 !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15) !important;
+}
+
 /* Responsive Nav Bar options */
 .desktop-nav {
   display: none;

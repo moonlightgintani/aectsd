@@ -411,6 +411,7 @@ export default function App() {
   const [regSubmitting, setRegSubmitting] = useState<boolean>(false);
   const [regSuccess, setRegSuccess] = useState<boolean>(false);
   const [regError, setRegError] = useState<string | null>(null);
+  const [showRegValidation, setShowRegValidation] = useState<boolean>(false);
 
   // Admin Portal authentication handlers
   const handleAdminAuth = async (e: React.FormEvent) => {
@@ -909,8 +910,16 @@ export default function App() {
 
   const handleRegistrationSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!regPaperId || !regAuthorName || !regPaperTitle || !regEmail || !regPhone || !regScreenshot) {
+      setShowRegValidation(true);
+      setRegError('Please fill out all required fields and upload the payment screenshot.');
+      return;
+    }
+
     setRegSubmitting(true);
     setRegError(null);
+    setShowRegValidation(false);
     
     try {
       if (!isSupabaseConfigured || !supabase) {
@@ -3305,6 +3314,7 @@ export default function App() {
                               setRegScreenshot(null);
                               setRegRegisterForTour(false);
                               setRegPreferredTourPlace('');
+                              setShowRegValidation(false);
                             }} 
                             className="btn btn-secondary"
                             style={{ marginTop: '0.5rem', padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
@@ -3321,7 +3331,7 @@ export default function App() {
                                 id="reg_paper_id"
                                 type="text" 
                                 required 
-                                className="form-input" 
+                                className={`form-input ${showRegValidation && !regPaperId ? 'is-invalid' : ''}`}
                                 style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem' }}
                                 placeholder="e.g. AECTSD-104"
                                 value={regPaperId}
@@ -3335,7 +3345,7 @@ export default function App() {
                                 id="reg_author_name"
                                 type="text" 
                                 required 
-                                className="form-input" 
+                                className={`form-input ${showRegValidation && !regAuthorName ? 'is-invalid' : ''}`}
                                 style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem' }}
                                 placeholder="Enter full name"
                                 value={regAuthorName}
@@ -3351,7 +3361,7 @@ export default function App() {
                               id="reg_paper_title"
                               type="text" 
                               required 
-                              className="form-input" 
+                              className={`form-input ${showRegValidation && !regPaperTitle ? 'is-invalid' : ''}`}
                               style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem' }}
                               placeholder="e.g. A Secure VLSI Implementation for IoT Nodes"
                               value={regPaperTitle}
@@ -3367,7 +3377,7 @@ export default function App() {
                                 id="reg_email"
                                 type="email" 
                                 required 
-                                className="form-input" 
+                                className={`form-input ${showRegValidation && !regEmail ? 'is-invalid' : ''}`}
                                 style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem' }}
                                 placeholder="author@example.com"
                                 value={regEmail}
@@ -3381,7 +3391,7 @@ export default function App() {
                                 id="reg_phone"
                                 type="tel" 
                                 required 
-                                className="form-input" 
+                                className={`form-input ${showRegValidation && !regPhone ? 'is-invalid' : ''}`}
                                 style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem' }}
                                 placeholder="+91-9876543210"
                                 value={regPhone}
@@ -3397,12 +3407,12 @@ export default function App() {
                             <label style={{ fontSize: '0.75rem', color: '#334155', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>Upload Payment Screenshot (Max 10MB)*</label>
                             <div 
                               style={{
-                                border: '2px dashed #cbd5e1',
+                                border: showRegValidation && !regScreenshot ? '2px dashed #dc2626' : '2px dashed #cbd5e1',
                                 borderRadius: '0.375rem',
                                 padding: '0.75rem',
                                 textAlign: 'center',
                                 cursor: 'pointer',
-                                background: '#f8fafc',
+                                background: showRegValidation && !regScreenshot ? '#fef2f2' : '#f8fafc',
                                 transition: 'all 0.2s ease',
                               }}
                               onDragOver={(e) => e.preventDefault()}
@@ -3448,6 +3458,7 @@ export default function App() {
                             type="submit" 
                             className="btn btn-primary" 
                             disabled={regSubmitting}
+                            onClick={() => setShowRegValidation(true)}
                             style={{ marginTop: '0.35rem', width: '100%', padding: '0.6rem', background: '#0f52ba', fontSize: '0.85rem' }}
                           >
                             {regSubmitting ? 'Submitting...' : 'Submit Registration & Payment'}
