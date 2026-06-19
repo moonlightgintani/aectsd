@@ -4710,21 +4710,31 @@ export default function App() {
       </AnimatePresence>
 
       {/* Nexus Agent Chatbot Floating Widget */}
-      <div 
-        className="nexus-chat-trigger" 
-        onClick={() => setShowNexusChat(!showNexusChat)}
-        title="Chat with Nexus AI Agent"
-        style={{ overflow: 'hidden', padding: 0 }}
-      >
-        {showNexusChat ? (
-          <X size={24} />
-        ) : (
-          <img 
-            src={chatbotIcon} 
-            alt="Nexus Agent" 
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} 
-          />
+      <div className="nexus-chat-container">
+        {!showNexusChat && (
+          <div className="nexus-chat-tooltip">
+            <span className="nexus-chat-tooltip-dot">●</span>
+            How can I help you?
+          </div>
         )}
+        
+        <div 
+          className="nexus-chat-trigger" 
+          onClick={() => setShowNexusChat(!showNexusChat)}
+          title="Chat with Nexus AI Agent"
+        >
+          {showNexusChat ? (
+            <div className="nexus-chat-close-btn">
+              <X size={24} />
+            </div>
+          ) : (
+            <img 
+              src={chatbotIcon} 
+              alt="Nexus Agent" 
+              className="nexus-chat-mascot-img"
+            />
+          )}
+        </div>
       </div>
 
       <AnimatePresence>
