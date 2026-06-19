@@ -55,7 +55,8 @@ const NAV_ITEMS = [
   { id: 'explore', label: 'Explore' },
   { id: 'contact-us', label: 'Contact Us' }, 
   { id: 'location', label: 'Directions' },
-  { id: 'ieee-sb', label: 'IEEE SB', external: true }
+  { id: 'ieee-sb', label: 'IEEE SB', external: true },
+  { id: 'nexus-agent', label: 'Nexus Agent' }
 ];
 
 const DESKTOP_NAV_ITEMS = [
@@ -87,7 +88,8 @@ const DESKTOP_NAV_ITEMS = [
   { id: 'registration', label: 'Registration' },
   { id: 'explore', label: 'Explore' },
   { id: 'contact-us', label: 'Contact Us' },
-  { id: 'ieee-sb', label: 'IEEE SB', external: true }
+  { id: 'ieee-sb', label: 'IEEE SB', external: true },
+  { id: 'nexus-agent', label: 'Nexus Agent' }
 ];
 
 interface Department {
@@ -444,6 +446,14 @@ export default function App() {
   const [regSuccess, setRegSuccess] = useState<boolean>(false);
   const [regError, setRegError] = useState<string | null>(null);
   const [showRegValidation, setShowRegValidation] = useState<boolean>(false);
+
+  // Nexus Agent Chatbot states
+  const [showNexusChat, setShowNexusChat] = useState<boolean>(false);
+  const [chatMessages, setChatMessages] = useState<{ sender: 'agent' | 'user'; text: string }[]>([
+    { sender: 'agent', text: 'Hello! I am Nexus, your SREC Conference AI Assistant. Ask me anything about AECTSD 2027 registration, important dates, key tracks, speakers, or workshops!' }
+  ]);
+  const [chatInput, setChatInput] = useState<string>('');
+  const [isAgentTyping, setIsAgentTyping] = useState<boolean>(false);
 
   // Admin Portal authentication handlers
   const handleAdminAuth = async (e: React.FormEvent) => {
@@ -1178,7 +1188,21 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Auto-scroll chatbot messages
+  useEffect(() => {
+    const container = document.getElementById('nexus-chat-messages-container');
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    }
+  }, [chatMessages, isAgentTyping, showNexusChat]);
+
   const scrollToSection = (id: string) => {
+    if (id === 'nexus-agent') {
+      setShowNexusChat(true);
+      setMobileMenuOpen(false);
+      return;
+    }
+
     if (id === 'explore') {
       setCurrentPage('explore');
       setActiveSection('explore');
@@ -1193,8 +1217,10 @@ export default function App() {
     setTimeout(() => {
       const el = document.getElementById(id);
       if (el) {
+        const headerEl = document.querySelector('.main-header');
+        const offset = headerEl ? headerEl.clientHeight : 95;
         window.scrollTo({
-          top: el.offsetTop - 95, // Header height offset
+          top: el.offsetTop - offset,
           behavior: 'smooth'
         });
         setActiveSection(id);
@@ -1210,6 +1236,54 @@ export default function App() {
       setFormSubmitted(false);
       setFormData({ name: '', email: '', subject: '', message: '' });
     }, 4000);
+  };
+
+  const handleSendChatMessage = (textToSend?: string) => {
+    const messageText = textToSend || chatInput;
+    if (!messageText.trim()) return;
+
+    // Add user message
+    const updatedMessages = [...chatMessages, { sender: 'user' as const, text: messageText }];
+    setChatMessages(updatedMessages);
+    if (!textToSend) setChatInput('');
+    setIsAgentTyping(true);
+
+    // Generate response after a short timeout (typing effect)
+    setTimeout(() => {
+      const lower = messageText.toLowerCase();
+      let reply = "";
+
+      // Helper function to extract info cleanly
+      const dateList = importantDates.map(d => `- ${d.title}: ${d.event_date}`).join('\n');
+      const speakerList = speakers.map(s => `- ${s.name} (${s.role}): "${s.talk}"`).join('\n');
+      const trackList = departments.map(d => `- ${d.name}`).join('\n');
+      const workshopList = workshops.map(w => `- ${w.title} by ${w.instructor} (${w.duration})`).join('\n');
+
+      if (lower.includes('date') || lower.includes('deadline') || lower.includes('when') || lower.includes('timeline')) {
+        reply = `Here are the important timeline dates for the conference:\n\n${dateList || "Important dates will be announced soon. Please stay tuned!"}`;
+      } else if (lower.includes('fee') || lower.includes('price') || lower.includes('cost') || lower.includes('payment') || lower.includes('register') || lower.includes('registration')) {
+        reply = `Registration Fee Information:\n\n- Indian Authors (Student): ₹6,000 / Non-Member: ₹7,000\n- Indian Authors (Professional): ₹7,000 / Non-Member: ₹8,000\n- International Authors: $150 to $300 USD\n\nYou can click on "Registration" in the menu or use the "Calculate Fee" button on the main banner to see the exact price breakdown for your criteria and find the bank wire transfer details.`;
+      } else if (lower.includes('speaker') || lower.includes('keynote') || lower.includes('talk')) {
+        reply = `We have a stellar lineup of keynote speakers at AECTSD 2027:\n\n${speakerList || "- To be updated soon."}`;
+      } else if (lower.includes('track') || lower.includes('department') || lower.includes('topic') || lower.includes('scope')) {
+        reply = `The conference covers key research tracks including:\n\n${trackList || "- Advanced Electronics\n- Communication\n- Trust, Security and Devices"}\n\nYou can view full details of each track by clicking on the tracks listed under the "Explore" or "Call for Papers" sections on our site.`;
+      } else if (lower.includes('workshop') || lower.includes('tutorial')) {
+        reply = `Pre-conference Workshops & Tutorials:\n\n${workshopList || "Pre-conference tutorial sessions will be announced soon."}`;
+      } else if (lower.includes('location') || lower.includes('where') || lower.includes('venue') || lower.includes('address') || lower.includes('travel') || lower.includes('direction')) {
+        reply = `AECTSD 2027 is hosted at:\n\n${info.event_location_display || "Sri Ramakrishna Engineering College, Coimbatore, Tamilnadu, India."}\n\nCoimbatore is well connected by air, rail, and road. You can check the "Directions" map and explore tourist spots nearby directly in the "Explore" page.`;
+      } else if (lower.includes('submit') || lower.includes('paper') || lower.includes('cmt') || lower.includes('manuscript')) {
+        reply = `You can submit your research paper through the Microsoft CMT Portal at the following URL:\n\n${info.cmt_link || "https://cmt3.research.microsoft.com/"}\n\nFormat guidelines: Fenced to 6 pages. Templates can be downloaded from IEEE guidelines.`;
+      } else if (lower.includes('contact') || lower.includes('phone') || lower.includes('email') || lower.includes('help')) {
+        reply = `For any questions, you can reach out to the conference secretariat at:\n\nEmail: aectsd@srec.ac.in\nSecretariat: ${info.secretariat_address || "Sri Ramakrishna Engineering College, Coimbatore, India."}`;
+      } else if (lower.includes('hello') || lower.includes('hi') || lower.includes('hey') || lower.includes('nexus')) {
+        reply = `Hello! How can I help you today? Ask me about paper submission, important dates, registration fees, or venue details.`;
+      } else {
+        reply = `Thank you for your question. AECTSD 2027 (International Conference on Advanced Electronics, Communication, Trust, Security and Devices) is organized by Sri Ramakrishna Engineering College. \n\nI can help you with:\n- Key dates & deadlines\n- Paper submission link (CMT)\n- Registration fees & bank details\n- Keynote speakers\n- Workshop details\n\nWhat would you like to know?`;
+      }
+
+      setChatMessages(prev => [...prev, { sender: 'agent' as const, text: reply }]);
+      setIsAgentTyping(false);
+    }, 1000);
   };
 
   // Framer Motion Animation Presets
@@ -1246,7 +1320,8 @@ export default function App() {
     explore: info.nav_explore || "Explore",
     venue: info.nav_venue || "Venue",
     'contact-us': info.nav_contact_us,
-    'ieee-sb': info.nav_ieee_sb || "IEEE SB"
+    'ieee-sb': info.nav_ieee_sb || "IEEE SB",
+    'nexus-agent': info.nav_nexus_agent || "Nexus Agent"
   };
 
   return (
@@ -1271,21 +1346,7 @@ export default function App() {
       />
 
       {/* Header / Navbar */}
-      <header style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '95px',
-        background: '#ffffff',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
-        borderBottom: '1px solid rgba(0, 0, 0, 0.06)',
-        zIndex: 90,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '0 2rem'
-      }}>
+      <header className="main-header">
         <a 
           href={info.srec_url || "https://srec.ac.in/"} 
           target="_blank" 
@@ -1293,12 +1354,12 @@ export default function App() {
           title="Sri Ramakrishna Engineering College"
           style={{ display: 'inline-flex', cursor: 'pointer', textDecoration: 'none' }}
         >
-          <SrecLogo lightText={false} height="85px" />
+          <SrecLogo lightText={false} className="srec-logo" />
         </a>
 
         {/* Desktop Navigation Links */}
         <nav className="desktop-nav">
-          <ul style={{ display: 'flex', gap: '0.65rem', listStyle: 'none', alignItems: 'center', margin: 0, padding: 0 }}>
+          <ul style={{ display: 'flex', gap: '1rem', listStyle: 'none', alignItems: 'center', margin: 0, padding: 0 }}>
             {DESKTOP_NAV_ITEMS.map((item: any, idx) => {
               if (item.dropdown) {
                 const isAnyDropdownActive = item.dropdown.some((sub: any) => activeSection === sub.id);
@@ -1372,7 +1433,7 @@ export default function App() {
         </nav>
 
         {/* AC Logo and Mobile Navigation Toggle Container */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div className="header-right-container">
           <img 
             src={acLogo} 
             alt="AECTSD Logo" 
@@ -1381,13 +1442,7 @@ export default function App() {
               setAdminRegMode(false);
               setAdminError(null);
             }}
-            style={{ 
-              height: '80px', 
-              width: 'auto', 
-              display: 'block', 
-              flexShrink: 0,
-              cursor: 'pointer'
-            }} 
+            className="ac-logo-img"
           />
 
           {/* Mobile Navigation Toggle */}
@@ -1416,21 +1471,7 @@ export default function App() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.2 }}
-            style={{
-              position: 'fixed',
-              top: '95px',
-              left: 0,
-              width: '100%',
-              background: 'rgba(255, 255, 255, 0.98)',
-              backdropFilter: 'blur(20px)',
-              borderBottom: '1px solid rgba(0, 0, 0, 0.1)',
-              padding: '1.5rem',
-              zIndex: 89,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '1rem'
-            }}
-            className="mobile-nav-toggle"
+            className="mobile-nav-drawer"
           >
             {NAV_ITEMS.map((item) => (
               item.external ? (
@@ -1534,17 +1575,7 @@ export default function App() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.8 }}
-            style={{
-              fontSize: '1.5rem',
-              fontWeight: 700,
-              color: 'var(--primary)', // SREC Navy
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-              margin: '0 auto 2.5rem',
-              maxWidth: '850px',
-              lineHeight: 1.4
-            }}
-            className="md:text-2xl"
+            className="hero-subtitle-text"
           >
             {info.hero_subtitle}
           </motion.h2>
@@ -1584,24 +1615,14 @@ export default function App() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.8 }}
-            style={{
-              display: 'inline-flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              background: '#ffffff',
-              border: '1px solid rgba(0, 0, 0, 0.08)',
-              borderRadius: '1rem',
-              padding: '1.5rem 2.5rem',
-              boxShadow: '0 10px 25px rgba(0, 0, 0, 0.04)',
-              marginBottom: '3rem'
-            }}
+            className="countdown-container"
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#d97706', fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem' }}>
               <Clock size={16} />
               <span>{info.hero_countdown_title}</span>
             </div>
             
-            <div style={{ display: 'flex', gap: '1.5rem' }}>
+            <div className="countdown-row">
               {[
                 { label: info.label_days, value: timeLeft.days },
                 { label: info.label_hours, value: timeLeft.hours },
@@ -1609,10 +1630,10 @@ export default function App() {
                 { label: info.label_secs, value: timeLeft.seconds }
               ].map((t, idx) => (
                 <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <span style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0f172a', fontFamily: 'var(--font-heading)', minWidth: '60px' }}>
+                  <span className="countdown-val">
                     {String(t.value).padStart(2, '0')}
                   </span>
-                  <span style={{ fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 600 }}>
+                  <span className="countdown-lbl">
                     {t.label}
                   </span>
                 </div>
@@ -4685,6 +4706,101 @@ export default function App() {
                 </>
               )}
             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Nexus Agent Chatbot Floating Widget */}
+      <div 
+        className="nexus-chat-trigger" 
+        onClick={() => setShowNexusChat(!showNexusChat)}
+        title="Chat with Nexus AI Agent"
+      >
+        {showNexusChat ? <X size={24} /> : <Terminal size={24} />}
+      </div>
+
+      <AnimatePresence>
+        {showNexusChat && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            transition={{ duration: 0.2 }}
+            className="nexus-chat-window"
+          >
+            {/* Header */}
+            <div className="nexus-chat-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Terminal size={18} style={{ color: '#f58220' }} />
+                <div>
+                  <h4 style={{ fontSize: '0.95rem', fontWeight: 800, margin: 0 }}>Nexus AI Assistant</h4>
+                  <span style={{ fontSize: '0.7rem', opacity: 0.8, display: 'block' }}>SREC Conference Agent</span>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowNexusChat(false)}
+                style={{ background: 'none', border: 'none', color: '#ffffff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Message List */}
+            <div className="nexus-chat-messages" id="nexus-chat-messages-container">
+              {chatMessages.map((msg, index) => (
+                <div key={index} className={`nexus-chat-message ${msg.sender}`}>
+                  <p style={{ margin: 0, whiteSpace: 'pre-wrap', fontSize: '0.85rem' }}>{msg.text}</p>
+                </div>
+              ))}
+              {isAgentTyping && (
+                <div className="nexus-chat-message agent" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                  <div className="nexus-typing-dots">
+                    <div className="nexus-typing-dot"></div>
+                    <div className="nexus-typing-dot"></div>
+                    <div className="nexus-typing-dot"></div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Suggested Prompts */}
+            <div className="nexus-chat-suggested">
+              {[
+                { label: 'Dates 📅', text: 'What are the important dates/deadlines?' },
+                { label: 'Fees 💳', text: 'How much are the registration fees?' },
+                { label: 'Submission 📝', text: 'How do I submit my paper?' },
+                { label: 'Speakers 🎙️', text: 'Who are the keynote speakers?' }
+              ].map((p, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleSendChatMessage(p.text)}
+                  className="nexus-chat-suggested-btn"
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Input Area */}
+            <form 
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSendChatMessage();
+              }}
+              className="nexus-chat-input-area"
+            >
+              <input
+                type="text"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                placeholder="Ask Nexus a question..."
+                className="nexus-chat-input"
+                title="Chat Input"
+              />
+              <button type="submit" className="nexus-chat-send">
+                Send
+              </button>
+            </form>
           </motion.div>
         )}
       </AnimatePresence>
