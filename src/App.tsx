@@ -31,7 +31,8 @@ import {
   LogOut,
   Eye,
   RefreshCw,
-  Database
+  Database,
+  Sparkles
 } from 'lucide-react';
 import { SrecLogo } from './components/SrecLogo';
 import acLogo from './assets/ac.png';
@@ -427,7 +428,19 @@ export default function App() {
   const [pageCount, setPageCount] = useState<number>(6);
   const [workshopAddon, setWorkshopAddon] = useState<boolean>(false);
   const [virtualMode, setVirtualMode] = useState<boolean>(false);
-  
+
+  // Payment tab and country code/online checkout states
+  const [paymentTab, setPaymentTab] = useState<'bank' | 'online'>('bank');
+  const [regPhoneCode, setRegPhoneCode] = useState<string>('+91');
+  const [cardHolder, setCardHolder] = useState<string>('');
+  const [cardNumber, setCardNumber] = useState<string>('');
+  const [cardExpiry, setCardExpiry] = useState<string>('');
+  const [cardCvv, setCardCvv] = useState<string>('');
+  const [selectedUpi, setSelectedUpi] = useState<'gpay' | 'phonepe' | 'paytm' | 'upi_id' | null>(null);
+  const [upiId, setUpiId] = useState<string>('');
+  const [onlineSuccess, setOnlineSuccess] = useState<boolean>(false);
+  const [onlinePaying, setOnlinePaying] = useState<boolean>(false);
+
   // Registration form inputs
   const [regPaperId, setRegPaperId] = useState<string>('');
   const [regPaperTitle, setRegPaperTitle] = useState<string>('');
@@ -999,6 +1012,8 @@ export default function App() {
     setRegError(null);
     setShowRegValidation(false);
     
+    const fullPhone = `${regPhoneCode} ${regPhone}`;
+    
     try {
       if (!isSupabaseConfigured || !supabase) {
         // Mock success if Supabase is offline
@@ -1009,7 +1024,7 @@ export default function App() {
             paper_title: regPaperTitle || 'Listener Registration',
             author_name: regAuthorName,
             email: regEmail,
-            phone: regPhone,
+            phone: fullPhone,
             screenshot_name: regScreenshot ? regScreenshot.name : 'offline_mode_proof.png',
             screenshot_size: regScreenshot ? regScreenshot.size : 102450,
             register_for_tour: regRegisterForTour,
@@ -1032,7 +1047,7 @@ export default function App() {
         paper_title: regPaperTitle,
         author_name: regAuthorName,
         email: regEmail,
-        phone: regPhone,
+        phone: fullPhone,
         screenshot_name: regScreenshot ? regScreenshot.name : 'no_file',
         screenshot_size: regScreenshot ? regScreenshot.size : 0,
         register_for_tour: regRegisterForTour,
@@ -3086,8 +3101,8 @@ export default function App() {
             style={{
               position: 'fixed',
               inset: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.6)',
-              backdropFilter: 'blur(4px)',
+              backgroundColor: 'rgba(2, 6, 23, 0.75)',
+              backdropFilter: 'blur(12px)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -3101,15 +3116,18 @@ export default function App() {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 20 }}
               style={{
-                backgroundColor: '#ffffff',
-                borderRadius: '1rem',
-                padding: '2rem',
-                maxWidth: '900px',
+                background: 'rgba(11, 15, 25, 0.9)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '1.25rem',
+                padding: '2.5rem 2rem',
+                maxWidth: '950px',
                 width: '100%',
                 maxHeight: '90vh',
                 overflowY: 'auto',
-                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-                position: 'relative'
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 30px rgba(99, 102, 241, 0.15)',
+                position: 'relative',
+                backdropFilter: 'blur(20px)',
+                color: 'var(--text-primary)'
               }}
               onClick={(e) => e.stopPropagation()}
             >
@@ -3118,38 +3136,45 @@ export default function App() {
                 onClick={() => setShowCalcModal(false)}
                 style={{
                   position: 'absolute',
-                  top: '1rem',
-                  right: '1rem',
-                  background: 'none',
-                  border: 'none',
+                  top: '1.25rem',
+                  right: '1.25rem',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '50%',
+                  width: '36px',
+                  height: '36px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   cursor: 'pointer',
-                  color: '#64748b'
+                  color: 'var(--text-secondary)',
+                  transition: 'all 0.2s ease'
                 }}
               >
-                <X size={24} />
+                <X size={20} />
               </button>
 
               {/* Title */}
-              <div style={{ textAlign: 'center', borderBottom: '1px solid rgba(0,0,0,0.06)', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
+              <div style={{ textAlign: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
                 <span style={{ fontSize: '0.85rem', color: 'var(--gold)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Registration Portal</span>
-                <h3 style={{ fontSize: '1.75rem', color: '#091d36', marginTop: '0.25rem', fontWeight: 700 }}>Payment Instructions & Fee Calculator</h3>
+                <h3 style={{ fontSize: '1.85rem', color: '#ffffff', marginTop: '0.25rem', fontWeight: 800 }}>Payment Instructions & Fee Calculator</h3>
               </div>
 
               {/* Grid content inside modal */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                 
                 {/* 1. Wire Transfer Instructions */}
-                <div style={{ background: 'rgba(59, 130, 246, 0.03)', border: '1px solid rgba(59, 130, 246, 0.12)', borderRadius: '0.75rem', padding: '1.25rem' }}>
-                  <h4 style={{ fontSize: '1.15rem', color: '#091d36', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700 }}>
-                    <DollarSign size={18} className="text-blue-500" />
+                <div style={{ background: 'rgba(99, 102, 241, 0.04)', border: '1px solid rgba(99, 102, 241, 0.15)', borderRadius: '0.75rem', padding: '1.5rem' }}>
+                  <h4 style={{ fontSize: '1.2rem', color: 'var(--accent-cyan)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700 }}>
+                    <DollarSign size={20} style={{ color: 'var(--accent-cyan)' }} />
                     {info.reg_bank_title}
                   </h4>
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1rem' }}>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', marginBottom: '1.25rem', lineHeight: 1.5 }}>
                     {info.reg_bank_desc}
                   </p>
                   
                   <div className="grid-2-col" style={{ gap: '1.5rem', alignItems: 'start' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
                       <tbody>
                         {[
                           { label: info.reg_bank_label_acc_name, value: info.bank_account_name },
@@ -3158,17 +3183,17 @@ export default function App() {
                           { label: info.reg_bank_label_ifsc, value: info.bank_ifsc_code },
                           { label: info.reg_bank_label_branch, value: info.bank_branch_location }
                         ].map((bank, bidx) => (
-                          <tr key={bidx} style={{ borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
-                            <td style={{ padding: '0.5rem 0', fontWeight: 600, color: '#0f172a', textAlign: 'left' }}>{bank.label}</td>
-                            <td style={{ padding: '0.5rem 0', color: 'var(--text-secondary)', textAlign: 'right' }}>{bank.value}</td>
+                          <tr key={bidx} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                            <td style={{ padding: '0.6rem 0', fontWeight: 600, color: 'var(--text-primary)', textAlign: 'left' }}>{bank.label}</td>
+                            <td style={{ padding: '0.6rem 0', color: 'var(--text-secondary)', textAlign: 'right', fontFamily: 'monospace', fontSize: '0.9rem' }}>{bank.value}</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
 
-                    <div style={{ background: 'rgba(245, 158, 11, 0.06)', border: '1px solid rgba(245, 158, 11, 0.15)', borderRadius: '0.5rem', padding: '1rem', height: '100%' }}>
-                      <span style={{ fontSize: '0.75rem', color: '#f59e0b', fontWeight: 800, textTransform: 'uppercase', display: 'block', marginBottom: '0.25rem' }}>Important Payment Note</span>
-                      <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.4, margin: 0 }}>
+                    <div style={{ background: 'rgba(251, 191, 36, 0.05)', border: '1px solid rgba(251, 191, 36, 0.2)', borderRadius: '0.5rem', padding: '1.25rem', height: '100%' }}>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--gold)', fontWeight: 800, textTransform: 'uppercase', display: 'block', marginBottom: '0.35rem', letterSpacing: '0.02em' }}>Important Payment Note</span>
+                      <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
                         {info.bank_important_note}
                       </p>
                     </div>
@@ -3180,11 +3205,11 @@ export default function App() {
                   
                   {/* Left Column: Selections */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                    <h4 style={{ fontSize: '1.15rem', color: '#091d36', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '0.5rem', fontWeight: 700 }}>1. Calculate Fee</h4>
+                    <h4 style={{ fontSize: '1.15rem', color: 'var(--text-primary)', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '0.5rem', fontWeight: 700 }}>1. Calculate Fee</h4>
                     
                     {/* Indian vs International */}
                     <div>
-                      <label style={{ fontSize: '0.8rem', color: '#334155', fontWeight: 700, display: 'block', marginBottom: '0.35rem' }}>Are you Indian or International?*</label>
+                      <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, display: 'block', marginBottom: '0.35rem' }}>Are you Indian or International?*</label>
                       <div style={{ display: 'flex', gap: '0.75rem' }}>
                         <button 
                           type="button" 
@@ -3207,7 +3232,7 @@ export default function App() {
 
                     {/* Student vs Professional */}
                     <div>
-                      <label style={{ fontSize: '0.8rem', color: '#334155', fontWeight: 700, display: 'block', marginBottom: '0.35rem' }}>Are you a student or a professional?*</label>
+                      <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, display: 'block', marginBottom: '0.35rem' }}>Are you a student or a professional?*</label>
                       <div style={{ display: 'flex', gap: '0.75rem' }}>
                         <button 
                           type="button" 
@@ -3230,7 +3255,7 @@ export default function App() {
 
                     {/* IEEE Member */}
                     <div>
-                      <label style={{ fontSize: '0.8rem', color: '#334155', fontWeight: 700, display: 'block', marginBottom: '0.35rem' }}>Are you an IEEE member?*</label>
+                      <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, display: 'block', marginBottom: '0.35rem' }}>Are you an IEEE member?*</label>
                       <div style={{ display: 'flex', gap: '0.75rem' }}>
                         <button 
                           type="button" 
@@ -3253,13 +3278,13 @@ export default function App() {
 
                     {/* Registration Option */}
                     <div>
-                      <label htmlFor="modal-reg-option" style={{ fontSize: '0.8rem', color: '#334155', fontWeight: 700, display: 'block', marginBottom: '0.35rem' }}>Select Registration Option*</label>
+                      <label htmlFor="modal-reg-option" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, display: 'block', marginBottom: '0.35rem' }}>Select Registration Option*</label>
                       <select 
                         id="modal-reg-option"
                         value={regOption} 
                         onChange={(e) => setRegOption(e.target.value as 'conference' | 'tutorial' | 'both' | 'listener')}
                         className="form-input"
-                        style={{ background: '#ffffff', color: '#0f172a', padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
+                        style={{ background: 'rgba(15, 23, 42, 0.6)', color: 'var(--text-primary)', border: '1px solid rgba(255, 255, 255, 0.1)', padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
                       >
                         <option value="conference">Conference Only</option>
                         <option value="tutorial">Tutorial Only</option>
@@ -3271,7 +3296,7 @@ export default function App() {
                     {/* Number of Pages */}
                     {regOption !== 'listener' && (
                       <div>
-                        <label htmlFor="modal-page-count" style={{ fontSize: '0.8rem', color: '#334155', fontWeight: 700, display: 'block', marginBottom: '0.35rem' }}>Number of Pages (Limit 1-12. Base covers 6 pages)*</label>
+                        <label htmlFor="modal-page-count" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, display: 'block', marginBottom: '0.35rem' }}>Number of Pages (Limit 1-12. Base covers 6 pages)*</label>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                           <input 
                             id="modal-page-count"
@@ -3281,7 +3306,7 @@ export default function App() {
                             value={pageCount} 
                             onChange={(e) => setPageCount(Math.max(1, Math.min(12, Number(e.target.value))))}
                             className="form-input"
-                            style={{ maxWidth: '80px', padding: '0.5rem', fontSize: '0.85rem' }}
+                            style={{ maxWidth: '80px', padding: '0.5rem', fontSize: '0.85rem', background: 'rgba(15, 23, 42, 0.6)', color: 'var(--text-primary)', border: '1px solid rgba(255, 255, 255, 0.1)' }}
                           />
                           <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                             {pageCount > 6 ? `+${pageCount - 6} Extra Page(s)` : 'Standard length'}
@@ -3292,9 +3317,9 @@ export default function App() {
 
                     {/* Modifiers */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.25rem' }}>
-                      <label style={{ fontSize: '0.8rem', color: '#334155', fontWeight: 700 }}>Additional Settings</label>
+                      <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700 }}>Additional Settings</label>
                       
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.8rem', color: '#1e293b' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                         <input 
                           type="checkbox" 
                           checked={isLate} 
@@ -3304,7 +3329,7 @@ export default function App() {
                         <span>Late Penalty (From: Nov 1, 2026)</span>
                       </label>
 
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.8rem', color: '#1e293b' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                         <input 
                           type="checkbox" 
                           checked={workshopAddon} 
@@ -3314,7 +3339,7 @@ export default function App() {
                         <span>Pre-conference workshop addon (+{isIndian ? '₹500' : '$10'})</span>
                       </label>
 
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.8rem', color: '#1e293b' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                         <input 
                           type="checkbox" 
                           checked={virtualMode} 
@@ -3327,10 +3352,10 @@ export default function App() {
                   </div>
 
                   {/* Right Column: Billing & Form */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                     {/* Billing Summary Box */}
-                    <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '0.75rem', padding: '1.25rem' }}>
-                      <h4 style={{ fontSize: '1rem', color: '#091d36', marginBottom: '0.75rem', borderBottom: '1px solid #cbd5e1', paddingBottom: '0.35rem', fontWeight: 700 }}>Fee Breakdown</h4>
+                    <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '0.75rem', padding: '1.25rem' }}>
+                      <h4 style={{ fontSize: '1rem', color: 'var(--text-primary)', marginBottom: '0.75rem', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '0.35rem', fontWeight: 700 }}>Fee Breakdown</h4>
                       
                       {(() => {
                         const bill = calculateTotalFees();
@@ -3338,11 +3363,11 @@ export default function App() {
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.8rem' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
                               <span>Base Fee:</span>
-                              <span style={{ fontWeight: 600, color: '#0f172a' }}>{bill.currencySymbol}{bill.baseFee}</span>
+                              <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{bill.currencySymbol}{bill.baseFee}</span>
                             </div>
                             
                             {bill.penalty > 0 && (
-                              <div style={{ display: 'flex', justifyContent: 'space-between', color: '#dc2626' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', color: '#f87171' }}>
                                 <span>Late Penalty:</span>
                                 <span style={{ fontWeight: 600 }}>+{bill.currencySymbol}{bill.penalty}</span>
                               </div>
@@ -3351,25 +3376,25 @@ export default function App() {
                             {bill.extraPageFee > 0 && (
                               <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
                                 <span>Extra Pages ({pageCount - 6}):</span>
-                                <span style={{ fontWeight: 600, color: '#0f172a' }}>+{bill.currencySymbol}{bill.extraPageFee}</span>
+                                <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>+{bill.currencySymbol}{bill.extraPageFee}</span>
                               </div>
                             )}
 
                             {bill.workshopFee > 0 && (
                               <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
                                 <span>Workshop:</span>
-                                <span style={{ fontWeight: 600, color: '#0f172a' }}>+{bill.currencySymbol}{bill.workshopFee}</span>
+                                <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>+{bill.currencySymbol}{bill.workshopFee}</span>
                               </div>
                             )}
 
                             {bill.virtualFee > 0 && (
                               <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
                                 <span>Virtual Mode:</span>
-                                <span style={{ fontWeight: 600, color: '#0f172a' }}>+{bill.currencySymbol}{bill.virtualFee}</span>
+                                <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>+{bill.currencySymbol}{bill.virtualFee}</span>
                               </div>
                             )}
 
-                            <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '2px solid #cbd5e1', paddingTop: '0.5rem', fontSize: '1.05rem', fontWeight: 800, color: '#0f52ba' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '2px solid rgba(255, 255, 255, 0.15)', paddingTop: '0.5rem', fontSize: '1.1rem', fontWeight: 800, color: 'var(--accent-cyan)' }}>
                               <span>Total Due:</span>
                               <span>{bill.currencySymbol}{bill.total} ({bill.currency})</span>
                             </div>
@@ -3378,192 +3403,545 @@ export default function App() {
                       })()}
                     </div>
 
-                    {/* Submission Form */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                      <h4 style={{ fontSize: '1rem', color: '#091d36', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '0.35rem', fontWeight: 700 }}>2. Submit Proof of Payment</h4>
-                      
-                      {regSuccess ? (
-                        <div style={{ 
-                          background: 'rgba(34, 197, 94, 0.08)', 
-                          border: '1px solid rgba(34, 197, 94, 0.25)', 
-                          borderRadius: '0.5rem', 
-                          padding: '1rem',
-                          textAlign: 'center',
-                          color: '#22c55e',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '0.35rem',
-                          alignItems: 'center'
-                        }}>
-                          <CheckCircle size={28} style={{ color: '#22c55e' }} />
-                          <span style={{ fontSize: '0.95rem', fontWeight: 700 }}>Submitted Successfully!</span>
-                          <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0 }}>
-                            SREC finance coordinators will verify receipt reference AECTSD and send a confirmation email.
-                          </p>
-                          <button 
-                            type="button" 
-                            onClick={() => {
-                              setRegSuccess(false);
-                              setRegPaperId('');
-                              setRegPaperTitle('');
-                              setRegAuthorName('');
-                              setRegEmail('');
-                              setRegPhone('');
-                              setRegScreenshot(null);
-                              setRegRegisterForTour(false);
-                              setRegPreferredTourPlace('');
-                              setShowRegValidation(false);
-                            }} 
-                            className="btn btn-secondary"
-                            style={{ marginTop: '0.5rem', padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
-                          >
-                            Submit Another
-                          </button>
-                        </div>
-                      ) : (
-                        <form onSubmit={handleRegistrationSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                          <div className="grid-2-col" style={{ gap: '0.75rem' }}>
-                            <div>
-                              <label htmlFor="reg_paper_id" style={{ fontSize: '0.75rem', color: '#334155', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>Paper ID*</label>
-                              <input 
-                                id="reg_paper_id"
-                                type="text" 
-                                required 
-                                className={`form-input ${showRegValidation && !regPaperId ? 'is-invalid' : ''}`}
-                                style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem' }}
-                                placeholder="e.g. AECTSD-104"
-                                value={regPaperId}
-                                onChange={(e) => setRegPaperId(e.target.value)}
-                                title="Paper ID"
-                              />
-                            </div>
-                            <div>
-                              <label htmlFor="reg_author_name" style={{ fontSize: '0.75rem', color: '#334155', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>Author Name*</label>
-                              <input 
-                                id="reg_author_name"
-                                type="text" 
-                                required 
-                                className={`form-input ${showRegValidation && !regAuthorName ? 'is-invalid' : ''}`}
-                                style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem' }}
-                                placeholder="Enter full name"
-                                value={regAuthorName}
-                                onChange={(e) => setRegAuthorName(e.target.value)}
-                                title="Author Name"
-                              />
-                            </div>
-                          </div>
-
-                          <div>
-                            <label htmlFor="reg_paper_title" style={{ fontSize: '0.75rem', color: '#334155', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>Paper Title*</label>
-                            <input 
-                              id="reg_paper_title"
-                              type="text" 
-                              required 
-                              className={`form-input ${showRegValidation && !regPaperTitle ? 'is-invalid' : ''}`}
-                              style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem' }}
-                              placeholder="e.g. A Secure VLSI Implementation for IoT Nodes"
-                              value={regPaperTitle}
-                              onChange={(e) => setRegPaperTitle(e.target.value)}
-                              title="Paper Title"
-                            />
-                          </div>
-
-                          <div className="grid-2-col" style={{ gap: '0.75rem' }}>
-                            <div>
-                              <label htmlFor="reg_email" style={{ fontSize: '0.75rem', color: '#334155', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>Email Address*</label>
-                              <input 
-                                id="reg_email"
-                                type="email" 
-                                required 
-                                className={`form-input ${showRegValidation && !regEmail ? 'is-invalid' : ''}`}
-                                style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem' }}
-                                placeholder="author@example.com"
-                                value={regEmail}
-                                onChange={(e) => setRegEmail(e.target.value)}
-                                title="Email Address"
-                              />
-                            </div>
-                            <div>
-                              <label htmlFor="reg_phone" style={{ fontSize: '0.75rem', color: '#334155', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>Phone Number*</label>
-                              <input 
-                                id="reg_phone"
-                                type="tel" 
-                                required 
-                                className={`form-input ${showRegValidation && !regPhone ? 'is-invalid' : ''}`}
-                                style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem' }}
-                                placeholder="+91-9876543210"
-                                value={regPhone}
-                                onChange={(e) => setRegPhone(e.target.value)}
-                                title="Phone Number"
-                              />
-                            </div>
-                          </div>
-
-
-                          {/* Screenshot */}
-                          <div>
-                            <label style={{ fontSize: '0.75rem', color: '#334155', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>Upload Payment Screenshot (Max 10MB)*</label>
-                            <div 
-                              style={{
-                                border: showRegValidation && !regScreenshot ? '2px dashed #dc2626' : '2px dashed #cbd5e1',
-                                borderRadius: '0.375rem',
-                                padding: '0.75rem',
-                                textAlign: 'center',
-                                cursor: 'pointer',
-                                background: showRegValidation && !regScreenshot ? '#fef2f2' : '#f8fafc',
-                                transition: 'all 0.2s ease',
-                              }}
-                              onDragOver={(e) => e.preventDefault()}
-                              onDrop={(e) => {
-                                e.preventDefault();
-                                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                                  setRegScreenshot(e.dataTransfer.files[0]);
-                                }
-                              }}
-                              onClick={() => {
-                                const input = document.createElement('input');
-                                input.type = 'file';
-                                input.accept = 'image/*,application/pdf';
-                                input.onchange = (e) => {
-                                  const files = (e.target as HTMLInputElement).files;
-                                  if (files && files[0]) {
-                                    setRegScreenshot(files[0]);
-                                  }
-                                };
-                                input.click();
-                              }}
-                            >
-                              <Download size={18} style={{ color: '#64748b', marginBottom: '0.25rem', marginInline: 'auto' }} />
-                              {regScreenshot ? (
-                                <div>
-                                  <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#0f52ba', display: 'block' }}>{regScreenshot.name}</span>
-                                </div>
-                              ) : (
-                                <div>
-                                  <span style={{ fontSize: '0.75rem', color: '#64748b', display: 'block' }}>Click to upload payment screenshot receipt</span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-
-                          {regError && (
-                            <div style={{ color: '#dc2626', fontSize: '0.75rem', fontWeight: 600 }}>
-                              {regError}
-                            </div>
-                          )}
-
-                          <button 
-                            type="submit" 
-                            className="btn btn-primary" 
-                            disabled={regSubmitting}
-                            onClick={() => setShowRegValidation(true)}
-                            style={{ marginTop: '0.35rem', width: '100%', padding: '0.6rem', background: '#0f52ba', fontSize: '0.85rem' }}
-                          >
-                            {regSubmitting ? 'Submitting...' : 'Submit Registration & Payment'}
-                          </button>
-                        </form>
-                      )}
+                    {/* Sliding Gateway Selector */}
+                    <div>
+                      <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700, display: 'block', marginBottom: '0.35rem', textTransform: 'uppercase', letterSpacing: '0.02em' }}>Select Payment Method</label>
+                      <div style={{ display: 'flex', background: 'rgba(255, 255, 255, 0.04)', padding: '0.25rem', borderRadius: '0.5rem', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                        <button
+                          type="button"
+                          onClick={() => setPaymentTab('bank')}
+                          style={{
+                            flex: 1,
+                            background: paymentTab === 'bank' ? 'var(--accent-gradient)' : 'transparent',
+                            color: '#ffffff',
+                            border: 'none',
+                            padding: '0.55rem',
+                            borderRadius: '0.375rem',
+                            fontSize: '0.8rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            boxShadow: paymentTab === 'bank' ? '0 2px 8px rgba(99, 102, 241, 0.3)' : 'none'
+                          }}
+                        >
+                          Bank Transfer
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPaymentTab('online')}
+                          style={{
+                            flex: 1,
+                            background: paymentTab === 'online' ? 'var(--accent-gradient)' : 'transparent',
+                            color: paymentTab === 'online' ? '#ffffff' : 'var(--text-secondary)',
+                            border: 'none',
+                            padding: '0.55rem',
+                            borderRadius: '0.375rem',
+                            fontSize: '0.8rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            boxShadow: paymentTab === 'online' ? '0 2px 8px rgba(99, 102, 241, 0.3)' : 'none'
+                          }}
+                        >
+                          Online Gateway
+                        </button>
+                      </div>
                     </div>
+
+                    {/* Conditionally Render forms based on active tab */}
+                    {paymentTab === 'bank' ? (
+                      /* Submission Form (Bank Transfer) */
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                        <h4 style={{ fontSize: '1rem', color: 'var(--text-primary)', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '0.35rem', fontWeight: 700 }}>2. Submit Proof of Payment</h4>
+                        
+                        {regSuccess ? (
+                          <div style={{ 
+                            background: 'rgba(34, 197, 94, 0.08)', 
+                            border: '1px solid rgba(34, 197, 94, 0.25)', 
+                            borderRadius: '0.5rem', 
+                            padding: '1rem',
+                            textAlign: 'center',
+                            color: '#22c55e',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.35rem',
+                            alignItems: 'center'
+                          }}>
+                            <CheckCircle size={28} style={{ color: '#22c55e' }} />
+                            <span style={{ fontSize: '0.95rem', fontWeight: 700 }}>Submitted Successfully!</span>
+                            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0 }}>
+                              SREC finance coordinators will verify receipt reference AECTSD and send a confirmation email.
+                            </p>
+                            <button 
+                              type="button" 
+                              onClick={() => {
+                                setRegSuccess(false);
+                                setRegPaperId('');
+                                setRegPaperTitle('');
+                                setRegAuthorName('');
+                                setRegEmail('');
+                                setRegPhone('');
+                                setRegScreenshot(null);
+                                setRegRegisterForTour(false);
+                                setRegPreferredTourPlace('');
+                                setShowRegValidation(false);
+                              }} 
+                              className="btn btn-secondary"
+                              style={{ marginTop: '0.5rem', padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
+                            >
+                              Submit Another
+                            </button>
+                          </div>
+                        ) : (
+                          <form onSubmit={handleRegistrationSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                            <div className="grid-2-col" style={{ gap: '0.75rem' }}>
+                              <div>
+                                <label htmlFor="reg_paper_id" style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>Paper ID*</label>
+                                <input 
+                                  id="reg_paper_id"
+                                  type="text" 
+                                  required 
+                                  className={`form-input ${showRegValidation && !regPaperId ? 'is-invalid' : ''}`}
+                                  style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem' }}
+                                  placeholder="e.g. AECTSD-104"
+                                  value={regPaperId}
+                                  onChange={(e) => setRegPaperId(e.target.value)}
+                                  title="Paper ID"
+                                />
+                              </div>
+                              <div>
+                                <label htmlFor="reg_author_name" style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>Author Name*</label>
+                                <input 
+                                  id="reg_author_name"
+                                  type="text" 
+                                  required 
+                                  className={`form-input ${showRegValidation && !regAuthorName ? 'is-invalid' : ''}`}
+                                  style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem' }}
+                                  placeholder="Enter full name"
+                                  value={regAuthorName}
+                                  onChange={(e) => setRegAuthorName(e.target.value)}
+                                  title="Author Name"
+                                />
+                              </div>
+                            </div>
+
+                            <div>
+                              <label htmlFor="reg_paper_title" style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>Paper Title*</label>
+                              <input 
+                                id="reg_paper_title"
+                                type="text" 
+                                required 
+                                className={`form-input ${showRegValidation && !regPaperTitle ? 'is-invalid' : ''}`}
+                                style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem' }}
+                                placeholder="e.g. A Secure VLSI Implementation for IoT Nodes"
+                                value={regPaperTitle}
+                                onChange={(e) => setRegPaperTitle(e.target.value)}
+                                title="Paper Title"
+                              />
+                            </div>
+
+                            <div className="grid-2-col" style={{ gap: '0.75rem' }}>
+                              <div>
+                                <label htmlFor="reg_email" style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>Email Address*</label>
+                                <input 
+                                  id="reg_email"
+                                  type="email" 
+                                  required 
+                                  className={`form-input ${showRegValidation && !regEmail ? 'is-invalid' : ''}`}
+                                  style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem' }}
+                                  placeholder="author@example.com"
+                                  value={regEmail}
+                                  onChange={(e) => setRegEmail(e.target.value)}
+                                  title="Email Address"
+                                />
+                              </div>
+                              <div>
+                                <label htmlFor="reg_phone" style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>Phone Number*</label>
+                                <div style={{ display: 'flex', gap: '0.4rem' }}>
+                                  <select
+                                    id="reg_phone_code"
+                                    value={regPhoneCode}
+                                    onChange={(e) => setRegPhoneCode(e.target.value)}
+                                    className="form-input"
+                                    style={{
+                                      width: '90px',
+                                      padding: '0.4rem 0.5rem',
+                                      fontSize: '0.8rem',
+                                      background: 'rgba(15, 23, 42, 0.6)',
+                                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                                      color: 'var(--text-primary)',
+                                      borderRadius: '0.5rem'
+                                    }}
+                                    title="Country Code"
+                                  >
+                                    <option value="+91">🇮🇳 +91</option>
+                                    <option value="+1">🇺🇸 +1</option>
+                                    <option value="+44">🇬🇧 +44</option>
+                                    <option value="+61">🇦🇺 +61</option>
+                                    <option value="+65">🇸🇬 +65</option>
+                                    <option value="+86">🇨🇳 +86</option>
+                                    <option value="+81">🇯🇵 +81</option>
+                                    <option value="+49">🇩🇪 +49</option>
+                                    <option value="+33">🇫🇷 +33</option>
+                                    <option value="+971">🇦🇪 +971</option>
+                                  </select>
+                                  <input 
+                                    id="reg_phone"
+                                    type="tel" 
+                                    required 
+                                    className={`form-input ${showRegValidation && !regPhone ? 'is-invalid' : ''}`}
+                                    style={{ flex: 1, padding: '0.4rem 0.6rem', fontSize: '0.8rem' }}
+                                    placeholder="9876543210"
+                                    value={regPhone}
+                                    onChange={(e) => setRegPhone(e.target.value)}
+                                    title="Phone Number"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Screenshot */}
+                            <div>
+                              <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>Upload Payment Screenshot (Max 10MB)*</label>
+                              <div 
+                                style={{
+                                  border: showRegValidation && !regScreenshot ? '2px dashed #ef4444' : '2px dashed rgba(255, 255, 255, 0.15)',
+                                  borderRadius: '0.5rem',
+                                  padding: '1rem',
+                                  textAlign: 'center',
+                                  cursor: 'pointer',
+                                  background: showRegValidation && !regScreenshot ? 'rgba(239, 68, 68, 0.05)' : 'rgba(255, 255, 255, 0.02)',
+                                  transition: 'all 0.2s ease',
+                                }}
+                                onDragOver={(e) => e.preventDefault()}
+                                onDrop={(e) => {
+                                  e.preventDefault();
+                                  if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                                    setRegScreenshot(e.dataTransfer.files[0]);
+                                  }
+                                }}
+                                onClick={() => {
+                                  const input = document.createElement('input');
+                                  input.type = 'file';
+                                  input.accept = 'image/*,application/pdf';
+                                  input.onchange = (e) => {
+                                    const files = (e.target as HTMLInputElement).files;
+                                    if (files && files[0]) {
+                                      setRegScreenshot(files[0]);
+                                    }
+                                  };
+                                  input.click();
+                                }}
+                              >
+                                <Download size={18} style={{ color: 'var(--text-muted)', marginBottom: '0.25rem', marginInline: 'auto' }} />
+                                {regScreenshot ? (
+                                  <div>
+                                    <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--accent-cyan)', display: 'block' }}>{regScreenshot.name}</span>
+                                  </div>
+                                ) : (
+                                  <div>
+                                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block' }}>Click to upload payment screenshot receipt</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {regError && (
+                              <div style={{ color: '#ef4444', fontSize: '0.75rem', fontWeight: 600 }}>
+                                {regError}
+                              </div>
+                            )}
+
+                            <button 
+                              type="submit" 
+                              className="btn btn-primary" 
+                              disabled={regSubmitting}
+                              onClick={() => setShowRegValidation(true)}
+                              style={{ marginTop: '0.35rem', width: '100%', padding: '0.65rem', background: 'var(--accent-gradient)', fontSize: '0.85rem', border: 'none', color: '#ffffff', borderRadius: '0.5rem', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)' }}
+                            >
+                              {regSubmitting ? 'Submitting...' : 'Submit Registration & Payment'}
+                            </button>
+                          </form>
+                        )}
+                      </div>
+                    ) : (
+                      /* Online Checkout Gateway (Futuristic Mock) */
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                        <h4 style={{ fontSize: '1rem', color: 'var(--text-primary)', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '0.35rem', fontWeight: 700 }}>2. Online Payment Gateway</h4>
+                        
+                        {onlineSuccess ? (
+                          <div style={{ 
+                            background: 'rgba(34, 197, 94, 0.08)', 
+                            border: '1px solid rgba(34, 197, 94, 0.25)', 
+                            borderRadius: '0.5rem', 
+                            padding: '1.25rem',
+                            textAlign: 'center',
+                            color: '#22c55e',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.5rem',
+                            alignItems: 'center'
+                          }}>
+                            <CheckCircle size={32} style={{ color: '#22c55e' }} />
+                            <span style={{ fontSize: '1rem', fontWeight: 800 }}>Demo Checkout Complete!</span>
+                            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>
+                              This was a simulation of the checkout sequence. SREC instant payment APIs will secure this transaction.
+                            </p>
+                            <div style={{ fontSize: '0.75rem', fontFamily: 'monospace', padding: '0.4rem 0.8rem', background: 'rgba(255, 255, 255, 0.03)', borderRadius: '0.25rem', border: '1px solid rgba(255,255,255,0.06)', marginTop: '0.25rem' }}>
+                              TxID: SREC-MOCK-{Math.floor(100000 + Math.random() * 900000)}
+                            </div>
+                            <button 
+                              type="button" 
+                              onClick={() => {
+                                setOnlineSuccess(false);
+                                setCardHolder('');
+                                setCardNumber('');
+                                setCardExpiry('');
+                                setCardCvv('');
+                                setSelectedUpi(null);
+                                setUpiId('');
+                              }} 
+                              className="btn btn-secondary"
+                              style={{ marginTop: '0.5rem', padding: '0.4rem 1rem', fontSize: '0.8rem' }}
+                            >
+                              Restart Simulator
+                            </button>
+                          </div>
+                        ) : (
+                          <form onSubmit={(e) => {
+                            e.preventDefault();
+                            setOnlinePaying(true);
+                            setTimeout(() => {
+                              setOnlinePaying(false);
+                              setOnlineSuccess(true);
+                            }, 1500);
+                          }} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                            
+                            {/* Futuristic Credit Card Graphic */}
+                            <div style={{
+                              width: '100%',
+                              height: '160px',
+                              background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.25) 0%, rgba(6, 182, 212, 0.25) 100%)',
+                              borderRadius: '0.75rem',
+                              border: '1px solid rgba(255, 255, 255, 0.15)',
+                              padding: '1.25rem',
+                              boxShadow: '0 10px 20px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.2)',
+                              position: 'relative',
+                              overflow: 'hidden',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              justifyContent: 'space-between',
+                              backdropFilter: 'blur(10px)',
+                              marginBottom: '0.5rem'
+                            }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                {/* Glowing Chip */}
+                                <div style={{
+                                  width: '32px',
+                                  height: '24px',
+                                  background: 'linear-gradient(135deg, #fbbf24 0%, #d97706 100%)',
+                                  borderRadius: '0.25rem',
+                                  position: 'relative',
+                                  boxShadow: '0 0 8px rgba(251, 191, 36, 0.4)'
+                                }} />
+                                {/* Visa logo / text */}
+                                <span style={{ fontStyle: 'italic', fontWeight: 900, color: '#ffffff', fontSize: '1.1rem', letterSpacing: '0.05em' }}>SREC Secure</span>
+                              </div>
+
+                              <div style={{
+                                fontSize: '1.15rem',
+                                letterSpacing: '0.12em',
+                                fontFamily: 'monospace',
+                                color: '#ffffff',
+                                textShadow: '0 2px 4px rgba(0,0,0,0.5)',
+                                textAlign: 'center',
+                                margin: '0.75rem 0'
+                              }}>
+                                {cardNumber ? cardNumber.replace(/(\d{4})/g, '$1 ').trim() : '•••• •••• •••• ••••'}
+                              </div>
+
+                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontFamily: 'monospace', color: 'rgba(255,255,255,0.8)' }}>
+                                <div>
+                                  <div style={{ fontSize: '0.55rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)' }}>Card Holder</div>
+                                  <div>{cardHolder ? cardHolder.toUpperCase() : 'CARDHOLDER NAME'}</div>
+                                </div>
+                                <div style={{ textAlign: 'right' }}>
+                                  <div style={{ fontSize: '0.55rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)' }}>Expires</div>
+                                  <div>{cardExpiry ? cardExpiry : 'MM/YY'}</div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Payment Method Switcher (Card vs UPI) */}
+                            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                              <button
+                                type="button"
+                                onClick={() => { setSelectedUpi(null); setUpiId(''); }}
+                                className={`btn ${selectedUpi === null ? 'btn-primary' : 'btn-secondary'}`}
+                                style={{ flex: 1, padding: '0.35rem', fontSize: '0.75rem', borderRadius: '0.25rem' }}
+                              >
+                                Credit/Debit Card
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => { setSelectedUpi('gpay'); }}
+                                className={`btn ${selectedUpi !== null ? 'btn-primary' : 'btn-secondary'}`}
+                                style={{ flex: 1, padding: '0.35rem', fontSize: '0.75rem', borderRadius: '0.25rem' }}
+                              >
+                                UPI Payment
+                              </button>
+                            </div>
+
+                            {selectedUpi === null ? (
+                              /* Card Inputs */
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                <div>
+                                  <label htmlFor="card_holder" style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Cardholder Name</label>
+                                  <input
+                                    id="card_holder"
+                                    type="text"
+                                    required
+                                    className="form-input"
+                                    style={{ padding: '0.35rem 0.5rem', fontSize: '0.8rem' }}
+                                    placeholder="e.g. John Doe"
+                                    value={cardHolder}
+                                    onChange={(e) => setCardHolder(e.target.value)}
+                                  />
+                                </div>
+                                <div>
+                                  <label htmlFor="card_number" style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Card Number</label>
+                                  <input
+                                    id="card_number"
+                                    type="text"
+                                    maxLength={16}
+                                    pattern="\d{16}"
+                                    required
+                                    className="form-input"
+                                    style={{ padding: '0.35rem 0.5rem', fontSize: '0.8rem' }}
+                                    placeholder="16-digit card number"
+                                    value={cardNumber}
+                                    onChange={(e) => setCardNumber(e.target.value.replace(/\D/g, ''))}
+                                  />
+                                </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem' }}>
+                                  <div>
+                                    <label htmlFor="card_expiry" style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Expiry Date</label>
+                                    <input
+                                      id="card_expiry"
+                                      type="text"
+                                      maxLength={5}
+                                      required
+                                      className="form-input"
+                                      style={{ padding: '0.35rem 0.5rem', fontSize: '0.8rem' }}
+                                      placeholder="MM/YY"
+                                      value={cardExpiry}
+                                      onChange={(e) => setCardExpiry(e.target.value)}
+                                    />
+                                  </div>
+                                  <div>
+                                    <label htmlFor="card_cvv" style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 600 }}>CVV</label>
+                                    <input
+                                      id="card_cvv"
+                                      type="password"
+                                      maxLength={3}
+                                      pattern="\d{3}"
+                                      required
+                                      className="form-input"
+                                      style={{ padding: '0.35rem 0.5rem', fontSize: '0.8rem' }}
+                                      placeholder="3 digits"
+                                      value={cardCvv}
+                                      onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, ''))}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              /* UPI Selector */
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', margin: '0.25rem 0' }}>
+                                  {['gpay', 'phonepe', 'paytm'].map((upiType) => (
+                                    <button
+                                      key={upiType}
+                                      type="button"
+                                      onClick={() => setSelectedUpi(upiType as any)}
+                                      style={{
+                                        padding: '0.4rem 0.8rem',
+                                        fontSize: '0.75rem',
+                                        background: selectedUpi === upiType ? 'rgba(6, 182, 212, 0.15)' : 'rgba(255,255,255,0.02)',
+                                        border: selectedUpi === upiType ? '1px solid var(--accent-cyan)' : '1px solid rgba(255,255,255,0.08)',
+                                        color: selectedUpi === upiType ? 'var(--accent-cyan)' : 'var(--text-secondary)',
+                                        borderRadius: '0.375rem',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s ease',
+                                        fontWeight: 700
+                                      }}
+                                    >
+                                      {upiType === 'gpay' ? 'Google Pay' : upiType === 'phonepe' ? 'PhonePe' : 'Paytm'}
+                                    </button>
+                                  ))}
+                                  <button
+                                    type="button"
+                                    onClick={() => setSelectedUpi('upi_id')}
+                                    style={{
+                                      padding: '0.4rem 0.8rem',
+                                      fontSize: '0.75rem',
+                                      background: selectedUpi === 'upi_id' ? 'rgba(6, 182, 212, 0.15)' : 'rgba(255,255,255,0.02)',
+                                      border: selectedUpi === 'upi_id' ? '1px solid var(--accent-cyan)' : '1px solid rgba(255,255,255,0.08)',
+                                      color: selectedUpi === 'upi_id' ? 'var(--accent-cyan)' : 'var(--text-secondary)',
+                                      borderRadius: '0.375rem',
+                                      cursor: 'pointer',
+                                      transition: 'all 0.2s ease',
+                                      fontWeight: 700
+                                    }}
+                                  >
+                                    UPI ID
+                                  </button>
+                                </div>
+                                <div>
+                                  <label htmlFor="upi_id" style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Enter UPI ID / Mobile Number</label>
+                                  <input
+                                    id="upi_id"
+                                    type="text"
+                                    required
+                                    className="form-input"
+                                    style={{ padding: '0.35rem 0.5rem', fontSize: '0.8rem' }}
+                                    placeholder={selectedUpi === 'gpay' ? 'e.g. name@okhdfcbank' : 'e.g. mobile@ybl or username@paytm'}
+                                    value={upiId}
+                                    onChange={(e) => setUpiId(e.target.value)}
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Scheduled Notice */}
+                            <div style={{
+                              background: 'rgba(6, 182, 212, 0.04)',
+                              border: '1px dashed rgba(6, 182, 212, 0.25)',
+                              borderRadius: '0.5rem',
+                              padding: '0.75rem',
+                              marginTop: '0.25rem',
+                              textAlign: 'left'
+                            }}>
+                              <span style={{ fontSize: '0.7rem', color: 'var(--accent-cyan)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '0.15rem' }}>
+                                <Sparkles size={12} /> Scheduled Pipeline (Future Integration)
+                              </span>
+                              <p style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>
+                                Live online transactions are in sandbox testing and scheduled for active deployment in Q3 2027. This simulator validates the checkout integration. To submit actual conference payment, please use the <strong>Bank Transfer</strong> tab.
+                              </p>
+                            </div>
+
+                            <button 
+                              type="submit" 
+                              className="btn btn-primary" 
+                              disabled={onlinePaying}
+                              style={{ marginTop: '0.35rem', width: '100%', padding: '0.65rem', background: 'var(--accent-gradient)', fontSize: '0.85rem', border: 'none', color: '#ffffff', borderRadius: '0.5rem', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)' }}
+                            >
+                              {onlinePaying ? 'Simulating Secure Connection...' : 'Simulate Gateway Payment (Demo)'}
+                            </button>
+                          </form>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

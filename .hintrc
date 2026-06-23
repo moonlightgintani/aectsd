@@ -10,6 +10,7 @@
         "button-name": "off"
       }
     ],
-    "compat-api/css": "off"
+    "compat-api/css": "off",
+    "css-prefix-order": "off"
   }
 }
