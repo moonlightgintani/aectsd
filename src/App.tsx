@@ -21,7 +21,6 @@ import {
   ChevronRight, 
   CheckCircle, 
   DollarSign, 
-  ArrowUp,
   Menu,
   X,
   FileText,
@@ -377,7 +376,6 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState<'main' | 'explore'>('main');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [committeeTab, setCommitteeTab] = useState<'organizing' | 'advisory' | 'technical'>('organizing');
-  const [showScrollTop, setShowScrollTop] = useState(false);
   
   // Database content states
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -1218,12 +1216,6 @@ export default function App() {
   // Track active section on scroll
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 500) {
-        setShowScrollTop(true);
-      } else {
-        setShowScrollTop(false);
-      }
-
       const scrollPosition = window.scrollY + 200; // Offset for header
 
       for (const item of NAV_ITEMS) {
@@ -2992,36 +2984,6 @@ export default function App() {
         </div>
       </footer>
 
-      {/* Scroll to top button */}
-      <AnimatePresence>
-        {showScrollTop && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            style={{
-              position: 'fixed',
-              bottom: '2rem',
-              right: '2rem',
-              background: '#3b82f6',
-              color: 'white',
-              border: 'none',
-              borderRadius: '50%',
-              width: '45px',
-              height: '45px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              boxShadow: '0 4px 14px rgba(59, 130, 246, 0.5)',
-              zIndex: 95
-            }}
-          >
-            <ArrowUp size={20} />
-          </motion.button>
-        )}
-      </AnimatePresence>
 
       {/* Call For Papers Scope Modal */}
       <AnimatePresence>
