@@ -377,6 +377,7 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState<'main' | 'explore'>('main');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [committeeTab, setCommitteeTab] = useState<'organizing' | 'advisory' | 'technical'>('organizing');
+  const [activeSubcommittee, setActiveSubcommittee] = useState<string>('leadership');
   
   // Database content states
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -1898,379 +1899,130 @@ export default function App() {
               transition={{ duration: 0.3 }}
             >
               {committeeTab === 'organizing' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4rem', width: '100%' }}>
-                  {/* Top Leadership Row 1: Patrons and General Chairs side-by-side */}
-                  <div className="grid-2-col" style={{ alignItems: 'start', gap: '2rem' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                      <h3 style={{ fontSize: '1.35rem', color: 'var(--primary)', marginBottom: '1rem', fontWeight: 700, textAlign: 'center' }}>
-                        Patrons
-                      </h3>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        {committeeMembers.filter(m => m.category === 'organizing' && m.role === 'Patron').map((member, mIdx) => {
-                          const showPic = LEADERSHIP_ROLES.has(member.role || '');
-                          return (
-                            <div 
-                              key={mIdx} 
-                              className="glass-card" 
-                              style={{ 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                gap: '1rem',
-                                borderLeft: '4px solid #0f52ba',
-                                textAlign: 'left',
-                                padding: '1.25rem',
-                                width: '100%'
-                              }}
-                            >
-                              {showPic && (
-                                <img 
-                                  src={member.image_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`}
-                                  onError={(e) => {
-                                    (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`;
-                                  }}
-                                  alt={member.name}
-                                  style={{
-                                    width: '55px',
-                                    height: '55px',
-                                    borderRadius: '50%',
-                                    objectFit: 'cover',
-                                    border: '2px solid rgba(59, 130, 246, 0.2)',
-                                    flexShrink: 0
-                                  }}
-                                />
-                              )}
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                                <h4 style={{ fontSize: '1.1rem', margin: 0 }}>{member.name}</h4>
-                                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>{member.desc}</p>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                      <h3 style={{ fontSize: '1.35rem', color: 'var(--primary)', marginBottom: '1rem', fontWeight: 700, textAlign: 'center' }}>
-                        General Chairs
-                      </h3>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        {committeeMembers.filter(m => m.category === 'organizing' && m.role === 'General Chair').map((member, mIdx) => {
-                          const showPic = LEADERSHIP_ROLES.has(member.role || '');
-                          return (
-                            <div 
-                              key={mIdx} 
-                              className="glass-card" 
-                              style={{ 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                gap: '1rem',
-                                borderLeft: '4px solid #0f52ba',
-                                textAlign: 'left',
-                                padding: '1.25rem',
-                                width: '100%'
-                              }}
-                            >
-                              {showPic && (
-                                <img 
-                                  src={member.image_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`}
-                                  onError={(e) => {
-                                    (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`;
-                                  }}
-                                  alt={member.name}
-                                  style={{
-                                    width: '55px',
-                                    height: '55px',
-                                    borderRadius: '50%',
-                                    objectFit: 'cover',
-                                    border: '2px solid rgba(59, 130, 246, 0.2)',
-                                    flexShrink: 0
-                                  }}
-                                />
-                              )}
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                                <h4 style={{ fontSize: '1.1rem', margin: 0 }}>{member.name}</h4>
-                                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>{member.desc}</p>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
+                <div className="committee-split-container">
+                  {/* Sidebar subgroups stack */}
+                  <div className="committee-sidebar">
+                    {[
+                      { id: 'leadership', label: 'Leadership' },
+                      { id: 'executive', label: 'Executive Committee' },
+                      { id: 'finance', label: 'Finance' },
+                      { id: 'publication', label: 'Publication' },
+                      { id: 'arrangements', label: 'Arrangements' },
+                      { id: 'registration', label: 'Registration' },
+                      { id: 'tutorials', label: 'Tutorials & Workshops' },
+                      { id: 'review', label: 'Technical Review' },
+                      { id: 'outreach', label: 'Outreach & Promotion' },
+                      { id: 'website', label: 'Website & Media' },
+                      { id: 'hospitality', label: 'Hospitality' },
+                      { id: 'members', label: 'General Members' }
+                    ].map((group) => (
+                      <button
+                        key={group.id}
+                        type="button"
+                        onClick={() => setActiveSubcommittee(group.id)}
+                        className={`committee-sidebar-btn ${activeSubcommittee === group.id ? 'active' : ''}`}
+                      >
+                        {group.label}
+                      </button>
+                    ))}
                   </div>
 
-                  {/* Top Leadership Row 2: Conference Chair and Session Chair side-by-side */}
-                  <div className="grid-2-col" style={{ alignItems: 'start', gap: '2rem' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                      <h3 style={{ fontSize: '1.35rem', color: 'var(--primary)', marginBottom: '1rem', fontWeight: 700, textAlign: 'center' }}>
-                        Conference Chair & Organizing Secretary
-                      </h3>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        {committeeMembers.filter(m => m.category === 'organizing' && m.role === 'Conference Chair & Organizing Secretary').map((member, mIdx) => {
-                          const showPic = LEADERSHIP_ROLES.has(member.role || '');
-                          return (
-                            <div 
-                              key={mIdx} 
-                              className="glass-card" 
-                              style={{ 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                gap: '1rem',
-                                borderLeft: '4px solid #0f52ba',
-                                textAlign: 'left',
-                                padding: '1.25rem',
-                                width: '100%'
+                  {/* Active Panel Members Grid */}
+                  <div className="grid-3-col">
+                    {committeeMembers
+                      .filter((member) => {
+                        if (member.category !== 'organizing') return false;
+                        switch (activeSubcommittee) {
+                          case 'leadership':
+                            return member.role === 'Patron' || member.role === 'General Chair';
+                          case 'executive':
+                            return member.role === 'Conference Chair & Organizing Secretary' || member.role === 'Session Chair';
+                          case 'finance':
+                            return member.role === 'Finance Committee Member';
+                          case 'publication':
+                            return member.role === 'Publication Committee Member';
+                          case 'arrangements':
+                            return member.role === 'Local Arrangements Committee Member';
+                          case 'registration':
+                            return member.role === 'Registration Committee Member';
+                          case 'tutorials':
+                            return member.role === 'Pre-Tutorial Sessions Committee Member';
+                          case 'review':
+                            return member.role === 'Technical Review Committee Convener' || member.role === 'Technical Review Committee Member';
+                          case 'outreach':
+                            return member.role === 'Outreach and Promotion Committee Convener' || member.role === 'Outreach and Promotion Committee Member';
+                          case 'website':
+                            return member.role === 'Website and Social Media Promotion Committee Chair' || member.role === 'Website and Social Media Promotion Committee Member';
+                          case 'hospitality':
+                            return member.role === 'Hospitality Committee Convener' || member.role === 'Hospitality Committee Member';
+                          case 'members':
+                            return member.role === 'Member' || !member.role;
+                          default:
+                            return false;
+                        }
+                      })
+                      .map((member, mIdx) => (
+                        <div key={mIdx} className="member-profile-card">
+                          <div className="member-avatar-wrapper">
+                            <img 
+                              src={member.image_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`}
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`;
                               }}
-                            >
-                              {showPic && (
-                                <img 
-                                  src={member.image_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`}
-                                  onError={(e) => {
-                                    (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`;
-                                  }}
-                                  alt={member.name}
-                                  style={{
-                                    width: '55px',
-                                    height: '55px',
-                                    borderRadius: '50%',
-                                    objectFit: 'cover',
-                                    border: '2px solid rgba(59, 130, 246, 0.2)',
-                                    flexShrink: 0
-                                  }}
-                                />
-                              )}
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                                <h4 style={{ fontSize: '1.1rem', margin: 0 }}>{member.name}</h4>
-                                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>{member.desc}</p>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                      <h3 style={{ fontSize: '1.35rem', color: 'var(--primary)', marginBottom: '1rem', fontWeight: 700, textAlign: 'center' }}>
-                        Session Chair
-                      </h3>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        {committeeMembers.filter(m => m.category === 'organizing' && m.role === 'Session Chair').map((member, mIdx) => {
-                          const showPic = LEADERSHIP_ROLES.has(member.role || '');
-                          return (
-                            <div 
-                              key={mIdx} 
-                              className="glass-card" 
-                              style={{ 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                gap: '1rem',
-                                borderLeft: '4px solid #0f52ba',
-                                textAlign: 'left',
-                                padding: '1.25rem',
-                                width: '100%'
-                              }}
-                            >
-                              {showPic && (
-                                <img 
-                                  src={member.image_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`}
-                                  onError={(e) => {
-                                    (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`;
-                                  }}
-                                  alt={member.name}
-                                  style={{
-                                    width: '55px',
-                                    height: '55px',
-                                    borderRadius: '50%',
-                                    objectFit: 'cover',
-                                    border: '2px solid rgba(59, 130, 246, 0.2)',
-                                    flexShrink: 0
-                                  }}
-                                />
-                              )}
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                                <h4 style={{ fontSize: '1.1rem', margin: 0 }}>{member.name}</h4>
-                                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>{member.desc}</p>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Subcommittees rendered as hierarchy trees */}
-                  {SUBCOMMITTEES.map((sub, idx) => {
-                    const chairs = committeeMembers.filter(m => m.category === 'organizing' && m.role === sub.chairRole);
-                    const members = committeeMembers.filter(m => m.category === 'organizing' && m.role === sub.memberRole);
-
-                    if (chairs.length === 0 && members.length === 0) return null;
-
-                    return (
-                      <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center', width: '100%' }}>
-                        <h3 style={{ 
-                          fontSize: '1.35rem', 
-                          color: 'var(--primary)', 
-                          marginBottom: '0.5rem',
-                          fontWeight: 700,
-                          textAlign: 'center'
-                        }}>
-                          {sub.name}
-                        </h3>
-
-                        {/* Chair(s) - Centered */}
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', flexWrap: 'wrap', width: '100%' }}>
-                          {chairs.map((member, mIdx) => {
-                            const showPic = LEADERSHIP_ROLES.has(member.role || '');
-                            return (
-                              <div 
-                                key={mIdx} 
-                                className="glass-card" 
-                                style={{ 
-                                  display: 'flex', 
-                                  alignItems: 'center', 
-                                  gap: '1rem',
-                                  borderLeft: '4px solid #0f52ba',
-                                  textAlign: 'left',
-                                  padding: '1.25rem',
-                                  width: '100%',
-                                  maxWidth: '400px'
-                                }}
-                              >
-                                {showPic && (
-                                  <img 
-                                    src={member.image_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`}
-                                    onError={(e) => {
-                                      (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`;
-                                    }}
-                                    alt={member.name}
-                                    style={{
-                                      width: '55px',
-                                      height: '55px',
-                                      borderRadius: '50%',
-                                      objectFit: 'cover',
-                                      border: '2px solid rgba(59, 130, 246, 0.2)',
-                                      flexShrink: 0
-                                    }}
-                                  />
-                                )}
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                                  <h4 style={{ fontSize: '1.1rem', margin: 0 }}>{member.name}</h4>
-                                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>{member.desc}</p>
-                                </div>
-                              </div>
-                            );
-                          })}
+                              alt={member.name}
+                              className="member-avatar-img"
+                            />
+                          </div>
+                          <span className="member-role-badge">
+                            {member.role && member.role !== 'Member' ? member.role : 'Organizing Member'}
+                          </span>
+                          <h4 className="member-name">{member.name}</h4>
+                          <p className="member-desc">{member.desc}</p>
                         </div>
-
-                        {/* Subcommittee Members in a 3-column Grid */}
-                        {members.length > 0 && (
-                          <div className="grid-3-col" style={{ width: '100%', gap: '1.5rem' }}>
-                            {members.map((member, mIdx) => {
-                              const showPic = LEADERSHIP_ROLES.has(member.role || '');
-                              return (
-                                <div 
-                                  key={mIdx} 
-                                  className="glass-card" 
-                                  style={{ 
-                                    display: 'flex', 
-                                    alignItems: 'center', 
-                                    gap: '1rem',
-                                    borderLeft: '4px solid #0f52ba',
-                                    textAlign: 'left',
-                                    padding: '1.25rem',
-                                    width: '100%'
-                                  }}
-                                >
-                                  {showPic && (
-                                    <img 
-                                      src={member.image_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`}
-                                      onError={(e) => {
-                                        (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`;
-                                      }}
-                                      alt={member.name}
-                                      style={{
-                                        width: '55px',
-                                        height: '55px',
-                                        borderRadius: '50%',
-                                        objectFit: 'cover',
-                                        border: '2px solid rgba(59, 130, 246, 0.2)',
-                                        flexShrink: 0
-                                      }}
-                                    />
-                                  )}
-                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                                    <h4 style={{ fontSize: '1.1rem', margin: 0 }}>{member.name}</h4>
-                                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>{member.desc}</p>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-
-                  {/* General Members (Organizing Committee Members) at the bottom */}
-                  {committeeMembers.filter(m => m.category === 'organizing' && (m.role === 'Member' || !m.role)).length > 0 && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
-                      <h3 style={{ 
-                        fontSize: '1.5rem', 
-                        color: 'var(--primary)', 
-                        marginBottom: '1rem',
-                        fontWeight: 700,
-                        textAlign: 'center'
-                      }}>
-                        {ROLE_HEADERS['Member'] || 'Organizing Committee Members'}
-                      </h3>
-                      <div className="grid-3-col" style={{ width: '100%', gap: '1.5rem' }}>
-                        {committeeMembers.filter(m => m.category === 'organizing' && (m.role === 'Member' || !m.role)).map((member, mIdx) => (
-                          <div 
-                            key={mIdx} 
-                            className="glass-card" 
-                            style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '1rem',
-                              borderLeft: '4px solid #0f52ba',
-                              textAlign: 'left',
-                              padding: '1.25rem'
-                            }}
-                          >
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                              <h4 style={{ fontSize: '1.1rem', margin: 0 }}>{member.name}</h4>
-                              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>{member.desc}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                      ))}
+                  </div>
                 </div>
               )}
 
               {committeeTab === 'advisory' && (
-                <div className="grid-2-col">
+                <div className="grid-3-col">
                   {committeeMembers.filter(m => m.category === 'advisory').map((adviser, index) => (
-                    <div key={index} className="glass-card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.25rem' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', textAlign: 'left' }}>
-                        {adviser.role && <span style={{ fontSize: '0.75rem', color: '#d97706', fontWeight: 700, textTransform: 'uppercase' }}>{adviser.role}</span>}
-                        <h4 style={{ fontSize: '1.1rem', margin: 0 }}>{adviser.name}</h4>
-                        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>{adviser.desc}</p>
+                    <div key={index} className="member-profile-card">
+                      <div className="member-avatar-wrapper">
+                        <img 
+                          src={adviser.image_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(adviser.name)}&backgroundColor=0f52ba,06b6d4,f58220`}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(adviser.name)}&backgroundColor=0f52ba,06b6d4,f58220`;
+                          }}
+                          alt={adviser.name}
+                          className="member-avatar-img"
+                        />
                       </div>
+                      <span className="member-role-badge">{adviser.role || 'Advisory Member'}</span>
+                      <h4 className="member-name">{adviser.name}</h4>
+                      <p className="member-desc">{adviser.desc}</p>
                     </div>
                   ))}
                 </div>
               )}
 
               {committeeTab === 'technical' && (
-                <div className="grid-2-col">
+                <div className="grid-3-col">
                   {committeeMembers.filter(m => m.category === 'technical').map((tech, index) => (
-                    <div key={index} className="glass-card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.25rem' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', textAlign: 'left' }}>
-                        {tech.role && <span style={{ fontSize: '0.75rem', color: '#d97706', fontWeight: 700, textTransform: 'uppercase' }}>{tech.role}</span>}
-                        <h4 style={{ fontSize: '1.1rem', margin: 0 }}>{tech.name}</h4>
-                        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>{tech.desc}</p>
+                    <div key={index} className="member-profile-card">
+                      <div className="member-avatar-wrapper">
+                        <img 
+                          src={tech.image_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(tech.name)}&backgroundColor=0f52ba,06b6d4,f58220`}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(tech.name)}&backgroundColor=0f52ba,06b6d4,f58220`;
+                          }}
+                          alt={tech.name}
+                          className="member-avatar-img"
+                        />
                       </div>
+                      <span className="member-role-badge">{tech.role || 'Technical Reviewer'}</span>
+                      <h4 className="member-name">{tech.name}</h4>
+                      <p className="member-desc">{tech.desc}</p>
                     </div>
                   ))}
                 </div>
@@ -3162,7 +2914,7 @@ export default function App() {
             style={{
               position: 'fixed',
               inset: 0,
-              backgroundColor: 'rgba(2, 6, 23, 0.75)',
+              backgroundColor: 'rgba(15, 23, 42, 0.45)',
               backdropFilter: 'blur(12px)',
               display: 'flex',
               alignItems: 'center',
@@ -3177,15 +2929,15 @@ export default function App() {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 20 }}
               style={{
-                background: 'rgba(11, 15, 25, 0.9)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
+                background: '#ffffff',
+                border: '1px solid #cbd5e1',
                 borderRadius: '1.25rem',
                 padding: '2.5rem 2rem',
                 maxWidth: '950px',
                 width: '100%',
                 maxHeight: '90vh',
                 overflowY: 'auto',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 30px rgba(99, 102, 241, 0.15)',
+                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
                 position: 'relative',
                 backdropFilter: 'blur(20px)',
                 color: 'var(--text-primary)'
@@ -3199,8 +2951,8 @@ export default function App() {
                   position: 'absolute',
                   top: '1.25rem',
                   right: '1.25rem',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  background: '#f1f5f9',
+                  border: '1px solid #cbd5e1',
                   borderRadius: '50%',
                   width: '36px',
                   height: '36px',
@@ -3208,7 +2960,7 @@ export default function App() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   cursor: 'pointer',
-                  color: 'var(--text-secondary)',
+                  color: 'var(--text-primary)',
                   transition: 'all 0.2s ease'
                 }}
               >
@@ -3216,18 +2968,18 @@ export default function App() {
               </button>
 
               {/* Title */}
-              <div style={{ textAlign: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
+              <div style={{ textAlign: 'center', borderBottom: '1px solid #cbd5e1', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
                 <span style={{ fontSize: '0.85rem', color: 'var(--gold)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Registration Portal</span>
-                <h3 style={{ fontSize: '1.85rem', color: '#ffffff', marginTop: '0.25rem', fontWeight: 800 }}>Payment Instructions & Fee Calculator</h3>
+                <h3 style={{ fontSize: '1.85rem', color: 'var(--primary)', marginTop: '0.25rem', fontWeight: 800 }}>Payment Instructions & Fee Calculator</h3>
               </div>
 
               {/* Grid content inside modal */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                 
                 {/* 1. Wire Transfer Instructions */}
-                <div style={{ background: 'rgba(99, 102, 241, 0.04)', border: '1px solid rgba(99, 102, 241, 0.15)', borderRadius: '0.75rem', padding: '1.5rem' }}>
-                  <h4 style={{ fontSize: '1.2rem', color: 'var(--accent-cyan)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700 }}>
-                    <DollarSign size={20} style={{ color: 'var(--accent-cyan)' }} />
+                <div style={{ background: 'rgba(15, 82, 186, 0.02)', border: '1px solid rgba(15, 82, 186, 0.12)', borderRadius: '0.75rem', padding: '1.5rem' }}>
+                  <h4 style={{ fontSize: '1.2rem', color: 'var(--accent)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700 }}>
+                    <DollarSign size={20} style={{ color: 'var(--accent)' }} />
                     {info.reg_bank_title}
                   </h4>
                   <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', marginBottom: '1.25rem', lineHeight: 1.5 }}>
@@ -3244,7 +2996,7 @@ export default function App() {
                           { label: info.reg_bank_label_ifsc, value: info.bank_ifsc_code },
                           { label: info.reg_bank_label_branch, value: info.bank_branch_location }
                         ].map((bank, bidx) => (
-                          <tr key={bidx} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                          <tr key={bidx} style={{ borderBottom: '1px solid #e2e8f0' }}>
                             <td style={{ padding: '0.6rem 0', fontWeight: 600, color: 'var(--text-primary)', textAlign: 'left' }}>{bank.label}</td>
                             <td style={{ padding: '0.6rem 0', color: 'var(--text-secondary)', textAlign: 'right', fontFamily: 'monospace', fontSize: '0.9rem' }}>{bank.value}</td>
                           </tr>
@@ -3252,9 +3004,9 @@ export default function App() {
                       </tbody>
                     </table>
 
-                    <div style={{ background: 'rgba(251, 191, 36, 0.05)', border: '1px solid rgba(251, 191, 36, 0.2)', borderRadius: '0.5rem', padding: '1.25rem', height: '100%' }}>
-                      <span style={{ fontSize: '0.8rem', color: 'var(--gold)', fontWeight: 800, textTransform: 'uppercase', display: 'block', marginBottom: '0.35rem', letterSpacing: '0.02em' }}>Important Payment Note</span>
-                      <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+                    <div style={{ background: '#fffbeb', border: '1px solid #fef3c7', borderRadius: '0.5rem', padding: '1.25rem', height: '100%' }}>
+                      <span style={{ fontSize: '0.8rem', color: '#b45309', fontWeight: 800, textTransform: 'uppercase', display: 'block', marginBottom: '0.35rem', letterSpacing: '0.02em' }}>Important Payment Note</span>
+                      <p style={{ fontSize: '0.85rem', color: '#b45309', lineHeight: 1.5, margin: 0 }}>
                         {info.bank_important_note}
                       </p>
                     </div>
@@ -3266,7 +3018,7 @@ export default function App() {
                   
                   {/* Left Column: Selections */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                    <h4 style={{ fontSize: '1.15rem', color: 'var(--text-primary)', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '0.5rem', fontWeight: 700 }}>1. Calculate Fee</h4>
+                    <h4 style={{ fontSize: '1.15rem', color: 'var(--text-primary)', borderBottom: '1px solid #cbd5e1', paddingBottom: '0.5rem', fontWeight: 700 }}>1. Calculate Fee</h4>
                     
                     {/* Indian vs International */}
                     <div>
@@ -3345,12 +3097,12 @@ export default function App() {
                         value={regOption} 
                         onChange={(e) => setRegOption(e.target.value as 'conference' | 'tutorial' | 'both' | 'listener')}
                         className="form-input"
-                        style={{ background: 'rgba(15, 23, 42, 0.6)', color: 'var(--text-primary)', border: '1px solid rgba(255, 255, 255, 0.1)', padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
+                        style={{ background: '#ffffff', color: 'var(--text-primary)', border: '1px solid #cbd5e1', padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
                       >
-                        <option value="conference">Conference Only</option>
-                        <option value="tutorial">Tutorial Only</option>
-                        <option value="both">Conference + Tutorial</option>
-                        {isIndian && <option value="listener">Indian Non-Author Attendee (Listener)</option>}
+                        <option value="conference" style={{ background: '#ffffff', color: '#0f172a' }}>Conference Only</option>
+                        <option value="tutorial" style={{ background: '#ffffff', color: '#0f172a' }}>Tutorial Only</option>
+                        <option value="both" style={{ background: '#ffffff', color: '#0f172a' }}>Conference + Tutorial</option>
+                        {isIndian && <option value="listener" style={{ background: '#ffffff', color: '#0f172a' }}>Indian Non-Author Attendee (Listener)</option>}
                       </select>
                     </div>
 
@@ -3367,7 +3119,7 @@ export default function App() {
                             value={pageCount} 
                             onChange={(e) => setPageCount(Math.max(1, Math.min(12, Number(e.target.value))))}
                             className="form-input"
-                            style={{ maxWidth: '80px', padding: '0.5rem', fontSize: '0.85rem', background: 'rgba(15, 23, 42, 0.6)', color: 'var(--text-primary)', border: '1px solid rgba(255, 255, 255, 0.1)' }}
+                            style={{ maxWidth: '80px', padding: '0.5rem', fontSize: '0.85rem', background: '#ffffff', color: 'var(--text-primary)', border: '1px solid #cbd5e1' }}
                           />
                           <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                             {pageCount > 6 ? `+${pageCount - 6} Extra Page(s)` : 'Standard length'}
@@ -3415,8 +3167,8 @@ export default function App() {
                   {/* Right Column: Billing & Form */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                     {/* Billing Summary Box */}
-                    <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '0.75rem', padding: '1.25rem' }}>
-                      <h4 style={{ fontSize: '1rem', color: 'var(--text-primary)', marginBottom: '0.75rem', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '0.35rem', fontWeight: 700 }}>Fee Breakdown</h4>
+                    <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '0.75rem', padding: '1.25rem' }}>
+                      <h4 style={{ fontSize: '1rem', color: 'var(--text-primary)', marginBottom: '0.75rem', borderBottom: '1px solid #cbd5e1', paddingBottom: '0.35rem', fontWeight: 700 }}>Fee Breakdown</h4>
                       
                       {(() => {
                         const bill = calculateTotalFees();
@@ -3428,7 +3180,7 @@ export default function App() {
                             </div>
                             
                             {bill.penalty > 0 && (
-                              <div style={{ display: 'flex', justifyContent: 'space-between', color: '#f87171' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', color: '#dc2626' }}>
                                 <span>Late Penalty:</span>
                                 <span style={{ fontWeight: 600 }}>+{bill.currencySymbol}{bill.penalty}</span>
                               </div>
@@ -3455,7 +3207,7 @@ export default function App() {
                               </div>
                             )}
 
-                            <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '2px solid rgba(255, 255, 255, 0.15)', paddingTop: '0.5rem', fontSize: '1.1rem', fontWeight: 800, color: 'var(--accent-cyan)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '2px solid #cbd5e1', paddingTop: '0.5rem', fontSize: '1.1rem', fontWeight: 800, color: 'var(--accent)' }}>
                               <span>Total Due:</span>
                               <span>{bill.currencySymbol}{bill.total} ({bill.currency})</span>
                             </div>
@@ -3467,14 +3219,14 @@ export default function App() {
                     {/* Sliding Gateway Selector */}
                     <div>
                       <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700, display: 'block', marginBottom: '0.35rem', textTransform: 'uppercase', letterSpacing: '0.02em' }}>Select Payment Method</label>
-                      <div style={{ display: 'flex', background: 'rgba(255, 255, 255, 0.04)', padding: '0.25rem', borderRadius: '0.5rem', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                      <div style={{ display: 'flex', background: '#f1f5f9', padding: '0.25rem', borderRadius: '0.5rem', border: '1px solid #cbd5e1' }}>
                         <button
                           type="button"
                           onClick={() => setPaymentTab('bank')}
                           style={{
                             flex: 1,
-                            background: paymentTab === 'bank' ? 'var(--accent-gradient)' : 'transparent',
-                            color: '#ffffff',
+                            background: paymentTab === 'bank' ? 'linear-gradient(135deg, var(--accent) 0%, var(--accent-cyan) 100%)' : 'transparent',
+                            color: paymentTab === 'bank' ? '#ffffff' : 'var(--text-secondary)',
                             border: 'none',
                             padding: '0.55rem',
                             borderRadius: '0.375rem',
@@ -3482,7 +3234,7 @@ export default function App() {
                             fontWeight: 700,
                             cursor: 'pointer',
                             transition: 'all 0.2s ease',
-                            boxShadow: paymentTab === 'bank' ? '0 2px 8px rgba(99, 102, 241, 0.3)' : 'none'
+                            boxShadow: paymentTab === 'bank' ? '0 2px 8px rgba(15, 82, 186, 0.2)' : 'none'
                           }}
                         >
                           Bank Transfer
@@ -3492,7 +3244,7 @@ export default function App() {
                           onClick={() => setPaymentTab('online')}
                           style={{
                             flex: 1,
-                            background: paymentTab === 'online' ? 'var(--accent-gradient)' : 'transparent',
+                            background: paymentTab === 'online' ? 'linear-gradient(135deg, var(--accent) 0%, var(--accent-cyan) 100%)' : 'transparent',
                             color: paymentTab === 'online' ? '#ffffff' : 'var(--text-secondary)',
                             border: 'none',
                             padding: '0.55rem',
@@ -3501,7 +3253,7 @@ export default function App() {
                             fontWeight: 700,
                             cursor: 'pointer',
                             transition: 'all 0.2s ease',
-                            boxShadow: paymentTab === 'online' ? '0 2px 8px rgba(99, 102, 241, 0.3)' : 'none'
+                            boxShadow: paymentTab === 'online' ? '0 2px 8px rgba(15, 82, 186, 0.2)' : 'none'
                           }}
                         >
                           Online Gateway
@@ -3513,7 +3265,7 @@ export default function App() {
                     {paymentTab === 'bank' ? (
                       /* Submission Form (Bank Transfer) */
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                        <h4 style={{ fontSize: '1rem', color: 'var(--text-primary)', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '0.35rem', fontWeight: 700 }}>2. Submit Proof of Payment</h4>
+                        <h4 style={{ fontSize: '1rem', color: 'var(--text-primary)', borderBottom: '1px solid #cbd5e1', paddingBottom: '0.35rem', fontWeight: 700 }}>2. Submit Proof of Payment</h4>
                         
                         {regSuccess ? (
                           <div style={{ 
@@ -3628,23 +3380,23 @@ export default function App() {
                                       width: '90px',
                                       padding: '0.4rem 0.5rem',
                                       fontSize: '0.8rem',
-                                      background: 'rgba(15, 23, 42, 0.6)',
-                                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                                      background: '#ffffff',
+                                      border: '1px solid #cbd5e1',
                                       color: 'var(--text-primary)',
                                       borderRadius: '0.5rem'
                                     }}
                                     title="Country Code"
                                   >
-                                    <option value="+91">🇮🇳 +91</option>
-                                    <option value="+1">🇺🇸 +1</option>
-                                    <option value="+44">🇬🇧 +44</option>
-                                    <option value="+61">🇦🇺 +61</option>
-                                    <option value="+65">🇸🇬 +65</option>
-                                    <option value="+86">🇨🇳 +86</option>
-                                    <option value="+81">🇯🇵 +81</option>
-                                    <option value="+49">🇩🇪 +49</option>
-                                    <option value="+33">🇫🇷 +33</option>
-                                    <option value="+971">🇦🇪 +971</option>
+                                    <option value="+91" style={{ background: '#ffffff', color: '#0f172a' }}>🇮🇳 +91</option>
+                                    <option value="+1" style={{ background: '#ffffff', color: '#0f172a' }}>🇺🇸 +1</option>
+                                    <option value="+44" style={{ background: '#ffffff', color: '#0f172a' }}>🇬🇧 +44</option>
+                                    <option value="+61" style={{ background: '#ffffff', color: '#0f172a' }}>🇦🇺 +61</option>
+                                    <option value="+65" style={{ background: '#ffffff', color: '#0f172a' }}>🇸🇬 +65</option>
+                                    <option value="+86" style={{ background: '#ffffff', color: '#0f172a' }}>🇨🇳 +86</option>
+                                    <option value="+81" style={{ background: '#ffffff', color: '#0f172a' }}>🇯🇵 +81</option>
+                                    <option value="+49" style={{ background: '#ffffff', color: '#0f172a' }}>🇩🇪 +49</option>
+                                    <option value="+33" style={{ background: '#ffffff', color: '#0f172a' }}>🇫🇷 +33</option>
+                                    <option value="+971" style={{ background: '#ffffff', color: '#0f172a' }}>🇦🇪 +971</option>
                                   </select>
                                   <input 
                                     id="reg_phone"
@@ -3666,12 +3418,12 @@ export default function App() {
                               <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>Upload Payment Screenshot (Max 10MB)*</label>
                               <div 
                                 style={{
-                                  border: showRegValidation && !regScreenshot ? '2px dashed #ef4444' : '2px dashed rgba(255, 255, 255, 0.15)',
+                                  border: showRegValidation && !regScreenshot ? '2px dashed #ef4444' : '2px dashed #cbd5e1',
                                   borderRadius: '0.5rem',
                                   padding: '1rem',
                                   textAlign: 'center',
                                   cursor: 'pointer',
-                                  background: showRegValidation && !regScreenshot ? 'rgba(239, 68, 68, 0.05)' : 'rgba(255, 255, 255, 0.02)',
+                                  background: showRegValidation && !regScreenshot ? 'rgba(239, 68, 68, 0.05)' : '#f8fafc',
                                   transition: 'all 0.2s ease',
                                 }}
                                 onDragOver={(e) => e.preventDefault()}
@@ -3697,7 +3449,7 @@ export default function App() {
                                 <Download size={18} style={{ color: 'var(--text-muted)', marginBottom: '0.25rem', marginInline: 'auto' }} />
                                 {regScreenshot ? (
                                   <div>
-                                    <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--accent-cyan)', display: 'block' }}>{regScreenshot.name}</span>
+                                    <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--accent)', display: 'block' }}>{regScreenshot.name}</span>
                                   </div>
                                 ) : (
                                   <div>
@@ -3718,7 +3470,7 @@ export default function App() {
                               className="btn btn-primary" 
                               disabled={regSubmitting}
                               onClick={() => setShowRegValidation(true)}
-                              style={{ marginTop: '0.35rem', width: '100%', padding: '0.65rem', background: 'var(--accent-gradient)', fontSize: '0.85rem', border: 'none', color: '#ffffff', borderRadius: '0.5rem', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)' }}
+                              style={{ marginTop: '0.35rem', width: '100%', padding: '0.65rem', background: 'linear-gradient(135deg, var(--accent) 0%, var(--accent-cyan) 100%)', fontSize: '0.85rem', border: 'none', color: '#ffffff', borderRadius: '0.5rem', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(15, 82, 186, 0.25)' }}
                             >
                               {regSubmitting ? 'Submitting...' : 'Submit Registration & Payment'}
                             </button>
@@ -3728,7 +3480,7 @@ export default function App() {
                     ) : (
                       /* Online Checkout Gateway (Futuristic Mock) */
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                        <h4 style={{ fontSize: '1rem', color: 'var(--text-primary)', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '0.35rem', fontWeight: 700 }}>2. Online Payment Gateway</h4>
+                        <h4 style={{ fontSize: '1rem', color: 'var(--text-primary)', borderBottom: '1px solid #cbd5e1', paddingBottom: '0.35rem', fontWeight: 700 }}>2. Online Payment Gateway</h4>
                         
                         {onlineSuccess ? (
                           <div style={{ 
@@ -3748,7 +3500,7 @@ export default function App() {
                             <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>
                               This was a simulation of the checkout sequence. SREC instant payment APIs will secure this transaction.
                             </p>
-                            <div style={{ fontSize: '0.75rem', fontFamily: 'monospace', padding: '0.4rem 0.8rem', background: 'rgba(255, 255, 255, 0.03)', borderRadius: '0.25rem', border: '1px solid rgba(255,255,255,0.06)', marginTop: '0.25rem' }}>
+                            <div style={{ fontSize: '0.75rem', fontFamily: 'monospace', padding: '0.4rem 0.8rem', background: '#f8fafc', borderRadius: '0.25rem', border: '1px solid #e2e8f0', marginTop: '0.25rem', color: 'var(--text-primary)' }}>
                               TxID: SREC-MOCK-{Math.floor(100000 + Math.random() * 900000)}
                             </div>
                             <button 
@@ -3786,7 +3538,7 @@ export default function App() {
                               borderRadius: '0.75rem',
                               border: '1px solid rgba(255, 255, 255, 0.15)',
                               padding: '1.25rem',
-                              boxShadow: '0 10px 20px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.2)',
+                              boxShadow: '0 10px 20px rgba(0,0,0,0.15), inset 0 1px 1px rgba(255,255,255,0.2)',
                               position: 'relative',
                               overflow: 'hidden',
                               display: 'flex',
@@ -3814,7 +3566,7 @@ export default function App() {
                                 letterSpacing: '0.12em',
                                 fontFamily: 'monospace',
                                 color: '#ffffff',
-                                textShadow: '0 2px 4px rgba(0,0,0,0.5)',
+                                textShadow: '0 2px 4px rgba(0,0,0,0.3)',
                                 textAlign: 'center',
                                 margin: '0.75rem 0'
                               }}>
@@ -3928,9 +3680,9 @@ export default function App() {
                                       style={{
                                         padding: '0.4rem 0.8rem',
                                         fontSize: '0.75rem',
-                                        background: selectedUpi === upiType ? 'rgba(6, 182, 212, 0.15)' : 'rgba(255,255,255,0.02)',
-                                        border: selectedUpi === upiType ? '1px solid var(--accent-cyan)' : '1px solid rgba(255,255,255,0.08)',
-                                        color: selectedUpi === upiType ? 'var(--accent-cyan)' : 'var(--text-secondary)',
+                                        background: selectedUpi === upiType ? 'rgba(15, 82, 186, 0.08)' : '#ffffff',
+                                        border: selectedUpi === upiType ? '1px solid var(--accent)' : '1px solid #cbd5e1',
+                                        color: selectedUpi === upiType ? 'var(--accent)' : 'var(--text-secondary)',
                                         borderRadius: '0.375rem',
                                         cursor: 'pointer',
                                         transition: 'all 0.2s ease',
@@ -3946,9 +3698,9 @@ export default function App() {
                                     style={{
                                       padding: '0.4rem 0.8rem',
                                       fontSize: '0.75rem',
-                                      background: selectedUpi === 'upi_id' ? 'rgba(6, 182, 212, 0.15)' : 'rgba(255,255,255,0.02)',
-                                      border: selectedUpi === 'upi_id' ? '1px solid var(--accent-cyan)' : '1px solid rgba(255,255,255,0.08)',
-                                      color: selectedUpi === 'upi_id' ? 'var(--accent-cyan)' : 'var(--text-secondary)',
+                                      background: selectedUpi === 'upi_id' ? 'rgba(15, 82, 186, 0.08)' : '#ffffff',
+                                      border: selectedUpi === 'upi_id' ? '1px solid var(--accent)' : '1px solid #cbd5e1',
+                                      color: selectedUpi === 'upi_id' ? 'var(--accent)' : 'var(--text-secondary)',
                                       borderRadius: '0.375rem',
                                       cursor: 'pointer',
                                       transition: 'all 0.2s ease',
@@ -3976,14 +3728,14 @@ export default function App() {
 
                             {/* Scheduled Notice */}
                             <div style={{
-                              background: 'rgba(6, 182, 212, 0.04)',
-                              border: '1px dashed rgba(6, 182, 212, 0.25)',
+                              background: 'rgba(15, 82, 186, 0.03)',
+                              border: '1px dashed rgba(15, 82, 186, 0.2)',
                               borderRadius: '0.5rem',
                               padding: '0.75rem',
                               marginTop: '0.25rem',
                               textAlign: 'left'
                             }}>
-                              <span style={{ fontSize: '0.7rem', color: 'var(--accent-cyan)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '0.15rem' }}>
+                              <span style={{ fontSize: '0.7rem', color: 'var(--accent)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '0.15rem' }}>
                                 <Sparkles size={12} /> Scheduled Pipeline (Future Integration)
                               </span>
                               <p style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>
@@ -3995,7 +3747,7 @@ export default function App() {
                               type="submit" 
                               className="btn btn-primary" 
                               disabled={onlinePaying}
-                              style={{ marginTop: '0.35rem', width: '100%', padding: '0.65rem', background: 'var(--accent-gradient)', fontSize: '0.85rem', border: 'none', color: '#ffffff', borderRadius: '0.5rem', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)' }}
+                              style={{ marginTop: '0.35rem', width: '100%', padding: '0.65rem', background: 'linear-gradient(135deg, var(--accent) 0%, var(--accent-cyan) 100%)', fontSize: '0.85rem', border: 'none', color: '#ffffff', borderRadius: '0.5rem', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(15, 82, 186, 0.25)' }}
                             >
                               {onlinePaying ? 'Simulating Secure Connection...' : 'Simulate Gateway Payment (Demo)'}
                             </button>
