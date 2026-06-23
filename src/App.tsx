@@ -51,44 +51,44 @@ const NAV_ITEMS = [
   { id: 'important-dates', label: 'Important Dates' },
   { id: 'workshops', label: 'Workshops' },
   { id: 'guidelines', label: 'Guidelines' },
-  { id: 'paper-submission', label: 'Paper Submission' },
-  { id: 'registration', label: 'Registration' },
-  { id: 'explore', label: 'Explore' },
-  { id: 'contact-us', label: 'Contact Us' }, 
-  { id: 'location', label: 'Directions' },
-  { id: 'ieee-sb', label: 'IEEE SB', external: true }
-];
-
-const DESKTOP_NAV_ITEMS = [
-  { id: 'home', label: 'Home' },
-  {
-    label: 'About',
-    dropdown: [
-      { id: 'about', label: 'About Us' },
-      { id: 'committee', label: 'Committee' },
-      { id: 'location', label: 'Directions' }
-    ]
-  },
-  { id: 'speakers', label: 'Speakers' },
-  {
-    label: 'Authors',
-    dropdown: [
-      { id: 'call-for-papers', label: 'Call For Papers' },
-      { id: 'guidelines', label: 'Guidelines' },
-      { id: 'paper-submission', label: 'Paper Submission' }
-    ]
-  },
-  {
-    label: 'Timeline & Events',
-    dropdown: [
-      { id: 'important-dates', label: 'Important Dates' },
-      { id: 'workshops', label: 'Workshops' }
-    ]
-  },
-  { id: 'registration', label: 'Registration' },
-  { id: 'explore', label: 'Explore' },
-  { id: 'contact-us', label: 'Contact Us' },
-  { id: 'ieee-sb', label: 'IEEE SB', external: true }
+    { id: 'paper-submission', label: 'Paper Submission' },
+    { id: 'registration', label: 'Registration' },
+    { id: 'explore', label: 'Explore Coimbatore' },
+    { id: 'contact-us', label: 'Contact Us' }, 
+    { id: 'location', label: 'Directions' },
+    { id: 'ieee-sb', label: 'IEEE SB', external: true }
+  ];
+  
+  const DESKTOP_NAV_ITEMS = [
+    { id: 'home', label: 'Home' },
+    {
+      label: 'About',
+      dropdown: [
+        { id: 'about', label: 'About Us' },
+        { id: 'committee', label: 'Committee' },
+        { id: 'location', label: 'Directions' }
+      ]
+    },
+    { id: 'speakers', label: 'Speakers' },
+    {
+      label: 'Authors',
+      dropdown: [
+        { id: 'call-for-papers', label: 'Call For Papers' },
+        { id: 'guidelines', label: 'Guidelines' },
+        { id: 'paper-submission', label: 'Paper Submission' }
+      ]
+    },
+    {
+      label: 'Timeline & Events',
+      dropdown: [
+        { id: 'important-dates', label: 'Important Dates' },
+        { id: 'workshops', label: 'Workshops' }
+      ]
+    },
+    { id: 'registration', label: 'Registration' },
+    { id: 'explore', label: 'Explore Coimbatore' },
+    { id: 'contact-us', label: 'Contact Us' },
+    { id: 'ieee-sb', label: 'IEEE SB', external: true }
 ];
 
 interface Department {
@@ -200,86 +200,8 @@ const parseDateDisplay = (dateStr: string) => {
   return { month, day, year };
 };
 
-const ROLE_HEADERS: Record<string, string> = {
-  'Patron': 'Patrons',
-  'General Chair': 'General Chairs',
-  'Conference Chair & Organizing Secretary': 'Conference Chair & Organizing Secretary',
-  'Session Chair': 'Session Chair',
-  'Member': 'Organizing Committee Members',
-  'Finance Chair & Joint-Organizing Secretary': 'Finance Chair & Joint-Organizing Secretary',
-  'Finance Committee Member': 'Finance Committee Members',
-  'Publication Chair': 'Publication Chair',
-  'Publication Committee Member': 'Publication Committee Members',
-  'Local Arrangements Chair': 'Local Arrangements Chair',
-  'Local Arrangements Committee Member': 'Local Arrangements Committee Members',
-  'Registration Chair': 'Registration Chair',
-  'Registration Committee Member': 'Registration Committee Members',
-  'Conference Pre-Tutorial Sessions Chair': 'Conference Pre-Tutorial Sessions Chair',
-  'Pre-Tutorial Sessions Committee Member': 'Pre-Tutorial Sessions Committee Members',
-  'Technical Review Committee Convener': 'Technical Review Committee Convener',
-  'Technical Review Committee Member': 'Technical Review Committee Members',
-  'Outreach and Promotion Committee Convener': 'Outreach and Promotion Committee Convener',
-  'Outreach and Promotion Committee Member': 'Outreach and Promotion Committee Members',
-  'Website and Social Media Promotion Committee Chair': 'Website and Social Media Promotion Committee Chair',
-  'Website and Social Media Promotion Committee Member': 'Website and Social Media Promotion Committee Members',
-  'Hospitality Committee Convener': 'Hospitality Committee Convener',
-  'Hospitality Committee Member': 'Hospitality Committee Members'
-};
 
-const LEADERSHIP_ROLES = new Set([
-  'Patron',
-  'General Chair',
-  'Conference Chair & Organizing Secretary',
-  'Session Chair'
-]);
 
-const SUBCOMMITTEES = [
-  {
-    name: 'Finance Committee',
-    chairRole: 'Finance Chair & Joint-Organizing Secretary',
-    memberRole: 'Finance Committee Member'
-  },
-  {
-    name: 'Publication Committee',
-    chairRole: 'Publication Chair',
-    memberRole: 'Publication Committee Member'
-  },
-  {
-    name: 'Local Arrangements Committee',
-    chairRole: 'Local Arrangements Chair',
-    memberRole: 'Local Arrangements Committee Member'
-  },
-  {
-    name: 'Registration Committee',
-    chairRole: 'Registration Chair',
-    memberRole: 'Registration Committee Member'
-  },
-  {
-    name: 'Conference Pre-Tutorial Sessions Committee',
-    chairRole: 'Conference Pre-Tutorial Sessions Chair',
-    memberRole: 'Pre-Tutorial Sessions Committee Member'
-  },
-  {
-    name: 'Technical Review Committee',
-    chairRole: 'Technical Review Committee Convener',
-    memberRole: 'Technical Review Committee Member'
-  },
-  {
-    name: 'Outreach and Promotion Committee',
-    chairRole: 'Outreach and Promotion Committee Convener',
-    memberRole: 'Outreach and Promotion Committee Member'
-  },
-  {
-    name: 'Website and Social Media Promotion Committee',
-    chairRole: 'Website and Social Media Promotion Committee Chair',
-    memberRole: 'Website and Social Media Promotion Committee Member'
-  },
-  {
-    name: 'Hospitality Committee',
-    chairRole: 'Hospitality Committee Convener',
-    memberRole: 'Hospitality Committee Member'
-  }
-];
 
 const ADMIN_MASTER_KEY = "MRBB2026";
 
@@ -1440,7 +1362,7 @@ export default function App() {
     guidelines: info.nav_guidelines,
     'paper-submission': info.nav_paper_submission,
     registration: info.nav_registration,
-    explore: info.nav_explore || "Explore",
+    explore: info.nav_explore || "Explore Coimbatore",
     venue: info.nav_venue || "Venue",
     'contact-us': info.nav_contact_us,
     'ieee-sb': info.nav_ieee_sb || "IEEE SB",
@@ -2703,6 +2625,30 @@ export default function App() {
                   </div>
                 </div>
               </div>
+
+              <div style={{ marginTop: '1.75rem', borderTop: '1px solid rgba(0,0,0,0.08)', paddingTop: '1.25rem', display: 'flex', justifyContent: 'center' }}>
+                <button
+                  type="button"
+                  onClick={() => scrollToSection('explore')}
+                  className="btn btn-primary"
+                  style={{
+                    background: 'linear-gradient(135deg, var(--accent) 0%, var(--accent-cyan) 100%)',
+                    border: 'none',
+                    padding: '0.65rem 1.25rem',
+                    fontSize: '0.85rem',
+                    fontWeight: 700,
+                    borderRadius: '0.5rem',
+                    color: '#ffffff',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    boxShadow: '0 4px 12px rgba(15, 82, 186, 0.15)'
+                  }}
+                >
+                  <Sparkles size={14} /> Explore Coimbatore & Nearby Sights
+                </button>
+              </div>
             </motion.div>
           </div>
 
@@ -3411,6 +3357,51 @@ export default function App() {
                                   />
                                 </div>
                               </div>
+                            </div>
+
+                            {/* Explore Coimbatore / Tour Option */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.25rem' }}>
+                              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                                <input 
+                                  type="checkbox" 
+                                  checked={regRegisterForTour} 
+                                  onChange={(e) => {
+                                    setRegRegisterForTour(e.target.checked);
+                                    if (!e.target.checked) setRegPreferredTourPlace('');
+                                  }}
+                                  style={{ width: '14px', height: '14px' }}
+                                />
+                                <span style={{ fontWeight: 600 }}>Explore Coimbatore (Register for Free Local Tour)</span>
+                              </label>
+
+                              {regRegisterForTour && (
+                                <div style={{ marginTop: '0.25rem' }}>
+                                  <label htmlFor="reg_tour_place" style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>Select Preferred Sightseeing Place*</label>
+                                  <select
+                                    id="reg_tour_place"
+                                    value={regPreferredTourPlace}
+                                    onChange={(e) => setRegPreferredTourPlace(e.target.value)}
+                                    required={regRegisterForTour}
+                                    className="form-input"
+                                    style={{
+                                      width: '100%',
+                                      padding: '0.4rem 0.5rem',
+                                      fontSize: '0.8rem',
+                                      background: '#ffffff',
+                                      border: '1px solid #cbd5e1',
+                                      color: '#0f172a',
+                                      borderRadius: '0.5rem'
+                                    }}
+                                  >
+                                    <option value="" style={{ background: '#ffffff', color: '#0f172a' }}>-- Select a Place --</option>
+                                    <option value="Isha Yoga Center - Dhyanalinga and Adiyogi Statue" style={{ background: '#ffffff', color: '#0f172a' }}>Isha Yoga Center - Dhyanalinga and Adiyogi Statue</option>
+                                    <option value="Dhyanalinga Temple" style={{ background: '#ffffff', color: '#0f172a' }}>Dhyanalinga Temple</option>
+                                    <option value="Marudamalai Temple" style={{ background: '#ffffff', color: '#0f172a' }}>Marudamalai Temple</option>
+                                    <option value="Brookefields Mall" style={{ background: '#ffffff', color: '#0f172a' }}>Brookefields Mall</option>
+                                    <option value="Eachanari Vinayagar Temple" style={{ background: '#ffffff', color: '#0f172a' }}>Eachanari Vinayagar Temple</option>
+                                  </select>
+                                </div>
+                              )}
                             </div>
 
                             {/* Screenshot */}
