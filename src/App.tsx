@@ -557,11 +557,15 @@ export default function App() {
       };
 
       if (isSupabaseConfigured && supabase) {
+        let error;
         if (editingDept.id) {
-          await supabase.from('departments').update(dataToSave).eq('id', editingDept.id);
+          const res = await supabase.from('departments').update(dataToSave).eq('id', editingDept.id);
+          error = res.error;
         } else {
-          await supabase.from('departments').insert(dataToSave);
+          const res = await supabase.from('departments').insert(dataToSave);
+          error = res.error;
         }
+        if (error) throw error;
       } else {
         let list = [...departments];
         if (editingDept.id) {
@@ -573,8 +577,9 @@ export default function App() {
       }
       setEditingDept(null);
       await fetchDbData();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Save department failed:', err);
+      alert('Save department failed: ' + (err.message || err));
     }
   };
 
@@ -582,14 +587,16 @@ export default function App() {
     if (!window.confirm('Are you sure you want to delete this department track?')) return;
     try {
       if (isSupabaseConfigured && supabase) {
-        await supabase.from('departments').delete().eq('id', id);
+        const { error } = await supabase.from('departments').delete().eq('id', id);
+        if (error) throw error;
       } else {
         const list = departments.filter(d => (d as any).id !== id);
         localStorage.setItem('srec_offline_departments', JSON.stringify(list));
       }
       await fetchDbData();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Delete department failed:', err);
+      alert('Delete department failed: ' + (err.message || err));
     }
   };
 
@@ -607,11 +614,15 @@ export default function App() {
       };
 
       if (isSupabaseConfigured && supabase) {
+        let error;
         if (editingSpeaker.id) {
-          await supabase.from('speakers').update(dataToSave).eq('id', editingSpeaker.id);
+          const res = await supabase.from('speakers').update(dataToSave).eq('id', editingSpeaker.id);
+          error = res.error;
         } else {
-          await supabase.from('speakers').insert(dataToSave);
+          const res = await supabase.from('speakers').insert(dataToSave);
+          error = res.error;
         }
+        if (error) throw error;
       } else {
         let list = [...speakers];
         if (editingSpeaker.id) {
@@ -623,8 +634,9 @@ export default function App() {
       }
       setEditingSpeaker(null);
       await fetchDbData();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Save speaker failed:', err);
+      alert('Save speaker failed: ' + (err.message || err));
     }
   };
 
@@ -632,14 +644,16 @@ export default function App() {
     if (!window.confirm('Are you sure you want to delete this speaker?')) return;
     try {
       if (isSupabaseConfigured && supabase) {
-        await supabase.from('speakers').delete().eq('id', id);
+        const { error } = await supabase.from('speakers').delete().eq('id', id);
+        if (error) throw error;
       } else {
         const list = speakers.filter(s => (s as any).id !== id);
         localStorage.setItem('srec_offline_speakers', JSON.stringify(list));
       }
       await fetchDbData();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Delete speaker failed:', err);
+      alert('Delete speaker failed: ' + (err.message || err));
     }
   };
 
@@ -655,11 +669,15 @@ export default function App() {
       };
 
       if (isSupabaseConfigured && supabase) {
+        let error;
         if (editingDate.id) {
-          await supabase.from('important_dates').update(dataToSave).eq('id', editingDate.id);
+          const res = await supabase.from('important_dates').update(dataToSave).eq('id', editingDate.id);
+          error = res.error;
         } else {
-          await supabase.from('important_dates').insert(dataToSave);
+          const res = await supabase.from('important_dates').insert(dataToSave);
+          error = res.error;
         }
+        if (error) throw error;
       } else {
         let list = [...importantDates];
         if (editingDate.id) {
@@ -671,8 +689,9 @@ export default function App() {
       }
       setEditingDate(null);
       await fetchDbData();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Save date failed:', err);
+      alert('Save date failed: ' + (err.message || err));
     }
   };
 
@@ -680,14 +699,16 @@ export default function App() {
     if (!window.confirm('Are you sure you want to delete this date?')) return;
     try {
       if (isSupabaseConfigured && supabase) {
-        await supabase.from('important_dates').delete().eq('id', id);
+        const { error } = await supabase.from('important_dates').delete().eq('id', id);
+        if (error) throw error;
       } else {
         const list = importantDates.filter(d => (d as any).id !== id);
         localStorage.setItem('srec_offline_important_dates', JSON.stringify(list));
       }
       await fetchDbData();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Delete date failed:', err);
+      alert('Delete date failed: ' + (err.message || err));
     }
   };
 
@@ -704,11 +725,15 @@ export default function App() {
       };
 
       if (isSupabaseConfigured && supabase) {
+        let error;
         if (editingWorkshop.id) {
-          await supabase.from('workshops').update(dataToSave).eq('id', editingWorkshop.id);
+          const res = await supabase.from('workshops').update(dataToSave).eq('id', editingWorkshop.id);
+          error = res.error;
         } else {
-          await supabase.from('workshops').insert(dataToSave);
+          const res = await supabase.from('workshops').insert(dataToSave);
+          error = res.error;
         }
+        if (error) throw error;
       } else {
         let list = [...workshops];
         if (editingWorkshop.id) {
@@ -720,8 +745,9 @@ export default function App() {
       }
       setEditingWorkshop(null);
       await fetchDbData();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Save workshop failed:', err);
+      alert('Save workshop failed: ' + (err.message || err));
     }
   };
 
@@ -729,18 +755,18 @@ export default function App() {
     if (!window.confirm('Are you sure you want to delete this workshop?')) return;
     try {
       if (isSupabaseConfigured && supabase) {
-        await supabase.from('workshops').delete().eq('id', id);
+        const { error } = await supabase.from('workshops').delete().eq('id', id);
+        if (error) throw error;
       } else {
         const list = workshops.filter(w => (w as any).id !== id);
         localStorage.setItem('srec_offline_workshops', JSON.stringify(list));
       }
       await fetchDbData();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Delete workshop failed:', err);
+      alert('Delete workshop failed: ' + (err.message || err));
     }
   };
-
-  
 
   const handleSaveCommittee = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -755,11 +781,15 @@ export default function App() {
       };
 
       if (isSupabaseConfigured && supabase) {
+        let error;
         if (editingCommittee.id) {
-          await supabase.from('committee').update(dataToSave).eq('id', editingCommittee.id);
+          const res = await supabase.from('committee').update(dataToSave).eq('id', editingCommittee.id);
+          error = res.error;
         } else {
-          await supabase.from('committee').insert(dataToSave);
+          const res = await supabase.from('committee').insert(dataToSave);
+          error = res.error;
         }
+        if (error) throw error;
       } else {
         let list = [...committeeMembers];
         if (editingCommittee.id) {
@@ -771,8 +801,9 @@ export default function App() {
       }
       setEditingCommittee(null);
       await fetchDbData();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Save committee member failed:', err);
+      alert('Save committee member failed: ' + (err.message || err));
     }
   };
 
@@ -780,27 +811,31 @@ export default function App() {
     if (!window.confirm('Are you sure you want to delete this committee member?')) return;
     try {
       if (isSupabaseConfigured && supabase) {
-        await supabase.from('committee').delete().eq('id', id);
+        const { error } = await supabase.from('committee').delete().eq('id', id);
+        if (error) throw error;
       } else {
         const list = committeeMembers.filter(c => (c as any).id !== id);
         localStorage.setItem('srec_offline_committee', JSON.stringify(list));
       }
       await fetchDbData();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Delete committee member failed:', err);
+      alert('Delete committee member failed: ' + (err.message || err));
     }
   };
 
   const handleSaveInfoSetting = async (key: string, val: string) => {
     try {
       if (isSupabaseConfigured && supabase) {
-        await supabase.from('conference_info').upsert({ key, value: val });
+        const { error } = await supabase.from('conference_info').upsert({ key, value: val });
+        if (error) throw error;
       }
       const updatedInfo = { ...info, [key]: val };
       setInfo(updatedInfo);
       localStorage.setItem('srec_offline_info', JSON.stringify(updatedInfo));
-    } catch (err) {
+    } catch (err: any) {
       console.error('Save setting failed:', err);
+      alert('Save setting failed: ' + (err.message || err));
     }
   };
 
@@ -808,14 +843,16 @@ export default function App() {
     if (!window.confirm('Are you sure you want to delete this registration log?')) return;
     try {
       if (isSupabaseConfigured && supabase) {
-        await supabase.from('registrations').delete().eq('id', id);
+        const { error } = await supabase.from('registrations').delete().eq('id', id);
+        if (error) throw error;
       } else {
         const list = submittedRegistrations.filter(r => r.id !== id);
         localStorage.setItem('srec_offline_registrations', JSON.stringify(list));
       }
       await fetchDbData();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Delete registration failed:', err);
+      alert('Delete registration failed: ' + (err.message || err));
     }
   };
 
@@ -823,13 +860,15 @@ export default function App() {
     if (!window.confirm('WARNING: Are you sure you want to delete ALL registrations? This cannot be undone.')) return;
     try {
       if (isSupabaseConfigured && supabase) {
-        await supabase.from('registrations').delete().neq('id', 0);
+        const { error } = await supabase.from('registrations').delete().neq('id', 0);
+        if (error) throw error;
       } else {
         localStorage.setItem('srec_offline_registrations', JSON.stringify([]));
       }
       await fetchDbData();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Clear registrations failed:', err);
+      alert('Clear registrations failed: ' + (err.message || err));
     }
   };
 
@@ -1041,7 +1080,6 @@ export default function App() {
     seconds: 0,
     isOver: false
   });
-
   // Fetch all content from Supabase database (Gracefully falls back to mock data if unconfigured/offline)
   const fetchDbData = async () => {
     // 1. Load localStorage updates first so they render immediately
@@ -1075,35 +1113,50 @@ export default function App() {
     try {
       // Fetch departments
       const { data: deptData, error: errDept } = await supabase.from('departments').select('*').order('sort_order');
-      if (!errDept && deptData && deptData.length > 0) setDepartments(deptData);
+      if (!errDept && deptData) {
+        setDepartments(deptData);
+        localStorage.setItem('srec_offline_departments', JSON.stringify(deptData));
+      }
 
       // Fetch committee
       const { data: committeeData, error: errCommittee } = await supabase.from('committee').select('*').order('id');
-      if (!errCommittee && committeeData && committeeData.length > 0) setCommitteeMembers(committeeData);
+      if (!errCommittee && committeeData) {
+        setCommitteeMembers(committeeData);
+        localStorage.setItem('srec_offline_committee', JSON.stringify(committeeData));
+      }
 
       // Fetch speakers
       const { data: speakersData, error: errSpeakers } = await supabase.from('speakers').select('*').order('id');
-      if (!errSpeakers && speakersData && speakersData.length > 0) setSpeakers(speakersData);
+      if (!errSpeakers && speakersData) {
+        setSpeakers(speakersData);
+        localStorage.setItem('srec_offline_speakers', JSON.stringify(speakersData));
+      }
 
       // Fetch important dates
       const { data: datesData, error: errDates } = await supabase.from('important_dates').select('*').order('sort_order');
-      if (!errDates && datesData && datesData.length > 0) setImportantDates(datesData);
+      if (!errDates && datesData) {
+        setImportantDates(datesData);
+        localStorage.setItem('srec_offline_important_dates', JSON.stringify(datesData));
+      }
 
       // Fetch workshops
       const { data: workshopsData, error: errWorkshops } = await supabase.from('workshops').select('*').order('id');
-      if (!errWorkshops && workshopsData && workshopsData.length > 0) setWorkshops(workshopsData);
+      if (!errWorkshops && workshopsData) {
+        setWorkshops(workshopsData);
+        localStorage.setItem('srec_offline_workshops', JSON.stringify(workshopsData));
+      }
 
       // Fetch registration fees
       const { data: feesData, error: errFees } = await supabase.from('registration_fees').select('*').order('sort_order');
-      if (!errFees && feesData && feesData.length > 0) setRegistrationFees(feesData);
+      if (!errFees && feesData) setRegistrationFees(feesData);
 
       // Fetch stats
       const { data: statsData, error: errStats } = await supabase.from('stats').select('*').order('sort_order');
-      if (!errStats && statsData && statsData.length > 0) setStats(statsData);
+      if (!errStats && statsData) setStats(statsData);
 
       // Fetch coordinators
       const { data: coordinatorsData, error: errCoordinators } = await supabase.from('coordinators').select('*').order('sort_order');
-      if (!errCoordinators && coordinatorsData && coordinatorsData.length > 0) setCoordinators(coordinatorsData);
+      if (!errCoordinators && coordinatorsData) setCoordinators(coordinatorsData);
 
       // Fetch registration pricing rules
       const { data: pricingData, error: errPricing } = await supabase.from('registration_pricing').select('*');
@@ -1117,19 +1170,21 @@ export default function App() {
 
       // Fetch conference info
       const { data: infoData, error: errInfo } = await supabase.from('conference_info').select('*');
-      if (!errInfo && infoData && infoData.length > 0) {
+      if (!errInfo && infoData) {
         const infoMap: Record<string, string> = {};
         infoData.forEach((row: any) => {
           infoMap[row.key] = row.value;
         });
         setInfo(prev => ({ ...prev, ...infoMap }));
+        localStorage.setItem('srec_offline_info', JSON.stringify(infoMap));
       }
 
       // Fetch registrations log
       const { data: registrationsLog, error: errReg } = await supabase.from('registrations').select('*').order('created_at', { ascending: false });
-      if (!errReg && registrationsLog) setSubmittedRegistrations(registrationsLog);
-
-
+      if (!errReg && registrationsLog) {
+        setSubmittedRegistrations(registrationsLog);
+        localStorage.setItem('srec_offline_registrations', JSON.stringify(registrationsLog));
+      }
     } catch (err) {
       console.warn('Failed to load online data. Falling back to offline fallback state.', err);
     }

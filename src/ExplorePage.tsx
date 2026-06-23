@@ -85,29 +85,39 @@ export default function ExplorePage({ adminUser }: { adminUser: string | null })
         .from('tourist_places')
         .select('*')
         .order('sort_order');
-      if (!errTourist && touristData && touristData.length > 0) setTouristPlaces(touristData);
+      if (!errTourist && touristData) {
+        setTouristPlaces(touristData);
+        localStorage.setItem('srec_offline_tourist_places', JSON.stringify(touristData));
+      }
 
       const { data: weekendData, error: errWeekend } = await supabase
         .from('weekend_stays')
         .select('*')
         .order('sort_order');
-      if (!errWeekend && weekendData && weekendData.length > 0) setWeekendStays(weekendData);
+      if (!errWeekend && weekendData) {
+        setWeekendStays(weekendData);
+        localStorage.setItem('srec_offline_weekend_stays', JSON.stringify(weekendData));
+      }
 
       const { data: hotelsData, error: errHotels } = await supabase
         .from('hotels_to_stay')
         .select('*')
         .order('sort_order');
-      if (!errHotels && hotelsData && hotelsData.length > 0) setHotels(hotelsData);
+      if (!errHotels && hotelsData) {
+        setHotels(hotelsData);
+        localStorage.setItem('srec_offline_hotels', JSON.stringify(hotelsData));
+      }
 
       const { data: infoData, error: errInfo } = await supabase
         .from('conference_info')
         .select('*');
-      if (!errInfo && infoData && infoData.length > 0) {
+      if (!errInfo && infoData) {
         const infoMap: Record<string, string> = {};
         infoData.forEach((row: any) => {
           infoMap[row.key] = row.value;
         });
         setInfo(prev => ({ ...prev, ...infoMap }));
+        localStorage.setItem('srec_offline_info', JSON.stringify(infoMap));
       }
     } catch (err) {
       console.warn('Failed to load online data for ExplorePage.', err);
@@ -153,8 +163,9 @@ export default function ExplorePage({ adminUser }: { adminUser: string | null })
       }
       setEditingTouristPlace(null);
       await fetchDbData();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Save tourist place failed:', err);
+      alert('Save tourist place failed: ' + (err.message || err));
     }
   };
 
@@ -162,14 +173,16 @@ export default function ExplorePage({ adminUser }: { adminUser: string | null })
     if (!window.confirm('Are you sure you want to delete this tourist place?')) return;
     try {
       if (isSupabaseConfigured && supabase) {
-        await supabase.from('tourist_places').delete().eq('id', id);
+        const { error } = await supabase.from('tourist_places').delete().eq('id', id);
+        if (error) throw error;
       } else {
         const list = touristPlaces.filter(t => t.id !== id);
         localStorage.setItem('srec_offline_tourist_places', JSON.stringify(list));
       }
       await fetchDbData();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Delete tourist place failed:', err);
+      alert('Delete tourist place failed: ' + (err.message || err));
     }
   };
 
@@ -207,8 +220,9 @@ export default function ExplorePage({ adminUser }: { adminUser: string | null })
       }
       setEditingWeekendStay(null);
       await fetchDbData();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Save weekend stay failed:', err);
+      alert('Save weekend stay failed: ' + (err.message || err));
     }
   };
 
@@ -216,14 +230,16 @@ export default function ExplorePage({ adminUser }: { adminUser: string | null })
     if (!window.confirm('Are you sure you want to delete this weekend stay?')) return;
     try {
       if (isSupabaseConfigured && supabase) {
-        await supabase.from('weekend_stays').delete().eq('id', id);
+        const { error } = await supabase.from('weekend_stays').delete().eq('id', id);
+        if (error) throw error;
       } else {
         const list = weekendStays.filter(s => s.id !== id);
         localStorage.setItem('srec_offline_weekend_stays', JSON.stringify(list));
       }
       await fetchDbData();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Delete weekend stay failed:', err);
+      alert('Delete weekend stay failed: ' + (err.message || err));
     }
   };
 
@@ -262,8 +278,9 @@ export default function ExplorePage({ adminUser }: { adminUser: string | null })
       }
       setEditingHotel(null);
       await fetchDbData();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Save hotel failed:', err);
+      alert('Save hotel failed: ' + (err.message || err));
     }
   };
 
@@ -271,14 +288,16 @@ export default function ExplorePage({ adminUser }: { adminUser: string | null })
     if (!window.confirm('Are you sure you want to delete this hotel?')) return;
     try {
       if (isSupabaseConfigured && supabase) {
-        await supabase.from('hotels_to_stay').delete().eq('id', id);
+        const { error } = await supabase.from('hotels_to_stay').delete().eq('id', id);
+        if (error) throw error;
       } else {
         const list = hotels.filter(h => h.id !== id);
         localStorage.setItem('srec_offline_hotels', JSON.stringify(list));
       }
       await fetchDbData();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Delete hotel failed:', err);
+      alert('Delete hotel failed: ' + (err.message || err));
     }
   };
 
