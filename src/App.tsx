@@ -999,6 +999,61 @@ export default function App() {
     };
   };
 
+  const sendRegistrationEmail = async (fullPhone: string) => {
+    const serviceId = info.emailjs_service_id;
+    const templateId = info.emailjs_template_id;
+    const publicKey = info.emailjs_public_key;
+    const recipient = info.emailjs_recipient || info.secretariat_email || 'aectsd2027@srec.ac.in';
+    
+    if (serviceId && templateId && publicKey) {
+      try {
+        let receiptBase64 = '';
+        if (regScreenshot) {
+          receiptBase64 = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(regScreenshot);
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = error => reject(error);
+          });
+        }
+        
+        const bill = calculateTotalFees();
+        const templateParams = {
+          to_email: recipient,
+          paper_id: regPaperId,
+          paper_title: regPaperTitle,
+          author_name: regAuthorName,
+          email: regEmail,
+          phone: fullPhone,
+          total_due: `${bill.currencySymbol}${bill.total} ${bill.currency}`,
+          register_for_tour: regRegisterForTour ? 'Yes' : 'No',
+          preferred_tour_place: regPreferredTourPlace || 'None',
+          receipt_image: receiptBase64
+        };
+
+        const res = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            service_id: serviceId,
+            template_id: templateId,
+            user_id: publicKey,
+            template_params: templateParams
+          })
+        });
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(`EmailJS responded with ${res.status}: ${errText}`);
+        }
+        console.log('Notification email sent successfully via EmailJS!');
+      } catch (emailErr) {
+        console.error('Failed to send notification email via EmailJS:', emailErr);
+      }
+    }
+  };
+
   const handleRegistrationSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -1017,7 +1072,7 @@ export default function App() {
     try {
       if (!isSupabaseConfigured || !supabase) {
         // Mock success if Supabase is offline
-        setTimeout(() => {
+        setTimeout(async () => {
           const newReg = {
             id: Date.now(),
             paper_id: regPaperId || 'N/A',
@@ -1035,6 +1090,9 @@ export default function App() {
           const updatedRegs = [newReg, ...existingRegs];
           localStorage.setItem('srec_offline_registrations', JSON.stringify(updatedRegs));
           setSubmittedRegistrations(updatedRegs);
+
+          // Try to send notification email
+          await sendRegistrationEmail(fullPhone);
 
           setRegSubmitting(false);
           setRegSuccess(true);
@@ -1057,6 +1115,9 @@ export default function App() {
       if (error) {
         throw error;
       }
+
+      // Send notification email
+      await sendRegistrationEmail(fullPhone);
 
       setRegSuccess(true);
       fetchDbData();
@@ -4499,6 +4560,67 @@ export default function App() {
                               placeholder="Enter Tour Info Notice"
                               title="Coimbatore Tour Info Alert"
                             />
+                          </div>
+
+                          <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                            <h4 style={{ fontSize: '1.1rem', color: 'var(--accent-cyan)', marginBottom: '1rem', fontWeight: 700 }}>EmailJS Auto-Notification Gateway</h4>
+                            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '1.25rem', lineHeight: 1.4 }}>
+                              Configure your client-side EmailJS integration keys to automatically receive email alerts with attached payment screenshot receipts upon new registrations.
+                            </p>
+                            
+                            <div className="admin-form-row">
+                              <div className="admin-form-group">
+                                <label htmlFor="emailjs_service_id">EmailJS Service ID</label>
+                                <input 
+                                  id="emailjs_service_id"
+                                  type="text" 
+                                  className="form-input" 
+                                  value={info.emailjs_service_id || ''} 
+                                  onChange={(e) => handleSaveInfoSetting('emailjs_service_id', e.target.value)} 
+                                  placeholder="e.g. service_xxxx"
+                                  title="EmailJS Service ID"
+                                />
+                              </div>
+                              <div className="admin-form-group">
+                                <label htmlFor="emailjs_template_id">EmailJS Template ID</label>
+                                <input 
+                                  id="emailjs_template_id"
+                                  type="text" 
+                                  className="form-input" 
+                                  value={info.emailjs_template_id || ''} 
+                                  onChange={(e) => handleSaveInfoSetting('emailjs_template_id', e.target.value)} 
+                                  placeholder="e.g. template_xxxx"
+                                  title="EmailJS Template ID"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="admin-form-row" style={{ marginTop: '1rem' }}>
+                              <div className="admin-form-group">
+                                <label htmlFor="emailjs_public_key">EmailJS Public Key (User ID)</label>
+                                <input 
+                                  id="emailjs_public_key"
+                                  type="text" 
+                                  className="form-input" 
+                                  value={info.emailjs_public_key || ''} 
+                                  onChange={(e) => handleSaveInfoSetting('emailjs_public_key', e.target.value)} 
+                                  placeholder="e.g. user_xxxx or public_key"
+                                  title="EmailJS Public Key"
+                                />
+                              </div>
+                              <div className="admin-form-group">
+                                <label htmlFor="emailjs_recipient">Notification Recipient Email</label>
+                                <input 
+                                  id="emailjs_recipient"
+                                  type="email" 
+                                  className="form-input" 
+                                  value={info.emailjs_recipient || ''} 
+                                  onChange={(e) => handleSaveInfoSetting('emailjs_recipient', e.target.value)} 
+                                  placeholder="e.g. finance@srec.ac.in"
+                                  title="Notification Recipient Email"
+                                />
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
