@@ -1,14 +1,11 @@
--- Create tables for SREC AECTSD 2027 Conference Website database
--- Remove everything in the default schema
 DROP SCHEMA IF EXISTS public CASCADE;
 
--- Re‑create the schema so you can create new tables again
 CREATE SCHEMA public;
 
 -- (Optional) Restore the default privileges
 GRANT ALL ON SCHEMA public TO postgres;
 GRANT ALL ON SCHEMA public TO public;
--- 1. Departments table (replaces tracks to store full paragraphs of organizing departments)
+
 CREATE TABLE IF NOT EXISTS departments (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -19,7 +16,7 @@ CREATE TABLE IF NOT EXISTS departments (
 -- 2. Committee table
 CREATE TABLE IF NOT EXISTS committee (
     id SERIAL PRIMARY KEY,
-    category VARCHAR(50) NOT NULL, -- 'organizing', 'advisory', 'technical'
+    category VARCHAR(50) NOT NULL,
     role VARCHAR(100),
     name VARCHAR(255) NOT NULL,
     "desc" TEXT NOT NULL,
@@ -255,7 +252,55 @@ CREATE POLICY "Allow anonymous DELETE on hotels_to_stay" ON hotels_to_stay FOR D
 -- Seed defaults for Coimbatore details and tour
 INSERT INTO conference_info (key, value) VALUES
 ('about_coimbatore_desc', 'Coimbatore, often referred to as the "Manchester of South India", is a dynamic city in Tamil Nadu, India, known for its industrial prowess, pleasant climate, and cultural heritage. It is a popular destination for conferences and business events, offering excellent infrastructure and connectivity. Coimbatore International Airport connects the city to major Indian cities like Chennai, Bangalore, Mumbai, and Delhi, as well as international destinations like Singapore and Sharjah. Coimbatore Junction is a major railway hub with frequent trains to all parts of India. It is also well-connected via National Highways, making it accessible by road from nearby cities like Chennai, Bangalore, and Kochi. Coimbatore is widely recognized as an emerging education hub in South India. The city is home to a variety of prestigious educational institutions, spanning schools, colleges, and specialized training centers. It offers a holistic educational environment with a focus on academics, innovation, and industry integration. The ideal time to visit Coimbatore is between September and March, when the weather is pleasant and conducive to travel.'),
-('about_coimbatore_tour_info', 'Half-a-day tour will be arranged to visit nearest site seeing places based on number of participant’s registered for tour.')
+('about_coimbatore_tour_info', 'Half-a-day tour will be arranged to visit nearest site seeing places based on number of participant’s registered for tour.'),
+('show_announcement', 'true'),
+('announcement_text', '📢 Call for Papers! Mark your calendars: The Call for Papers for AECTSD 2027 opens on 15th December 2026. Start preparing your submission'),
+('about_conference', 'We are delighted to inform the upcoming International Conference on Advances in Engineering and Computing Technologies for Sustainable Development (AECTSD 2027) is organized by the Department of Electrical and Electronics Engineering, Electronics and Communication Engineering, Electronics and Instrumentation, Biomedical Engineering, Computer Science Engineering and Information Technology of Sri Ramakrishna Engineering College, Coimbatore, Tamilnadu, India during 17th and 18th December 2027. This technical co-sponsor for this conference is IEEE Madras Section. This interdisciplinary conference provides a dynamic platform for students, academicians, researchers, and industry professionals from around the globe to exchange ideas and collaborate, explore innovative solutions, present their latest research, and explore cutting-edge advancements across multiple fields of technology to facilitate the growth and prosperity of society as a whole. This interdisciplinary conference aims to foster collaboration and knowledge sharing across a diverse tracks from various domains such as Power and Energy, Embedded and Communication, Biomedical Engineering, Instrumentation and Control, Computational Intelligence, Big Data, Internet of Things and Security, and other related areas including core sciences and engineering. In addition to the technical sessions, there will be pre-conference tutorial and keynote addresses.'),
+('advisory_committee_desc', 'The Advisory Committee comprises of experienced professionals, experts, or senior members, to provide strategic advice and guidance for the conference. This committee help shape the event''s vision and content while offering insights to maintain its relevance and quality, and supports the organizers in achieving the conference''s goals and maintaining its prestige.'),
+('technical_committee_desc', 'The Technical Committee is comprised of researchers, scholars, and technical specialists who oversee the peer-review process and review submitted manuscripts. They evaluate papers based on originality, technical depth, and relevance to the conference tracks to ensure the highest standards of academic excellence and publication quality.'),
+('about_trust', 'SNR Sons Charitable Trust was found in the year 1970 by the illustrious sons of Sri. S. N. Rangasamy Naidu namely, Late Sri Chinnasamy Naidu, Late Sri. P. R. Ramaswami Naidu, Sr. R. Doraiswami Naidu and Sevaratna Dr.R.Venkatesalu Naidu. Being an ardent devotee of Sri Ramakrishna Paramahamsa, all the institutions started by the Trust bear the name of the HolySage "Sri Ramakrishna".\n\nFollowing the Principles of Sri Ramakrishna Paramahamsa''s Philosophy of God through man'', the Trust successfully runs 15 organisations significantly catering to social causes of society focusing on Health Care, Education and Service. Apart from healthcare, it is education that has attracted the attention of the SNR Sons Charitable Trust. This extraordinary penchant for education has resulted in bringing some of the sterling Educational Institutions and Courses within the reach of many, who would otherwise have been left dreaming about education at such levels.'),
+('about_institution', 'Sri Ramakrishna Engineering College (SREC), Coimbatore established in the year 1994 by SNR Sons Charitable Trust is one of the 17 institutions managed by the trust. SREC is an autonomous institution offering 12 Undergraduate programmes in the disciplines of Aeronautical, Biomedical, Civil, Mechanical, Electronics and Communication, Electrical and Electronics, Electronics and Instrumentation, Information Technology, Computer Science and Engineering, Robotics and Automation, Artificial Intelligence and Data Science and M.Tech Computer Science and Engineering (5 Year Integrated). The institution offers Seven Post Graduate programmes in Engineering and Technology with specializations of Manufacturing Engineering, Power Electronics and Drives, VLSI Design, Computer Science and Engineering , Embedded System Technologies, Control and Instrumentation Engineering and Nanoscience and Technology, in addition to MBA.'),
+('speakers_desc', 'We are honored to present our distinguished Keynote Speakers of ICAECTSD 2025, invited to deliver a featured address at a conference. Their presentations set the tone for the event, aligning with its central theme. The industry leaders and renowned academics, will share their insights on cutting-edge technologies on topics pertaining to the scope of the conference.'),
+('workshops_desc', 'The pre-conference tutorial sessions will be held on the first day of conference, designed to provide in-depth knowledge and hands-on training on specific topics related to the conference theme. These tutorials are conducted by experts to cater for the participants looking to enhance their skills and understanding on specific area related to the conference theme.'),
+('workshops_title', 'Pre-conference Tutorials'),
+('speakers_title', 'Keynote Speakers'),
+('steering_committee_desc', 'The Steering Committee comprises of eminent faculty members responsible for overseeing the planning, execution, and strategic direction of a conference. The committee also provides guidance on key decisions, ensures alignment with the conference''s goals, and maintains its quality and reputation over time. This Committee plays a crucial role in shaping the overall success of the event.'),
+('committee_tab_steering', 'Steering Committee'),
+('committee_tab_tech', 'Technical Program'),
+('hero_title', 'Welcome to ICAECTSD 2027'),
+('hero_subtitle', 'Second IEEE International Conference On Advances in Engineering and Computing Technologies for Sustainable Development (ICAECTSD) 2027'),
+('event_date_display', '17th and 18th December 2027'),
+('event_location_display', 'Sri Ramakrishna Engineering College, Coimbatore, Tamilnadu, India'),
+('hero_countdown_title', 'Conference Countdown'),
+('label_days', 'Days'),
+('label_hours', 'Hours'),
+('label_mins', 'Minutes'),
+('label_secs', 'Seconds'),
+('hero_btn_submit', 'Submit Paper'),
+('hero_btn_register', 'Calculate Fees'),
+('submission_card_title', 'Submit Your Application through CMT'),
+('submission_card_desc', 'Submit your research papers directly via the Microsoft CMT portal. Make sure to adhere to all formatting guidelines before uploading your work.'),
+('label_conf_id', 'Conference CMT Portal ID:'),
+('cmt_id', 'ICAECTSD 2027'),
+('cmt_link', 'https://cmt3.research.microsoft.com/aectsd2025'),
+('submission_btn_cmt', 'Go to CMT Submission Portal'),
+('contact_badge', 'Connect'),
+('contact_title', 'Contact Us'),
+('contact_form_title', 'Send Us a Message'),
+('contact_form_label_name', 'Your Name'),
+('contact_form_placeholder_name', 'Enter full name'),
+('contact_form_label_email', 'Email Address'),
+('contact_form_placeholder_email', 'Enter email address'),
+('contact_form_label_subject', 'Subject'),
+('contact_form_placeholder_subject', 'How can we help?'),
+('contact_form_label_message', 'Message'),
+('contact_form_placeholder_message', 'Type details here...'),
+('contact_form_btn_send', 'Send Message'),
+('contact_sec_title', 'Organizing Secretariat'),
+('secretariat_address', 'Department of EEE / ECE,\nSri Ramakrishna Engineering College,\nVattamalaipalayam, N.G.G.O Colony Post,\nCoimbatore, Tamilnadu - 641022, India.'),
+('secretariat_email', 'aectsd2027@srec.ac.in'),
+('secretariat_phone', '+91 (422) 2461588 / 2460088'),
+('contact_coord_title', 'Conference Coordinators')
 ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
 
 -- Seed tourist places
@@ -304,6 +349,126 @@ INSERT INTO hotels_to_stay (name, category, address, description, map_url, image
 ('Sri Aarvee Hotels', 'Budget-Friendly Hotels', 'Gandhipuram, Coimbatore', 'Value-for-money hotel providing essential comforts and prime accessibility.', 'https://maps.google.com/?q=Sri+Aarvee+Hotels+Coimbatore', 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=600&q=80', 15),
 ('Zone by The Park', 'Budget-Friendly Hotels', 'Avinashi Road, Coimbatore', 'Trendy, social hotel offering active spaces, smart amenities, and neat rooms.', 'https://maps.google.com/?q=Zone+by+The+Park+Coimbatore', 'https://images.unsplash.com/photo-1445019980597-93fa8acb246c?auto=format&fit=crop&w=600&q=80', 16),
 ('Hotel Jothi Grand', 'Budget-Friendly Hotels', 'Near KCT, Saravanampatti, Coimbatore', 'Pocket-friendly hotel near IT parks and educational institutions in Saravanampatti.', 'https://maps.google.com/?q=Hotel+Jothi+Grand+Coimbatore', 'https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?auto=format&fit=crop&w=600&q=80', 17);
+
+-- Seed important dates
+INSERT INTO "public"."important_dates" ("title", "event_date", "desc", "sort_order") VALUES
+('Call for Papers', 'December 15, 2026', 'Call for Papers opens via CMT Portal.', 1),
+('Paper Submission Deadline', 'April 30, 2027', 'All draft manuscripts must be submitted.', 2),
+('Paper Acceptance Notification', 'June 30, 2027', 'Notification of acceptance or rejection.', 3),
+('Camera-ready Paper Submission Deadline', 'July 31, 2027', 'Deadline for final camera-ready upload.', 4),
+('Early Bird Registration Deadline', 'August 15, 2027', 'Discounted early registration closes.', 5),
+('Final Registration Deadline', 'September 30, 2027', 'Regular registration closes.', 6),
+('Late Fee Registration Deadline', 'October 10, 2027', 'Last chance registration with late fee surcharge.', 7),
+('Pre-conference Tutorials Registration', 'November 15, 2027', 'Registration deadline for tutorial sessions.', 8),
+('Conference Date', 'December 17-18, 2027', 'AECTSD 2027 Conference sessions.', 9);
+
+-- Seed departments (tracks)
+INSERT INTO "public"."departments" ("name", "description", "sort_order") VALUES
+('Power and Energy Systems', 'Focuses on power systems operation, renewable integrations, electric machines, smart grids, electric vehicles, and AI/ML applications.\n\nSubtopics:\n• Power System Operation and Control\n• Advanced Transmission and Distribution Systems\n• Smart Grids and Micro Grids\n• Renewable Energy Systems\n• Electrical Machinery and Control\n• Electric Vehicles\n• Emerging Power Electronics Converters\n• Energy Storage Systems\n• AI/ML Applications in Electrical Engineering\n• Sustainable Energy Systems', 1),
+('Emerging Embedded and Communication Systems', 'Covers VLSI design, semiconductor devices, communication networks, green communication, embedded systems, and IoT applications.\n\nSubtopics:\n• Microelectronics\n• Semiconductor Devices\n• Circuits and Systems\n• Embedded Systems\n• VLSI Design\n• 5G/6G Technology\n• Communication Protocols and Networks\n• Green and Sustainable Communication Systems\n• Signal, Speech and Image Processing\n• RF, Microwaves & Optical Communication\n• Digital Communication Technologies and Systems\n• Sensor Networks & IoT\n• Embedded AI', 2),
+('Instrumentation and Control Systems', 'Highlights process control, automation, industrial controls, actuators, robotics, quantum sensors, and cyber-physical systems.\n\nSubtopics:\n• Smart Instrumentation and Control Systems\n• AI and Machine Learning in Control and Instrumentation Applications\n• Process Control\n• Instrumentation Systems\n• DCS and SCADA\n• Automation and Industrial Control\n• CAN\n• Sensors and Actuators\n• Cyber-Physical Systems and Industrial IoT\n• Robotics and Autonomous Systems\n• Measurement Techniques and Metrology\n• Wearable and Portable Sensing Devices\n• Quantum Sensors and Measurement Technologies', 3),
+('Biomedical Engineering and Sciences', 'Explores bio-sensors, micro/nano bio-engineering, biomedical imaging, remote healthcare, big data in health, and smart implants.\n\nSubtopics:\n• Disruptive technologies in healthcare - AI/ML\n• Micro/Nano Bio-engineering\n• Biomedical Instrumentation and Devices\n• Biosensors/ Micro/Nano and Wearable Technologies\n• Biomedical Imaging and Image Processing\n• Biomedical and Health Informatics\n• IoT in Healthcare\n• Diagnostic, Therapeutic and Rehabilitation Engineering\n• Big Data Analytics in Healthcare\n• Telemedicine and Remote Healthcare\n• Smart Implants and Biocompatible Devices\n• Bio-photonics and Optical Technologies', 4),
+('Emerging Computing Technologies and Computational Intelligence', 'Covers machine learning algorithms, generative AI, parallel systems, computing architectures, and the societal impact of AI.\n\nSubtopics:\n• Artificial Intelligence\n• Machine Learning\n• Generative AI\n• Computational Intelligence Techniques\n• High-Performance and Parallel Computing\n• Edge, IoT, and Cyber-Physical Systems\n• Ethics and Societal Impact of AI\n• Intelligent Software and Systems', 5),
+('Transformative Technologies in Big Data, Internet of Things and Security', 'Focuses on analytics modeling, cloud security, cybersecurity threats, threat intelligence, blockchain, and IoT integration.\n\nSubtopics:\n• Predictive Modeling\n• Business Intelligence and Real-Time Analytics\n• AI-Driven Automation\n• Edge Computing\n• Cloud Computing\n• IoT Security\n• Cybersecurity\n• Ethical Hacking and Threat Intelligence\n• Data Science and Big Data Analytics\n• AI and Big Data Integration\n• Blockchain Technologies', 6);
+
+
+-- Seed committee members
+INSERT INTO "public"."committee" ("category", "role", "name", "desc") VALUES
+('steering', 'Steering Committee Member', 'Dr. N. Susila', 'Professor and Head, Department of Information Technology'),
+('steering', 'Steering Committee Member', 'Dr. M. S. Geetha Devasena', 'Professor and Head, Department of Computer Science Engineering'),
+('steering', 'Steering Committee Member', 'Dr. A. Grace Selvarani', 'Professor and Head, Department of M.Tech Computer Science Engineering'),
+('steering', 'Steering Committee Member', 'Dr. R. Shanmugasundaram', 'Professor and Head, Department of Electronics and Instrumentation Engineering'),
+('steering', 'Steering Committee Member', 'Dr. S. Allirani', 'Professor and Head, Department of Electrical and Electronics Engineering'),
+('steering', 'Steering Committee Member', 'Dr. M. Jagadeeswari', 'Professor and Head, Department of Electronics and Communication Engineering'),
+('steering', 'Steering Committee Member', 'Dr. N. Sathish Kumar', 'Professor and Head, Department of Bio-Medical Engineering'),
+('organizing', 'Chief Patron', 'Dr. Sundar Ramakrishnan', 'Managing Trustee, SNR Sons Charitable Trust, Coimbatore'),
+('organizing', 'Chief Patron', 'Thiru. S. Narendran', 'Joint Managing Trustee, SNR Sons Charitable Trust, Coimbatore'),
+('organizing', 'General Chair', 'Dr. A. Soundarrajan', 'Principal, Sri Ramakrishna Engineering College'),
+('organizing', 'General Chair', 'Dr. P. Sakthivel', 'Chairman, IEEE Madras Section'),
+('organizing', 'General Chair', 'Dr. S. Radha', 'Secretary, IEEE Madras Section'),
+('organizing', 'General Chair', 'Dr. S. Brindha', 'Treasurer, IEEE Madras Section'),
+('organizing', 'Conference Chair', 'Dr. V. Karpagam', 'Organizing Secretary, Professor & Head - AI&DS'),
+('organizing', 'Session Chair', 'Dr. R. Kingsy Grace', 'Professor - AI&DS'),
+('organizing', 'Member', 'Mrs. N. Divya', 'Asst. Prof. (Sr.G) - EEE'),
+('organizing', 'Member', 'Mrs. R. Kiruba', 'Asst. Prof. (Sr. G) - EIE'),
+('organizing', 'Member', 'Dr. S. P. Vimal', 'Asso. Prof. - ECE'),
+('organizing', 'Member', 'Dr. J. Selva Kumar', 'Professor - M.Tech CSE'),
+('organizing', 'Member', 'Mrs. R. Rajalakshmi', 'Asst. Prof. (OG) - IT'),
+('organizing', 'Member', 'Mrs. G. Lavanya', 'Asst. Prof. (Sl.G) - BME'),
+('organizing', 'Program and Finance Chair', 'Dr. K. Balamurugan', 'Asso. Prof - EEE'),
+('organizing', 'Program and Finance Committee Member', 'Dr. C. Praveenkumar', 'Asst. Prof. (Sl.Gr) - EEE'),
+('organizing', 'Publication Chair', 'Mrs. S. Jansi Rani', 'Asst. Prof. (Sl.Gr) - IT'),
+('organizing', 'Publication Committee Member', 'Mr. I. Aravindaguru', 'Asst. Prof. (Sr. G) - EIE'),
+('organizing', 'Publication Committee Member', 'Mrs. C. Sowntharya', 'Asst. Prof. (Sr.G) - CSE'),
+('organizing', 'Publication Committee Member', 'Dr. N. Saranya', 'AP (Sl.G)'),
+('organizing', 'Publication Committee Member', 'Dr. P. Vishnu Vardhan', 'Asst. Prof. (Sr.G) - BME'),
+('organizing', 'Local Arrangements Chair', 'Dr. Deepa B Prabhu', 'Asso. Prof. - BME'),
+('organizing', 'Local Arrangements Committee Member', 'Dr. V. Radhika', 'Asso. Prof. - BME'),
+('organizing', 'Local Arrangements Committee Member', 'Mr. B. Marisekar', 'Asst. Prof. (Sl.G) - EEE'),
+('organizing', 'Local Arrangements Committee Member', 'Dr. M. Logaprakash', 'Asst. Prof. (Sl. G) - AIDS'),
+('organizing', 'Registration Chair', 'Dr. V. Radhika', 'Asso. Prof. - BME'),
+('organizing', 'Registration Committee Member', 'Dr. H. Vidhya', 'Asst. Prof. (Sr.G) - EEE'),
+('organizing', 'Registration Committee Member', 'Mrs. T. Anitha', 'Asst. Prof. (Sl.G) - EIE'),
+('organizing', 'Registration Committee Member', 'Mrs. M. Jaishree', 'Asst. Prof. (Sl.G) - ECE'),
+('organizing', 'Registration Committee Member', 'Mrs. R. S. Ramya', 'Asst. Prof. (Sr.G) - CSE'),
+('organizing', 'Registration Committee Member', 'Mr. S. Jeevanandham', 'Asst. Prof. (Sr.G) - IT'),
+('organizing', 'Registration Committee Member', 'Mrs. L. Divyalakshmi', 'Asst. Prof. (Sl.G) - BME'),
+('organizing', 'Conference Pre-Tutorial Sessions Chair', 'Dr. C. Praveen Kumar', 'Asst. Prof. (Sl.Gr) - EEE'),
+('organizing', 'Pre-Tutorial Sessions Committee Member', 'Mrs. B. Kalaimathi', 'Asst. Prof. (Sr.G) - ECE'),
+('organizing', 'Pre-Tutorial Sessions Committee Member', 'Dr. A. Vijay', 'Asst. Prof. (Sr.G) - ECE'),
+('organizing', 'Pre-Tutorial Sessions Committee Member', 'Mrs. M. Kowsalya (Sr.G) - ECE', 'Asso. Prof. - ECE'),
+('organizing', 'Technical Review Committee Convener', 'Dr. V. Karpagam', 'Professor & Head - AI&DS'),
+('organizing', 'Technical Review Committee Member', 'Dr. V. Rukkumani', 'Asso. Prof. - EIE'),
+('organizing', 'Technical Review Committee Member', 'Dr. M. Kasi Selvanathan', 'Asso. Prof. - ECE'),
+('organizing', 'Technical Review Committee Member', 'Dr. K. Balachander', 'Asst. Prof. (Sl.G) - EEE'),
+('organizing', 'Technical Review Committee Member', 'Dr. J. Anitha', 'Proffessor - AI&DS'),
+('organizing', 'Technical Review Committee Member', 'Dr. B. Mathivanan', 'Asso. Prof. - CSE'),
+('organizing', 'Outreach and Promotion Committee Convener', 'Dr. V. Rukkumani', 'Asso. Prof. - EIE'),
+('organizing', 'Outreach and Promotion Committee Member', 'Dr. M. Kalaiarasu', 'Professor - IT'),
+('organizing', 'Website and Social Media Promotion Committee Chair', 'Mr. R. S. Vishnu Durai', 'Asst. Prof. (Sl.Gr) - AI&DS'),
+('organizing', 'Website and Social Media Promotion Committee Member', 'Mr. K. Robin Johny', 'Asst. Prof. (Sr.G) - AERO'),
+('organizing', 'Website and Social Media Promotion Committee Member', 'Mr. G. Narendran', 'Asst. Prof. (Sl.Gr) - IT'),
+('organizing', 'Hospitality Committee Convener', 'Dr. P. Perumal', 'Professor - CSE'),
+('organizing', 'Hospitality Committee Member', 'Dr. M. Nagarajapandian', 'Asst. Prof. (Sl.G) - EIE'),
+('organizing', 'Hospitality Committee Member', 'Mr. V. Krishna Kumar', 'Asst. Prof. (Sl.G) - CSE'),
+('organizing', 'Hospitality Committee Member', 'Dr. M. Logaprakash', 'Asst. Prof. (Sl.G) - AI&DS'),
+('advisory', 'Advisory Committee Member', 'Dr. K. Ramesh', 'Principal Scientist, ICAR-Central Institute for Cotton Research (CICR) Regional Station, Coimbatore, Tamilnadu'),
+('advisory', 'Advisory Committee Member', 'Dr. Karthik Seemakurthy', 'Research Scientist, Hydronium Energies Ltd, London UK'),
+('advisory', 'Advisory Committee Member', 'Dr. Hareesh Janakiraman', 'Director, Embedded Guru LLC, USA'),
+('advisory', 'Advisory Committee Member', 'Dr. R. Gheorghiță Ghinea', 'Director R and D, Brunel University of London, UK'),
+('advisory', 'Advisory Committee Member', 'Dr. A. R Abdul Rajak', 'Head EEE, BITS Pilani, Dubai Campus, Dubai'),
+('advisory', 'Advisory Committee Member', 'Mr. C. Senthilnathan', 'Associate Director, Virtusa Corporation, USA'),
+('advisory', 'Advisory Committee Member', 'Mr. Soundararajan Manthiri', 'Sr. Energy Management System Manager, California, United States'),
+('advisory', 'Advisory Committee Member', 'Dr. Keerthivasan Krishnamoorthy', 'Professor, University of Technology and Applied Sciences, Muscat, Sultanate of Oman'),
+('advisory', 'Advisory Committee Member', 'Dr. Shankar Venugopal', 'Vice President, Mahindra Research Valley, Chennai'),
+('advisory', 'Advisory Committee Member', 'Mr. Shekhar Malani', 'Managing Director, Devise Electronics Pvt. Ltd., Pune'),
+('advisory', 'Advisory Committee Member', 'Dr. S. Joseph Gladwin', 'Vice-Chairman – Industry, Associate General Manager, BigCat Wireless Pvt. Ltd., Chennai'),
+('advisory', 'Advisory Committee Member', 'Dr. Selvakumar Ramasethu', 'Senior PRL. Solution Engineer, Cadence Design System, Bengaluru, India'),
+('advisory', 'Advisory Committee Member', 'Dr. Paramasivam Shanmugam', 'R & D and Engineering Leader, ESAB, Danfoss Drives, Chennai'),
+('advisory', 'Advisory Committee Member', 'Dr. Thanga Raj Chelliah', 'Professor and Head, Water Resources Development and Management Department, IIT Roorkee, Uttrakhand'),
+('advisory', 'Advisory Committee Member', 'Dr. R. Venkatesh Babu', 'Professor, Department of Computational and Data Sciences Indian Institute of Science, Bangalore, Karnataka'),
+('advisory', 'Advisory Committee Member', 'Dr. Anantha Padmanabha', 'Assistant Professor, Department of Computer Science and Engineering, IITM, Chennai, Tamilnadu'),
+('advisory', 'Advisory Committee Member', 'Dr. Gopalakrishnan Srinivasan', 'Assistant Professor, Department of Computer Science and Engineering, IITM, Chennai, Tamilnadu'),
+('advisory', 'Advisory Committee Member', 'Dr. M. Sabarimalai Manikandan', 'Associate Professor, IIT Palakad, India'),
+('advisory', 'Advisory Committee Member', 'Dr. M. Tottappan', 'Associate Professor, IIT (Bhu), Varanasi, India.'),
+('advisory', 'Advisory Committee Member', 'Dr. Yadaiah Narri', 'Professor (Retired), Jawaharlal Nehru Technological University Hyderabad, Telangana'),
+('advisory', 'Advisory Committee Member', 'Dr. K. Udhaykumar', 'Associate Professor, Department of Electrical and Electronics Engineering, Anna University, Chennai, Tamilnadu.'),
+('advisory', 'Advisory Committee Member', 'Dr. S. Radha', 'Treasurer, IEEE Madras Section, Senior Professor, SSN College of Engineering, Chennai'),
+('advisory', 'Advisory Committee Member', 'Dr. P. Sakthivel', 'Vice-Chairman, Academics, Anna University, Chennai'),
+('advisory', 'Advisory Committee Member', 'Dr. S. Nickolas', 'Professor and Head of the Department, Computer Applications, NIT, Trichy, Tamilnadu'),
+('advisory', 'Advisory Committee Member', 'Dr. D. Sriram Kumar', 'Professor, NIT, Tiruchirappalli, India'),
+('advisory', 'Advisory Committee Member', 'Dr. S. M. Sameer', 'Professor, NIT Calicut, India'),
+('advisory', 'Advisory Committee Member', 'Dr. Harigovindan', 'Associate Professor, NIT Puducherry, India'),
+('advisory', 'Advisory Committee Member', 'Dr. P. Karuppanan', 'Associate Professor, MNIT, Allahabad, UP'),
+('advisory', 'Advisory Committee Member', 'Dr. R. Jayabarathi', 'Associate Professor, Department of Electrical and Electronics Engineering, Amrita School of Engineering, Coimbatore'),
+('advisory', 'Advisory Committee Member', 'Dr. S. Albert Alexander', 'IEEE Chairman, PELS, Professor, VIT, Vellore'),
+('advisory', 'Advisory Committee Member', 'Dr. Ramalatha Marimuthu', 'Director, iExplore Foundation for Sustainable Development, Coimbatore'),
+('advisory', 'Advisory Committee Member', 'Dr. Debarati Sen', 'Professor, GSSS, IIT Kharagpur, West Bengal');
+
+-- Seed coordinators
+INSERT INTO "public"."coordinators" ("role", "name", "phone", "sort_order") VALUES
+('Publications Coordinator', 'Dr. M. Jagadeeswari', '+91 94435 56903', 1),
+('Technical Program Coordinator', 'Dr. A. Grace Selvarani', '+91 98427 12604', 2);
 
 -- 13. Restore necessary permissions to API gateway roles (anon, authenticated, service_role)
 -- Dropping and recreating the public schema revokes default permissions for these roles.

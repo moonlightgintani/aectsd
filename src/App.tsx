@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   motion, 
   AnimatePresence, 
   useScroll, 
-  useSpring 
+  useSpring,
+  useTransform
 } from 'framer-motion';
 import { 
   Calendar, 
@@ -20,7 +21,6 @@ import {
   Terminal, 
   ChevronRight, 
   CheckCircle, 
-  DollarSign, 
   Menu,
   X,
   FileText,
@@ -35,6 +35,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { SrecLogo } from './components/SrecLogo';
+import Footer from './components/Footer';
 import acLogo from './assets/ac.png';
 import srecLogo from './assets/srec-logo.png';
 import chatbotIcon from './assets/chatbot.gif';
@@ -100,7 +101,7 @@ interface Department {
 
 interface CommitteeMember {
   id?: any;
-  category: 'organizing' | 'advisory' | 'technical';
+  category: 'steering' | 'organizing' | 'advisory' | 'technical';
   role: string | null;
   name: string;
   desc: string;
@@ -134,6 +135,7 @@ interface Workshop {
   details: string;
 }
 
+/*
 interface RegistrationFee {
   member_type: string;
   inr_reg: string;
@@ -143,6 +145,7 @@ interface RegistrationFee {
   usd_virt_reg: string;
   usd_virt_early: string;
 }
+*/
 
 interface Stat {
   number: string;
@@ -294,12 +297,77 @@ async function sha256(message: string): Promise<string> {
   return sha256_fallback(message);
 }
 
+// Dynamic dynamic count up component for conference statistics
+function CounterUp({ target, duration = 1.2 }: { target: string; duration?: number }) {
+  const [count, setCount] = useState(0);
+  const elementRef = useRef<HTMLDivElement>(null);
+  const [hasStarted, setHasStarted] = useState(false);
+
+  // Extract the numeric part and any suffixes (e.g. "17" or "100+")
+  const numericPart = parseInt(target.replace(/\D/g, ''), 10) || 0;
+  const suffix = target.replace(/[0-9]/g, '');
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setHasStarted(true);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (elementRef.current) {
+      observer.observe(elementRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!hasStarted) return;
+
+    let start = 0;
+    const end = numericPart;
+    if (start === end) {
+      setCount(end);
+      return;
+    }
+
+    const totalSteps = 45;
+    const stepTime = (duration * 1000) / totalSteps;
+    const increment = end / totalSteps;
+    let currentStep = 0;
+
+    const timer = setInterval(() => {
+      currentStep++;
+      const nextVal = Math.round(increment * currentStep);
+      if (currentStep >= totalSteps) {
+        setCount(end);
+        clearInterval(timer);
+      } else {
+        setCount(nextVal);
+      }
+    }, stepTime);
+
+    return () => clearInterval(timer);
+  }, [hasStarted, numericPart, duration]);
+
+  return (
+    <div ref={elementRef} style={{ display: 'inline-block' }}>
+      {count}
+      {suffix}
+    </div>
+  );
+}
+
 export default function App() {
   const [activeSection, setActiveSection] = useState('home');
   const [currentPage, setCurrentPage] = useState<'main' | 'explore'>('main');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [committeeTab, setCommitteeTab] = useState<'organizing' | 'advisory' | 'technical'>('organizing');
+  const [committeeTab, setCommitteeTab] = useState<'steering' | 'organizing' | 'advisory' | 'technical'>('steering');
   const [activeSubcommittee, setActiveSubcommittee] = useState<string>('leadership');
+  const [submissionTab, setSubmissionTab] = useState<'initial' | 'camera-ready'>('initial');
   
   // Database content states
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -307,7 +375,7 @@ export default function App() {
   const [speakers, setSpeakers] = useState<Speaker[]>([]);
   const [importantDates, setImportantDates] = useState<ImportantDate[]>([]);
   const [workshops, setWorkshops] = useState<Workshop[]>([]);
-  const [registrationFees, setRegistrationFees] = useState<RegistrationFee[]>([]);
+  // const [registrationFees, setRegistrationFees] = useState<RegistrationFee[]>([]);
   const [stats, setStats] = useState<Stat[]>([]);
   const [coordinators, setCoordinators] = useState<Coordinator[]>([]);
   const [info, setInfo] = useState<Record<string, string>>({});
@@ -1062,12 +1130,16 @@ export default function App() {
   }, [info.hero_title, info.logo_title]);
 
   // Scroll Progress
-  const { scrollYProgress } = useScroll();
+  const { scrollY, scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 100,
     damping: 30,
     restDelta: 0.001
   });
+
+  // Parallax transforms for Hero background scroll animation
+  const heroBgY = useTransform(scrollY, [0, 600], ['0%', '25%']);
+  const heroBgScale = useTransform(scrollY, [0, 600], [1, 1.08]);
 
   // Countdown timer calculation
   const [timeLeft, setTimeLeft] = useState({
@@ -1144,8 +1216,8 @@ export default function App() {
       }
 
       // Fetch registration fees
-      const { data: feesData, error: errFees } = await supabase.from('registration_fees').select('*').order('sort_order');
-      if (!errFees && feesData) setRegistrationFees(feesData);
+      // const { data: feesData, error: errFees } = await supabase.from('registration_fees').select('*').order('sort_order');
+      // if (!errFees && feesData) setRegistrationFees(feesData);
 
       // Fetch stats
       const { data: statsData, error: errStats } = await supabase.from('stats').select('*').order('sort_order');
@@ -1190,6 +1262,12 @@ export default function App() {
   useEffect(() => {
     fetchDbData();
   }, []);
+
+  // Set dynamic banner height CSS variable
+  useEffect(() => {
+    const isBannerVisible = info.show_announcement !== 'false';
+    document.documentElement.style.setProperty('--banner-height', isBannerVisible ? '40px' : '0px');
+  }, [info.show_announcement]);
 
   useEffect(() => {
     const targetTime = info.countdown_target ? new Date(info.countdown_target).getTime() : new Date('2027-04-04T09:00:00').getTime();
@@ -1369,26 +1447,60 @@ export default function App() {
     'nexus-agent': info.nav_nexus_agent || "Nexus Agent"
   };
 
+  const renderBannerContent = (text: string) => {
+    const target = "Call for Papers!";
+    if (text.includes(target)) {
+      const parts = text.split(target);
+      return (
+        <>
+          {parts[0]}<strong>{target}</strong>{parts[1]}
+        </>
+      );
+    }
+    return text;
+  };
+
   return (
     <div style={{ position: 'relative', width: '100%', minHeight: '100vh', background: 'var(--bg-deep)' }}>
       {/* Background Grids and Overlays */}
       <div className="bg-grid-overlay" />
       <div className="bg-radial-overlay" />
+      <div className="bg-bubbles">
+        <div className="bubble bubble-1" />
+        <div className="bubble bubble-2" />
+        <div className="bubble bubble-3" />
+      </div>
 
       {/* Top Page Progress Indicator */}
       <motion.div 
         style={{
           scaleX,
           position: 'fixed',
-          top: 0,
+          top: 'var(--banner-height, 0px)',
           left: 0,
           right: 0,
           height: '4px',
           background: 'linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%)',
           transformOrigin: '0%',
-          zIndex: 100
+          zIndex: 125
         }} 
       />
+
+      {/* Announcement Banner */}
+      {info.show_announcement !== 'false' && (
+        <div className="announcement-banner">
+          <div className="announcement-content">
+            <div className="announcement-marquee-container">
+              <span className="announcement-marquee-text">
+                {renderBannerContent(
+                  info.announcement_text || 
+                  "📢 Call for Papers! Mark your calendars: The Call for Papers for AECTSD 2027 opens on 15th December 2026. Start preparing your submission"
+                )}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Header / Navbar */}
       <header className="main-header">
@@ -1499,208 +1611,271 @@ export default function App() {
               borderRadius: '0.375rem',
               padding: '0.5rem',
               color: '#0f172a',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              overflow: 'hidden',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '38px',
+              height: '38px'
             }}
             className="mobile-nav-toggle"
           >
-            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={mobileMenuOpen ? 'close' : 'menu'}
+                initial={{ rotate: -90, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: 90, opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                style={{ display: 'inline-flex' }}
+              >
+                {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+              </motion.div>
+            </AnimatePresence>
           </button>
         </div>
       </header>
-
+ 
       {/* Mobile Drawer Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, y: -30 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.2 }}
+            exit={{ opacity: 0, y: -30 }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
             className="mobile-nav-drawer"
           >
-            {NAV_ITEMS.map((item) => (
-              item.external ? (
-                <a
-                  key={item.id}
-                  href={
-                    item.id === 'ieee-sb'
-                      ? (info.ieee_sb_url || "https://ieeesrecsbs.vercel.app/")
-                      : (info.snr_url || info.snr_trust_url || "https://www.snrst.org")
-                  }
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: '#1e293b',
-                    textAlign: 'left',
-                    padding: '0.75rem 1rem',
-                    borderRadius: '0.5rem',
-                    fontSize: '1rem',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    width: '100%',
-                    textDecoration: 'none',
-                    display: 'block'
-                  }}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {navLabelMap[item.id] || item.label}
-                </a>
-              ) : (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    scrollToSection(item.id);
-                    setMobileMenuOpen(false);
-                  }}
-                  style={{
-                    background: activeSection === item.id ? 'rgba(59, 130, 246, 0.08)' : 'transparent',
-                    border: 'none',
-                    color: activeSection === item.id ? '#3b82f6' : '#1e293b',
-                    textAlign: 'left',
-                    padding: '0.75rem 1rem',
-                    borderRadius: '0.5rem',
-                    fontSize: '1rem',
-                    fontWeight: activeSection === item.id ? '700' : '600',
-                    cursor: 'pointer',
-                    width: '100%'
-                  }}
-                >
-                  {navLabelMap[item.id] || item.label}
-                </button>
-              )
+            {NAV_ITEMS.map((item, idx) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, x: -16 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ 
+                  duration: 0.3, 
+                  delay: idx * 0.035, 
+                  ease: [0.16, 1, 0.3, 1] 
+                }}
+                style={{ width: '100%' }}
+              >
+                {item.external ? (
+                  <a
+                    href={
+                      item.id === 'ieee-sb'
+                        ? (info.ieee_sb_url || "https://ieeesrecsbs.vercel.app/")
+                        : (info.snr_url || info.snr_trust_url || "https://www.snrst.org")
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: '#1e293b',
+                      textAlign: 'left',
+                      padding: '0.75rem 1rem',
+                      borderRadius: '0.5rem',
+                      fontSize: '1rem',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      width: '100%',
+                      textDecoration: 'none',
+                      display: 'block',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {navLabelMap[item.id] || item.label}
+                  </a>
+                ) : (
+                  <button
+                    onClick={() => {
+                      scrollToSection(item.id);
+                      setMobileMenuOpen(false);
+                    }}
+                    style={{
+                      background: activeSection === item.id ? 'rgba(59, 130, 246, 0.08)' : 'transparent',
+                      border: 'none',
+                      color: activeSection === item.id ? '#3b82f6' : '#1e293b',
+                      textAlign: 'left',
+                      padding: '0.75rem 1rem',
+                      borderRadius: '0.5rem',
+                      fontSize: '1rem',
+                      fontWeight: activeSection === item.id ? '700' : '600',
+                      cursor: 'pointer',
+                      width: '100%',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    {navLabelMap[item.id] || item.label}
+                  </button>
+                )}
+              </motion.div>
             ))}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {currentPage === 'explore' ? (
-        <ExplorePage adminUser={adminUser} />
-      ) : (
-        <>
+      <AnimatePresence mode="wait">
+        {currentPage === 'explore' ? (
+          <motion.div
+            key="explore"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.35, ease: 'easeInOut' }}
+          >
+            <ExplorePage adminUser={adminUser} />
+          </motion.div>
+        ) : (
+<motion.div
+            key="home"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.35, ease: 'easeInOut' }}
+          >
           {/* Hero Section */}
           <section 
             id="home" 
-        style={{
-          minHeight: '100vh',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          position: 'relative',
-          padding: '8rem 1.5rem 6rem',
-          backgroundImage: `url(${info.hero_bg_url || 'https://images.shiksha.com/mediadata/images/1488263707phpWPR1Pb.jpeg'})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          textAlign: 'center',
-          overflow: 'hidden'
-        }}
-      >
-        {/* Light overlay for exact readability and style match */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.75) 60%, rgba(255, 255, 255, 1) 100%)',
-          zIndex: 1
-        }} />
-
-        <div style={{ position: 'relative', zIndex: 2, maxWidth: '1000px', width: '100%' }}>
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.8 }}
-            className="hero-title md:text-7xl"
-          >
-            {info.hero_title}
-          </motion.h1>
- 
-          {/* Large Subtitle (Full Conference Name) */}
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.8 }}
-            className="hero-subtitle-text"
-          >
-            {info.hero_subtitle}
-          </motion.h2>
-
-          {/* Date and Location Badge */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.4, duration: 0.8 }}
             style={{
+              minHeight: '100vh',
               display: 'flex',
               flexDirection: 'column',
-              gap: '1rem',
-              alignItems: 'center',
               justifyContent: 'center',
-              marginBottom: '3rem'
+              alignItems: 'center',
+              position: 'relative',
+              padding: 'calc(8rem + var(--banner-height, 0px)) 1.5rem 6rem',
+              textAlign: 'center',
+              overflow: 'hidden'
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.35rem', fontWeight: 700, color: '#0f172a' }}>
-              <Calendar size={22} className="text-blue-600" />
-              <span>{info.event_date_display}</span>
-            </div>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem', color: '#475569', fontSize: '1.05rem', fontWeight: 500 }}>
+            {/* Parallax Hero Background Image */}
+            <motion.div 
+              style={{
+                position: 'absolute',
+                inset: 0,
+                backgroundImage: `url(${info.hero_bg_url || 'https://images.shiksha.com/mediadata/images/1488263707phpWPR1Pb.jpeg'})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                y: heroBgY,
+                scale: heroBgScale,
+                zIndex: 0
+              }}
+            />
+
+            {/* Light overlay for exact readability and style match */}
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.75) 60%, rgba(255, 255, 255, 1) 100%)',
+              zIndex: 1
+            }} />
+
+        <div style={{ position: 'relative', zIndex: 2, maxWidth: '960px', width: '100%' }}>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="glass-card"
+            style={{
+              padding: '3rem 2.5rem',
+              borderRadius: '1.5rem',
+              background: 'rgba(255, 255, 255, 0.85)',
+              backdropFilter: 'blur(16px)',
+              border: '1px solid rgba(255, 255, 255, 0.4)',
+              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '1.5rem',
+              color: '#0f172a'
+            }}
+          >
+            {/* Title */}
+            <h1 className="hero-title" style={{ margin: 0, fontSize: '3rem', fontWeight: 800, background: 'linear-gradient(135deg, #091d36 40%, #0f52ba 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', lineHeight: 1.2 }}>
+              {info.hero_title || 'Welcome to ICAECTSD 2027'}
+            </h1>
+
+            {/* Subtitle */}
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: '#334155', maxWidth: '800px', margin: 0, lineHeight: 1.5 }}>
+              {info.hero_subtitle || 'Second IEEE International Conference On Advances in Engineering and Computing Technologies for Sustainable Development (ICAECTSD) 2027'}
+            </h2>
+
+            {/* Date & Location */}
+            <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', margin: '0.5rem 0 1rem', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <MapPin size={18} className="text-blue-600" />
-                <span>{(info.event_location_display || '').includes(',') ? info.event_location_display.split(',')[0] + ',' : (info.event_location_display || '')}</span>
+                <Calendar size={20} className="text-blue-600" />
+                <span>{info.event_date_display || '17th and 18th December 2027'}</span>
               </div>
-              {(info.event_location_display || '').includes(',') && (
-                <span>{info.event_location_display.split(',').slice(1).join(',').trim()}</span>
-              )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <MapPin size={20} className="text-blue-600" />
+                <span>{info.event_location_display || 'Sri Ramakrishna Engineering College, Coimbatore, Tamilnadu, India'}</span>
+              </div>
             </div>
-          </motion.div>
 
-          {/* Countdown Clock */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.8 }}
-            className="countdown-container"
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#d97706', fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem' }}>
-              <Clock size={16} />
-              <span>{info.hero_countdown_title}</span>
+            {/* Countdown Clock */}
+            <div className="countdown-container" style={{ width: '100%', maxWidth: '600px', padding: '1rem', background: 'rgba(15, 82, 186, 0.05)', borderRadius: '1rem', border: '1px solid rgba(15, 82, 186, 0.1)', color: '#0f172a' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', color: '#1e3a8a', fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>
+                <Clock size={16} />
+                <span>{info.hero_countdown_title || 'Conference Countdown'}</span>
+              </div>
+              <div className="countdown-row" style={{ color: '#0f172a' }}>
+                {[
+                  { label: info.label_days || 'Days', value: timeLeft.days },
+                  { label: info.label_hours || 'Hours', value: timeLeft.hours },
+                  { label: info.label_mins || 'Minutes', value: timeLeft.minutes },
+                  { label: info.label_secs || 'Seconds', value: timeLeft.seconds }
+                ].map((t, idx) => (
+                  <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <span className="countdown-val" style={{ display: 'inline-flex', overflow: 'hidden', height: '2.5rem', alignItems: 'center', justifyContent: 'center', color: '#091d36', fontSize: '1.8rem', fontWeight: 800 }}>
+                      <AnimatePresence mode="popLayout" initial={false}>
+                        <motion.span
+                          key={t.value}
+                          initial={{ y: 20, opacity: 0 }}
+                          animate={{ y: 0, opacity: 1 }}
+                          exit={{ y: -20, opacity: 0 }}
+                          transition={{ duration: 0.2, ease: 'easeOut' }}
+                          style={{ display: 'inline-block' }}
+                        >
+                          {String(t.value).padStart(2, '0')}
+                        </motion.span>
+                      </AnimatePresence>
+                    </span>
+                    <span className="countdown-lbl" style={{ color: '#475569', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 600 }}>
+                      {t.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
-            
-            <div className="countdown-row">
-              {[
-                { label: info.label_days, value: timeLeft.days },
-                { label: info.label_hours, value: timeLeft.hours },
-                { label: info.label_mins, value: timeLeft.minutes },
-                { label: info.label_secs, value: timeLeft.seconds }
-              ].map((t, idx) => (
-                <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <span className="countdown-val">
-                    {String(t.value).padStart(2, '0')}
-                  </span>
-                  <span className="countdown-lbl">
-                    {t.label}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </motion.div>
 
-          {/* Actions */}
-          <motion.div
-            initial={{ opacity: 0, y: 25 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.8 }}
-            style={{ display: 'flex', gap: '1.25rem', justifyContent: 'center', flexWrap: 'wrap' }}
-          >
-            <button onClick={() => scrollToSection('paper-submission')} className="btn btn-primary" style={{ fontSize: '1rem', padding: '1rem 2rem' }}>
-              <FileText size={18} />
-              {info.hero_btn_submit}
-            </button>
-            <button onClick={() => setShowCalcModal(true)} className="btn btn-secondary" style={{ fontSize: '1rem', padding: '1rem 2rem' }}>
-              {info.hero_btn_register}
-              <ChevronRight size={18} />
-            </button>
+            {/* Actions */}
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap', width: '100%', marginTop: '0.5rem' }}>
+              <button onClick={() => scrollToSection('paper-submission')} className="btn btn-primary" style={{ fontSize: '0.95rem', padding: '0.8rem 1.75rem' }}>
+                <FileText size={18} />
+                {info.hero_btn_submit || 'Submit Paper'}
+              </button>
+              <button 
+                onClick={() => {
+                  alert('Brochure download starting...');
+                  const link = document.createElement('a');
+                  link.href = '#';
+                  link.setAttribute('download', 'ICAECTSD_2027_Brochure.pdf');
+                  document.body.appendChild(link);
+                }} 
+                className="btn btn-secondary" 
+                style={{ fontSize: '0.95rem', padding: '0.8rem 1.75rem', background: '#0b2240', border: '1px solid rgba(0,0,0,0.1)', color: '#ffffff' }}
+              >
+                <Download size={18} />
+                Download Brochure
+              </button>
+              <button onClick={() => setShowCalcModal(true)} className="btn btn-secondary" style={{ fontSize: '0.95rem', padding: '0.8rem 1.75rem' }}>
+                {info.hero_btn_register || 'Calculate Fees'}
+                <ChevronRight size={18} />
+              </button>
+            </div>
           </motion.div>
         </div>
       </section>
@@ -1720,38 +1895,58 @@ export default function App() {
             <div style={{ height: '3px', width: '60px', background: '#3b82f6', margin: '1rem auto 0' }} />
           </motion.div>
 
-          <div className="grid-2-col" style={{ gap: '2rem' }}>
+          {/* About Layout: About the Conference (Full Width) & Trust + College (Grid) */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', marginBottom: '2rem' }}>
             <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
               className="glass-card"
+              style={{ width: '100%' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
-                <BookOpen className="text-blue-400" size={24} />
-                <h3 style={{ fontSize: '1.5rem', color: 'white' }}>{info.about_card_conf_title}</h3>
+                <Layers className="text-blue-400" size={26} />
+                <h3 style={{ fontSize: '1.6rem', color: 'white', fontWeight: 700 }}>About the Conference</h3>
               </div>
-              <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', whiteSpace: 'pre-line' }}>
-                {info.about_trust || info.about_conference}
+              <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', whiteSpace: 'pre-line', lineHeight: '1.8', fontSize: '0.975rem' }}>
+                {info.about_conference}
               </p>
             </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="glass-card"
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
-                <Award className="text-amber-400" size={24} />
-                <h3 style={{ fontSize: '1.5rem', color: 'white' }}>{info.about_card_inst_title}</h3>
-              </div>
-              <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', whiteSpace: 'pre-line' }}>
-                {info.about_institution}
-              </p>
-            </motion.div>
+            <div className="grid-2-col" style={{ gap: '2rem' }}>
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+                className="glass-card"
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
+                  <BookOpen className="text-cyan-400" size={24} />
+                  <h3 style={{ fontSize: '1.5rem', color: 'white', fontWeight: 700 }}>{info.about_card_conf_title || "About the Trust"}</h3>
+                </div>
+                <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', whiteSpace: 'pre-line', lineHeight: '1.7', fontSize: '0.95rem' }}>
+                  {info.about_trust}
+                </p>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+                className="glass-card"
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
+                  <Award className="text-amber-400" size={24} />
+                  <h3 style={{ fontSize: '1.5rem', color: 'white', fontWeight: 700 }}>{info.about_card_inst_title || "About the Institution"}</h3>
+                </div>
+                <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', whiteSpace: 'pre-line', lineHeight: '1.7', fontSize: '0.95rem' }}>
+                  {info.about_institution}
+                </p>
+              </motion.div>
+            </div>
           </div>
 
           {/* Stats Bar */}
@@ -1770,7 +1965,9 @@ export default function App() {
                 className="glass-card"
                 style={{ textAlign: 'center', padding: '1.5rem' }}
               >
-                <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#3b82f6', fontFamily: 'var(--font-heading)' }}>{stat.number}</div>
+                <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#3b82f6', fontFamily: 'var(--font-heading)' }}>
+                  <CounterUp target={stat.number} />
+                </div>
                 <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 500 }}>{stat.label}</div>
               </motion.div>
             ))}
@@ -1796,15 +1993,15 @@ export default function App() {
           {/* Committee Tabs */}
           <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginBottom: '3rem', flexWrap: 'wrap' }}>
             {([
-              { id: 'organizing', label: info.committee_tab_org },
-              { id: 'advisory', label: info.committee_tab_adv },
-              { id: 'technical', label: info.committee_tab_tech }
-            ] as { id: 'organizing' | 'advisory' | 'technical', label: string }[]).map((tab) => (
+              { id: 'steering', label: info.committee_tab_steering || 'Steering Committee' },
+              { id: 'organizing', label: info.committee_tab_org || 'Organizing Committee' },
+              { id: 'advisory', label: info.committee_tab_adv || 'Advisory Committee' },
+              { id: 'technical', label: info.committee_tab_tech || 'Technical Program' }
+            ] as { id: 'steering' | 'organizing' | 'advisory' | 'technical', label: string }[]).map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setCommitteeTab(tab.id)}
-                className={`btn ${committeeTab === tab.id ? 'btn-primary' : 'btn-secondary'}`}
-                style={{ borderRadius: '2rem' }}
+                className={`committee-tab-btn ${committeeTab === tab.id ? 'active' : 'inactive'}`}
               >
                 {tab.label}
               </button>
@@ -1820,8 +2017,67 @@ export default function App() {
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.3 }}
             >
+              {committeeTab === 'steering' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                  {info.steering_committee_desc && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="glass-card"
+                      style={{ padding: '2rem', textAlign: 'center', maxWidth: '900px', margin: '0 auto 0.5rem', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)' }}
+                    >
+                      <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>
+                        Steering Committee
+                      </h3>
+                      <p style={{ color: 'var(--text-secondary)', lineHeight: '1.7', fontSize: '0.95rem', margin: 0 }}>
+                        {info.steering_committee_desc}
+                      </p>
+                    </motion.div>
+                  )}
+
+                  <div className="grid-3-col">
+                    {committeeMembers
+                      .filter((member) => member.category === 'steering')
+                      .map((member, mIdx) => (
+                        <div 
+                          key={mIdx} 
+                          className="member-profile-card" 
+                          style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '1.75rem 1.5rem', borderLeft: '4px solid #8b5cf6', justifyContent: 'center' }}
+                        >
+                          <span className="member-role-badge" style={{ marginBottom: '0.75rem', alignSelf: 'center' }}>
+                            {member.role || 'Steering Committee Member'}
+                          </span>
+                          <h4 className="member-name" style={{ fontSize: '1.15rem', fontWeight: 700, color: 'white', marginBottom: '0.5rem', marginTop: 0 }}>
+                            {member.name}
+                          </h4>
+                          <p className="member-desc" style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.5' }}>
+                            {member.desc}
+                          </p>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
               {committeeTab === 'organizing' && (
-                <div className="committee-split-container">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                  {info.organizing_committee_desc && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="glass-card"
+                      style={{ padding: '2rem', textAlign: 'center', maxWidth: '900px', margin: '0 auto 0.5rem', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)' }}
+                    >
+                      <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>
+                        Organizing Committee
+                      </h3>
+                      <p style={{ color: 'var(--text-secondary)', lineHeight: '1.7', fontSize: '0.95rem', margin: 0 }}>
+                        {info.organizing_committee_desc}
+                      </p>
+                    </motion.div>
+                  )}
+                  
+                  <div className="committee-split-container">
                   {/* Sidebar subgroups stack */}
                   <div className="committee-sidebar">
                     {[
@@ -1856,19 +2112,19 @@ export default function App() {
                         if (member.category !== 'organizing') return false;
                         switch (activeSubcommittee) {
                           case 'leadership':
-                            return member.role === 'Patron' || member.role === 'General Chair';
+                            return member.role === 'Chief Patron' || member.role === 'Patron' || member.role === 'General Chair';
                           case 'executive':
-                            return member.role === 'Conference Chair & Organizing Secretary' || member.role === 'Session Chair';
+                            return member.role === 'Conference Chair' || member.role === 'Conference Chair & Organizing Secretary' || member.role === 'Session Chair';
                           case 'finance':
-                            return member.role === 'Finance Committee Member';
+                            return member.role === 'Program and Finance Chair' || member.role === 'Finance Committee Member' || member.role === 'Program and Finance Committee Member';
                           case 'publication':
-                            return member.role === 'Publication Committee Member';
+                            return member.role === 'Publication Chair' || member.role === 'Publication Committee Member';
                           case 'arrangements':
-                            return member.role === 'Local Arrangements Committee Member';
+                            return member.role === 'Local Arrangements Chair' || member.role === 'Local Arrangements Committee Member';
                           case 'registration':
-                            return member.role === 'Registration Committee Member';
+                            return member.role === 'Registration Chair' || member.role === 'Registration Committee Member';
                           case 'tutorials':
-                            return member.role === 'Pre-Tutorial Sessions Committee Member';
+                            return member.role === 'Conference Pre-Tutorial Sessions Chair' || member.role === 'Pre-Tutorial Sessions Committee Member';
                           case 'review':
                             return member.role === 'Technical Review Committee Convener' || member.role === 'Technical Review Committee Member';
                           case 'outreach':
@@ -1883,70 +2139,102 @@ export default function App() {
                             return false;
                         }
                       })
-                      .map((member, mIdx) => (
-                        <div key={mIdx} className="member-profile-card">
-                          <div className="member-avatar-wrapper">
-                            <img 
-                              src={member.image_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`}
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`;
-                              }}
-                              alt={member.name}
-                              className="member-avatar-img"
-                            />
-                          </div>
-                          <span className="member-role-badge">
-                            {member.role && member.role !== 'Member' ? member.role : 'Organizing Member'}
-                          </span>
-                          <h4 className="member-name">{member.name}</h4>
-                          <p className="member-desc">{member.desc}</p>
-                        </div>
-                      ))}
+                      .map((member, mIdx) => {
+                        const showAvatar = activeSubcommittee === 'leadership';
+                        if (showAvatar) {
+                          return (
+                            <div key={mIdx} className="member-profile-card">
+                              <div className="member-avatar-wrapper">
+                                <img 
+                                  src={member.image_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`}
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`;
+                                  }}
+                                  alt={member.name}
+                                  className="member-avatar-img"
+                                />
+                              </div>
+                              <span className="member-role-badge">
+                                {member.role && member.role !== 'Member' ? member.role : 'Organizing Member'}
+                              </span>
+                              <h4 className="member-name">{member.name}</h4>
+                              <p className="member-desc">{member.desc}</p>
+                            </div>
+                          );
+                        } else {
+                          return (
+                            <div key={mIdx} className="member-profile-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '1.75rem 1.5rem', borderLeft: '4px solid #3b82f6', justifyContent: 'center' }}>
+                              <span className="member-role-badge" style={{ marginBottom: '0.75rem', alignSelf: 'center' }}>
+                                {member.role && member.role !== 'Member' ? member.role : 'Organizing Member'}
+                              </span>
+                              <h4 className="member-name" style={{ fontSize: '1.15rem', fontWeight: 700, color: 'white', marginBottom: '0.5rem', marginTop: 0 }}>{member.name}</h4>
+                              <p className="member-desc" style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.5' }}>{member.desc}</p>
+                            </div>
+                          );
+                        }
+                      })}
+                  </div>
+                </div>
+              </div>
+            )}
+
+              {committeeTab === 'advisory' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                  {info.advisory_committee_desc && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="glass-card"
+                      style={{ padding: '2rem', textAlign: 'center', maxWidth: '800px', margin: '0 auto 0.5rem', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)' }}
+                    >
+                      <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>
+                        Advisory Committee
+                      </h3>
+                      <p style={{ color: 'var(--text-secondary)', lineHeight: '1.7', fontSize: '0.95rem', margin: 0 }}>
+                        {info.advisory_committee_desc}
+                      </p>
+                    </motion.div>
+                  )}
+                  
+                  <div className="grid-3-col">
+                    {committeeMembers.filter(m => m.category === 'advisory').map((adviser, index) => (
+                      <div key={index} className="member-profile-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '1.75rem 1.5rem', borderLeft: '4px solid #3b82f6', justifyContent: 'center' }}>
+                        <span className="member-role-badge" style={{ marginBottom: '0.75rem', alignSelf: 'center' }}>{adviser.role || 'Advisory Member'}</span>
+                        <h4 className="member-name" style={{ fontSize: '1.15rem', fontWeight: 700, color: 'white', marginBottom: '0.5rem', marginTop: 0 }}>{adviser.name}</h4>
+                        <p className="member-desc" style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.5' }}>{adviser.desc}</p>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
 
-              {committeeTab === 'advisory' && (
-                <div className="grid-3-col">
-                  {committeeMembers.filter(m => m.category === 'advisory').map((adviser, index) => (
-                    <div key={index} className="member-profile-card">
-                      <div className="member-avatar-wrapper">
-                        <img 
-                          src={adviser.image_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(adviser.name)}&backgroundColor=0f52ba,06b6d4,f58220`}
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(adviser.name)}&backgroundColor=0f52ba,06b6d4,f58220`;
-                          }}
-                          alt={adviser.name}
-                          className="member-avatar-img"
-                        />
-                      </div>
-                      <span className="member-role-badge">{adviser.role || 'Advisory Member'}</span>
-                      <h4 className="member-name">{adviser.name}</h4>
-                      <p className="member-desc">{adviser.desc}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-
               {committeeTab === 'technical' && (
-                <div className="grid-3-col">
-                  {committeeMembers.filter(m => m.category === 'technical').map((tech, index) => (
-                    <div key={index} className="member-profile-card">
-                      <div className="member-avatar-wrapper">
-                        <img 
-                          src={tech.image_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(tech.name)}&backgroundColor=0f52ba,06b6d4,f58220`}
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(tech.name)}&backgroundColor=0f52ba,06b6d4,f58220`;
-                          }}
-                          alt={tech.name}
-                          className="member-avatar-img"
-                        />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                  {info.technical_committee_desc && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="glass-card"
+                      style={{ padding: '2rem', textAlign: 'center', maxWidth: '800px', margin: '0 auto 0.5rem', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)' }}
+                    >
+                      <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>
+                        Technical Committee
+                      </h3>
+                      <p style={{ color: 'var(--text-secondary)', lineHeight: '1.7', fontSize: '0.95rem', margin: 0 }}>
+                        {info.technical_committee_desc}
+                      </p>
+                    </motion.div>
+                  )}
+                  
+                  <div className="grid-3-col">
+                    {committeeMembers.filter(m => m.category === 'technical').map((tech, index) => (
+                      <div key={index} className="member-profile-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '1.75rem 1.5rem', borderLeft: '4px solid #10b981', justifyContent: 'center' }}>
+                        <span className="member-role-badge" style={{ marginBottom: '0.75rem', alignSelf: 'center' }}>{tech.role || 'Technical Reviewer'}</span>
+                        <h4 className="member-name" style={{ fontSize: '1.15rem', fontWeight: 700, color: 'white', marginBottom: '0.5rem', marginTop: 0 }}>{tech.name}</h4>
+                        <p className="member-desc" style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.5' }}>{tech.desc}</p>
                       </div>
-                      <span className="member-role-badge">{tech.role || 'Technical Reviewer'}</span>
-                      <h4 className="member-name">{tech.name}</h4>
-                      <p className="member-desc">{tech.desc}</p>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
             </motion.div>
@@ -1967,6 +2255,11 @@ export default function App() {
             <span style={{ color: '#3b82f6', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '0.1em' }}>{info.speakers_badge}</span>
             <h2 style={{ fontSize: '2.5rem', color: 'white', marginTop: '0.5rem' }}>{info.speakers_title}</h2>
             <div style={{ height: '3px', width: '60px', background: '#3b82f6', margin: '1rem auto 0' }} />
+            {info.speakers_desc && (
+              <p style={{ color: 'var(--text-secondary)', marginTop: '1.5rem', maxWidth: '800px', marginInline: 'auto', lineHeight: '1.7', fontSize: '0.95rem' }}>
+                {info.speakers_desc}
+              </p>
+            )}
           </motion.div>
 
           <div className="grid-3-col" style={{ gap: '2rem' }}>
@@ -2260,29 +2553,131 @@ export default function App() {
             <div style={{ height: '3px', width: '60px', background: '#3b82f6', margin: '1rem auto 0' }} />
           </motion.div>
 
+          {/* 1. Important Dates / Key Deadlines */}
+          <div style={{ marginBottom: '4rem' }}>
+            <h3 style={{ fontSize: '1.5rem', color: 'white', marginBottom: '2rem', textAlign: 'center', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Key Dates & Deadlines
+            </h3>
+            <div className="grid-3-col" style={{ gap: '1.5rem' }}>
+              {importantDates
+                .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+                .map((dateItem, idx) => (
+                  <div 
+                    key={idx} 
+                    className="glass-card" 
+                    style={{ 
+                      display: 'flex', 
+                      gap: '1rem', 
+                      alignItems: 'center', 
+                      padding: '1.5rem',
+                      borderLeft: '4px solid #10b981',
+                      background: 'rgba(255, 255, 255, 0.03)'
+                    }}
+                  >
+                    <div style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '0.5rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <CheckCircle size={20} />
+                    </div>
+                    <div>
+                      <h4 style={{ fontSize: '0.95rem', fontWeight: 700, margin: '0 0 0.25rem', color: 'white' }}>{dateItem.title}</h4>
+                      <p style={{ fontSize: '0.9rem', color: '#d97706', fontWeight: 600, margin: 0 }}>{dateItem.event_date}</p>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+
+          {/* 2. Instructions and CMT Procedures */}
           <div className="grid-2-col" style={{ gap: '2rem' }}>
-            <div className="glass-card">
-              <h3 style={{ fontSize: '1.35rem', color: 'white', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <CheckCircle className="text-green-500" size={20} />
-                {info.guidelines_sub1}
+            {/* Left Card: General Instructions */}
+            <div className="glass-card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <h3 style={{ fontSize: '1.35rem', color: 'white', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.75rem', fontWeight: 700 }}>
+                Instructions for Authors
               </h3>
-              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.95rem', color: 'var(--text-secondary)' }}>
-                {(info.guidelines_bullets_formatting || '').split('\n').map((bullet, idx) => (
-                  <li key={idx}>• {bullet}</li>
+              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '0.95rem', color: 'var(--text-secondary)', padding: 0, margin: 0 }}>
+                {[
+                  "The maximum length of the paper for review is 6 pages, including figures, tables, and references. The maximum file size allowed is 10 MB in PDF format without encryption and/or passwords.",
+                  "Papers of poor quality and/or high similarity index will be rejected during the initial screening process without review.",
+                  "Use only the IEEE standard two-column conference paper Microsoft Word template.",
+                  "The paper will be peer-reviewed by domain experts of the respective tracks.",
+                  "Authors should submit the papers through Microsoft Conference Management Toolkit (CMT).",
+                  "Kindly do not submit the paper multiple times, as it may lead to the cancellation of your paper."
+                ].map((inst, idx) => (
+                  <li key={idx} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', lineHeight: '1.6' }}>
+                    <span style={{ color: '#3b82f6', fontWeight: 'bold', fontSize: '1.1rem', marginTop: '-2px' }}>•</span>
+                    <span>{inst}</span>
+                  </li>
                 ))}
               </ul>
             </div>
 
-            <div className="glass-card">
-              <h3 style={{ fontSize: '1.35rem', color: 'white', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <CheckCircle className="text-green-500" size={20} />
-                {info.guidelines_sub2}
-              </h3>
-              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.95rem', color: 'var(--text-secondary)' }}>
-                {(info.guidelines_bullets_presentation || '').split('\n').map((bullet, idx) => (
-                  <li key={idx}>• {bullet}</li>
-                ))}
-              </ul>
+            {/* Right Card: CMT Procedure Toggler */}
+            <div className="glass-card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div style={{ display: 'flex', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.5rem', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                <h3 style={{ fontSize: '1.35rem', color: 'white', fontWeight: 700, margin: 0 }}>
+                  CMT Submission Portal
+                </h3>
+                <div style={{ display: 'inline-flex', background: 'rgba(255,255,255,0.06)', borderRadius: '1.5rem', padding: '0.25rem' }}>
+                  <button 
+                    onClick={() => setSubmissionTab('initial')}
+                    className={`committee-tab-btn ${submissionTab === 'initial' ? 'active' : 'inactive'}`}
+                    style={{ padding: '0.4rem 1.2rem', fontSize: '0.8rem', borderRadius: '1.5rem' }}
+                  >
+                    Initial Submission
+                  </button>
+                  <button 
+                    onClick={() => setSubmissionTab('camera-ready')}
+                    className={`committee-tab-btn ${submissionTab === 'camera-ready' ? 'active' : 'inactive'}`}
+                    style={{ padding: '0.4rem 1.2rem', fontSize: '0.8rem', borderRadius: '1.5rem' }}
+                  >
+                    Camera-Ready
+                  </button>
+                </div>
+              </div>
+
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={submissionTab}
+                  initial={{ opacity: 0, x: 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {submissionTab === 'initial' ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <span style={{ fontSize: '0.85rem', color: '#d97706', fontWeight: 700 }}>
+                        Procedure for Uploading Papers:
+                      </span>
+                      <ol style={{ paddingLeft: '1.2rem', margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                        <li>
+                          Go to paper submission website: <a href="https://cmt3.research.microsoft.com/aectsd2025" target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', textDecoration: 'underline' }}>https://cmt3.research.microsoft.com/aectsd2025</a>.
+                        </li>
+                        <li>If you are new to the system, please choose "Register" at the bottom of the dialog box. Create a new account with a user ID and Password.</li>
+                        <li>Log in to CMT with your user ID and Password.</li>
+                        <li>Select "All Conferences" and choose the conference.</li>
+                        <li>Click the Conference Name link.</li>
+                        <li>On the Author Console page, click <strong>+ Create new submission</strong>.</li>
+                        <li>Fill out the required fields, including the title, abstract, authors, subject areas, and email IDs of all the co-authors.</li>
+                        <li>Upload your paper and other files (if needed).</li>
+                        <li>Click “Submit” to submit your paper.</li>
+                      </ol>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <span style={{ fontSize: '0.85rem', color: '#d97706', fontWeight: 700 }}>
+                        Submitting Camera-Ready Version:
+                      </span>
+                      <ol style={{ paddingLeft: '1.2rem', margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                        <li>Go to the Author Console in CMT.</li>
+                        <li>Click the <strong>Create Camera Ready Submission</strong> link.</li>
+                        <li>Edit the title, abstract, and author information.</li>
+                        <li>Upload the camera-ready file.</li>
+                        <li>Answer any additional questions.</li>
+                        <li>Click “Submit” to submit your paper.</li>
+                      </ol>
+                    </div>
+                  )}
+                </motion.div>
+              </AnimatePresence>
             </div>
           </div>
         </div>
@@ -2303,32 +2698,32 @@ export default function App() {
             <div style={{ height: '3px', width: '60px', background: '#3b82f6', margin: '1rem auto 0' }} />
           </motion.div>
 
-          <div className="glass-card" style={{ maxWidth: '800px', margin: '0 auto', padding: '3rem 2rem', textAlign: 'center' }}>
-            <div style={{ display: 'inline-flex', background: 'rgba(59, 130, 246, 0.1)', padding: '1rem', borderRadius: '50%', color: '#3b82f6', marginBottom: '1.5rem' }}>
-              <Layers size={36} />
+          <div className="glass-card" style={{ maxWidth: '750px', margin: '0 auto', padding: '2.5rem 2rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem' }}>
+            <div style={{ display: 'inline-flex', background: 'rgba(59, 130, 246, 0.1)', padding: '0.85rem', borderRadius: '50%', color: '#3b82f6' }}>
+              <Layers size={32} />
             </div>
             
-            <h3 style={{ fontSize: '1.75rem', color: 'white', marginBottom: '1rem' }}>{info.submission_card_title}</h3>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', maxWidth: '600px', marginInline: 'auto' }}>
-              {info.submission_card_desc}
+            <h3 style={{ fontSize: '1.6rem', color: 'white', margin: 0, fontWeight: 700 }}>
+              {info.submission_card_title || 'Submit Your Application through CMT'}
+            </h3>
+            <p style={{ color: 'var(--text-secondary)', margin: 0, maxWidth: '600px', fontSize: '0.95rem', lineHeight: '1.5' }}>
+              {info.submission_card_desc || 'Submit your research papers directly via the Microsoft CMT portal. Make sure to adhere to all formatting guidelines before uploading your work.'}
             </p>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center', marginBottom: '2rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', color: '#64748b' }}>
-                <Terminal size={14} />
-                <span>{info.label_conf_id} <strong>{info.cmt_id}</strong></span>
-              </div>
+ 
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', color: '#94a3b8' }}>
+              <Terminal size={14} />
+              <span>{info.label_conf_id || 'Conference CMT Portal ID:'} <strong>{info.cmt_id || 'AECTSD2027'}</strong></span>
             </div>
-
+ 
             <a 
-              href={info.cmt_link} 
+              href={info.cmt_link || 'https://cmt3.research.microsoft.com/aectsd2025'} 
               target="_blank" 
               rel="noopener noreferrer" 
               className="btn btn-primary"
-              style={{ fontSize: '1.1rem', padding: '1rem 2.5rem' }}
+              style={{ fontSize: '1rem', padding: '0.8rem 2.2rem', marginTop: '0.5rem' }}
             >
-              {info.submission_btn_cmt}
-              <ExternalLink size={18} />
+              {info.submission_btn_cmt || 'Go to CMT Submission Portal'}
+              <ExternalLink size={16} />
             </a>
           </div>
         </div>
@@ -2342,71 +2737,262 @@ export default function App() {
             whileInView="visible"
             viewport={{ once: true }}
             variants={fadeInUp}
-            style={{ textAlign: 'center', marginBottom: '4rem' }}
+            style={{ textAlign: 'center', marginBottom: '3.5rem' }}
           >
             <span style={{ color: '#3b82f6', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '0.1em' }}>{info.reg_badge}</span>
             <h2 style={{ fontSize: '2.5rem', color: 'white', marginTop: '0.5rem' }}>{info.reg_title}</h2>
             <div style={{ height: '3px', width: '60px', background: '#3b82f6', margin: '1rem auto 0' }} />
           </motion.div>
 
-          {/* Pricing Table */}
-          <div className="registration-table-container">
-            <table className="registration-table">
-              <thead>
-                <tr>
-                  <th rowSpan={3} style={{ width: '25%' }}>{info.reg_table_header_member}</th>
-                  <th colSpan={2}>{info.reg_table_header_indian}</th>
-                  <th colSpan={4}>
-                    {info.reg_table_header_foreign}<br />
-                    <span style={{ fontSize: '0.75rem', fontWeight: 500, opacity: 0.8 }}>
-                      {info.reg_table_header_foreign_note}
-                    </span>
-                  </th>
-                </tr>
-                <tr>
-                  <th rowSpan={2}>{info.reg_table_header_regular}</th>
-                  <th rowSpan={2}>{info.reg_table_header_early}</th>
-                  <th colSpan={2}>{info.reg_table_header_physical}</th>
-                  <th colSpan={2}>{info.reg_table_header_virtual}</th>
-                </tr>
-                <tr>
-                  <th>{info.reg_table_header_regular}</th>
-                  <th>{info.reg_table_header_early}</th>
-                  <th>{info.reg_table_header_regular}</th>
-                  <th>{info.reg_table_header_early}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {registrationFees.map((row, index) => (
-                  <tr key={index}>
-                    <td style={{ fontWeight: 600, textAlign: 'left' }}>{row.member_type}</td>
-                    <td>{row.inr_reg}</td>
-                    <td>{row.inr_early}</td>
-                    <td>{row.usd_phys_reg}</td>
-                    <td>{row.usd_phys_early}</td>
-                    <td>{row.usd_virt_reg}</td>
-                    <td>{row.usd_virt_early}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          {/* General Guidelines Card */}
+          <div className="glass-card" style={{ padding: '2rem', marginBottom: '3.5rem' }}>
+            <h3 style={{ fontSize: '1.4rem', color: 'white', marginBottom: '1.25rem', fontWeight: 700 }}>Registration Guidelines</h3>
+            <div style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: '1.7', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <p style={{ margin: 0 }}>
+                <strong>At least one of the authors</strong> of each accepted paper must register for the conference for the paper to be included in the conference proceedings and published through <strong>IEEE Xplore (Scopus Indexed)</strong>.
+              </p>
+              <p style={{ margin: 0 }}>
+                All accepted and presented papers of AECTSD 2027 will be submitted for possible publication in the <strong>IEEE Xplore® Digital Library</strong>.
+              </p>
+              <p style={{ margin: 0 }}>
+                Full registration includes the registration of one paper. Additional papers for a single registration come with an additional fee. The maximum length of the paper is <strong>6 pages</strong> including figures, tables, and references.
+              </p>
+              <p style={{ margin: 0 }}>
+                Registration fee covers admission to all sessions, cost of publishing the article in IEEE Xplore digital library, conference proceedings, welcome reception, conference kit, refreshments, working lunch, banquet dinner and half-a-day tour to nearby places.
+              </p>
+              <p style={{ margin: 0, color: '#d97706', fontWeight: 600 }}>
+                * A fee of Rs. 500 will be applied for each additional page (with a maximum of 2 pages).
+              </p>
+            </div>
           </div>
 
-          <div style={{ marginBottom: '3rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <p style={{ color: '#d97706', fontWeight: 600, fontSize: '0.95rem' }}>
-              {info.reg_notice_non_presenter}
+          {/* Indian Authors Table */}
+          <div style={{ marginBottom: '3.5rem' }}>
+            <h3 style={{ fontSize: '1.35rem', color: 'white', marginBottom: '1.25rem', fontWeight: 700 }}>
+              Indian Authors (Fees in INR, GST Inclusive)
+            </h3>
+            <div className="registration-table-container">
+              <table className="registration-table">
+                <thead>
+                  <tr>
+                    <th rowSpan={2} style={{ width: '30%', verticalAlign: 'middle', textAlign: 'left' }}>Categories</th>
+                    <th colSpan={2}>Graduate Student / Research Scholar</th>
+                    <th colSpan={2}>Professionals</th>
+                  </tr>
+                  <tr>
+                    <th>IEEE Member</th>
+                    <th>Non-IEEE Member</th>
+                    <th>IEEE Member</th>
+                    <th>Non-IEEE Member</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style={{ fontWeight: 600, textAlign: 'left' }}>Conference only</td>
+                    <td>₹6,000*</td>
+                    <td>₹7,000*</td>
+                    <td>₹7,000*</td>
+                    <td>₹8,000*</td>
+                  </tr>
+                  <tr>
+                    <td style={{ fontWeight: 600, textAlign: 'left' }}>Tutorial only</td>
+                    <td>₹1,000</td>
+                    <td>₹1,250</td>
+                    <td>₹1,250</td>
+                    <td>₹1,500</td>
+                  </tr>
+                  <tr>
+                    <td style={{ fontWeight: 600, textAlign: 'left' }}>Conference plus Tutorial</td>
+                    <td>₹6,500*</td>
+                    <td>₹7,500*</td>
+                    <td>₹7,500*</td>
+                    <td>₹8,500*</td>
+                  </tr>
+                  <tr>
+                    <td style={{ fontWeight: 600, textAlign: 'left' }}>Indian Non-Author Attendee</td>
+                    <td>₹3,500</td>
+                    <td>₹5,000</td>
+                    <td>₹4,500</td>
+                    <td>₹6,000</td>
+                  </tr>
+                  <tr>
+                    <td style={{ fontWeight: 600, textAlign: 'left' }}>Rate per Additional Paper</td>
+                    <td>₹3,000</td>
+                    <td>₹3,000</td>
+                    <td>₹3,000</td>
+                    <td>₹3,000</td>
+                  </tr>
+                  <tr>
+                    <td style={{ fontWeight: 600, textAlign: 'left' }}>Extra Page (after 6 pages)</td>
+                    <td>₹500</td>
+                    <td>₹500</td>
+                    <td>₹500</td>
+                    <td>₹500</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Foreign Authors Table */}
+          <div style={{ marginBottom: '3.5rem' }}>
+            <h3 style={{ fontSize: '1.35rem', color: 'white', marginBottom: '1.25rem', fontWeight: 700 }}>
+              Foreign Authors (Fees in USD, GST Inclusive)
+            </h3>
+            <div className="registration-table-container">
+              <table className="registration-table">
+                <thead>
+                  <tr>
+                    <th rowSpan={2} style={{ width: '30%', verticalAlign: 'middle', textAlign: 'left' }}>Categories</th>
+                    <th colSpan={2}>Graduate Student / Research Scholar</th>
+                    <th colSpan={2}>Professionals</th>
+                  </tr>
+                  <tr>
+                    <th>IEEE Member</th>
+                    <th>Non-IEEE Member</th>
+                    <th>IEEE Member</th>
+                    <th>Non-IEEE Member</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style={{ fontWeight: 600, textAlign: 'left' }}>Conference only</td>
+                    <td>$150*</td>
+                    <td>$200*</td>
+                    <td>$200*</td>
+                    <td>$250*</td>
+                  </tr>
+                  <tr>
+                    <td style={{ fontWeight: 600, textAlign: 'left' }}>Tutorial only</td>
+                    <td>$40</td>
+                    <td>$50</td>
+                    <td>$50</td>
+                    <td>$75</td>
+                  </tr>
+                  <tr>
+                    <td style={{ fontWeight: 600, textAlign: 'left' }}>Conference plus Tutorial</td>
+                    <td>$175*</td>
+                    <td>$225*</td>
+                    <td>$225*</td>
+                    <td>$300*</td>
+                  </tr>
+                  <tr>
+                    <td style={{ fontWeight: 600, textAlign: 'left' }}>Rate per Additional Paper</td>
+                    <td>$50</td>
+                    <td>$50</td>
+                    <td>$50</td>
+                    <td>$50</td>
+                  </tr>
+                  <tr>
+                    <td style={{ fontWeight: 600, textAlign: 'left' }}>Extra Page (after 6 pages)</td>
+                    <td>$20</td>
+                    <td>$20</td>
+                    <td>$20</td>
+                    <td>$20</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Bank Account Details */}
+          <div className="glass-card" style={{ padding: '2rem', marginBottom: '3.5rem', background: '#f8fafc', border: '1px solid #e2e8f0', color: '#0f172a' }}>
+            <h3 style={{ fontSize: '1.4rem', color: '#091d36', marginBottom: '0.5rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ color: '#0f52ba', fontSize: '1.5rem', fontWeight: 900 }}>$</span> Bank Account Details
+            </h3>
+            <p style={{ color: '#475569', fontSize: '0.95rem', marginBottom: '2rem', lineHeight: '1.5' }}>
+              Please find the official banking channels to process registration fees. Bank transfer references must include your Paper ID.
             </p>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', fontWeight: 600, fontStyle: 'italic', lineHeight: 1.5 }}>
-              {info.reg_notice_certificate}
-            </p>
-                  <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'flex-start' }}>
-              <h4 style={{ fontSize: '1.2rem', color: '#0f172a', fontWeight: 700 }}>{info.reg_link_label}</h4>
+
+            <div className="grid-2-col" style={{ gap: '2.5rem', alignItems: 'stretch' }}>
+              {/* Left Column: Bank Parameters Table */}
+              <div style={{ display: 'flex', flexDirection: 'column', width: '100%', justifyContent: 'center' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {[
+                    { label: 'Account Name', value: 'Sri Ramakrishna Engineering College - AECTSD' },
+                    { label: 'Bank Name', value: 'ICICI Bank, Coimbatore' },
+                    { label: 'Account Number', value: '058705008310' },
+                    { label: 'IFSC Code', value: 'ICIC0000587' },
+                    { label: 'Branch Location', value: 'SREC Campus Branch, Coimbatore' }
+                  ].map((row, rIdx) => (
+                    <div 
+                      key={rIdx} 
+                      style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center', 
+                        paddingBottom: '0.75rem', 
+                        borderBottom: rIdx < 4 ? '1px solid #e2e8f0' : 'none',
+                        gap: '1rem'
+                      }}
+                    >
+                      <span style={{ fontWeight: 700, color: '#0f172a', fontSize: '0.95rem', flexShrink: 0 }}>{row.label}</span>
+                      <span style={{ color: '#1e293b', fontSize: '0.95rem', fontWeight: 500, textAlign: 'right' }}>{row.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Right Column: Important Payment Note Card */}
+              <div 
+                style={{ 
+                  background: '#fffbeb', 
+                  border: '1px solid #fef3c7', 
+                  borderRadius: '1rem', 
+                  padding: '1.75rem', 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  gap: '0.75rem' 
+                }}
+              >
+                <h4 style={{ fontSize: '0.95rem', color: '#b45309', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>
+                  IMPORTANT PAYMENT NOTE
+                </h4>
+                <p style={{ color: '#78350f', fontSize: '0.92rem', lineHeight: '1.6', margin: 0, fontWeight: 500 }}>
+                  Please include your Paper ID in the payment reference. Once the wire transfer transaction completes successfully, authors are requested to upload the scanned payment receipt copy in the registration form below.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Modifiers Box & Calculator Callout */}
+          <div className="grid-2-col" style={{ gap: '2rem', alignItems: 'stretch', marginBottom: '3rem' }}>
+            {/* Notes box */}
+            <div className="glass-card" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1rem', borderLeft: '4px solid #f58220' }}>
+              <h4 style={{ fontSize: '1.1rem', color: 'white', fontWeight: 700, margin: 0 }}>Fee Modifiers & Addons</h4>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.88rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <li>
+                  <strong style={{ color: '#f58220' }}>* Early Bird Registration:</strong>
+                  <ul style={{ paddingLeft: '1.2rem', marginTop: '0.25rem' }}>
+                    <li>Discount of <strong>INR 1,000</strong> on Indian conference & conference plus tutorial registration fees.</li>
+                    <li>Discount of <strong>INR 500</strong> on the Indian non-author attendee fee.</li>
+                    <li>Discount of <strong>USD 25</strong> on Foreign conference & conference plus tutorial registration fees.</li>
+                  </ul>
+                </li>
+                <li>
+                  <strong style={{ color: 'white' }}>* Late Registration Fee:</strong> Additional surcharge fee of <strong>INR 1,000 / USD 25</strong> applies on conference and conference plus tutorial registration fees.
+                </li>
+                <li>
+                  <strong style={{ color: 'white' }}>* Virtual Mode Presentation:</strong> Additional addon charge of <strong>INR 1,000 / USD 25</strong> applies on the conference registration fee.
+                </li>
+              </ul>
+            </div>
+
+            {/* Interactive portal callout */}
+            <div className="glass-card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
+              <div style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', padding: '1rem', borderRadius: '50%', marginBottom: '1.25rem' }}>
+                <CheckCircle size={32} />
+              </div>
+              <h4 style={{ fontSize: '1.25rem', color: 'white', fontWeight: 700, marginBottom: '0.5rem' }}>Dynamic Fee Calculator</h4>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1.5rem', maxWidth: '350px' }}>
+                Instantly calculate your total registration fees including extra pages and optional pre-conference tutorial addons.
+              </p>
               <button 
                 className="btn btn-primary" 
-                style={{ background: '#0b2240', border: '1px solid rgba(0,0,0,0.1)', padding: '0.75rem 2.5rem', fontSize: '1rem' }}
+                style={{ padding: '0.75rem 2.5rem', fontSize: '1rem' }}
                 onClick={() => setShowCalcModal(true)}
               >
-                {info.reg_btn_click}
+                Launch Fee Calculator
               </button>
             </div>
           </div>
@@ -2423,15 +3009,15 @@ export default function App() {
             variants={fadeInUp}
             style={{ textAlign: 'center', marginBottom: '4rem' }}
           >
-            <span style={{ color: '#3b82f6', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '0.1em' }}>{info.contact_badge}</span>
-            <h2 style={{ fontSize: '2.5rem', color: 'white', marginTop: '0.5rem' }}>{info.contact_title}</h2>
+            <span style={{ color: '#3b82f6', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '0.1em' }}>{info.contact_badge || 'Connect'}</span>
+            <h2 style={{ fontSize: '2.5rem', color: 'white', marginTop: '0.5rem' }}>{info.contact_title || 'Contact Us'}</h2>
             <div style={{ height: '3px', width: '60px', background: '#3b82f6', margin: '1rem auto 0' }} />
           </motion.div>
 
           <div className="grid-2-col" style={{ gap: '2rem' }}>
             {/* Contact Form */}
             <div className="glass-card">
-              <h3 style={{ fontSize: '1.5rem', color: 'white', marginBottom: '1.5rem' }}>{info.contact_form_title}</h3>
+              <h3 style={{ fontSize: '1.5rem', color: 'white', marginBottom: '1.5rem' }}>{info.contact_form_title || 'Send Us a Message'}</h3>
               
               {formSubmitted ? (
                 <div style={{ 
@@ -2443,61 +3029,61 @@ export default function App() {
                   color: '#4ade80'
                 }}>
                   <CheckCircle size={36} style={{ margin: '0 auto 1rem' }} />
-                  <h4 style={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>{info.contact_form_success_title}</h4>
-                  <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>{info.contact_form_success_desc}</p>
+                  <h4 style={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>{info.contact_form_success_title || 'Message Sent!'}</h4>
+                  <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>{info.contact_form_success_desc || 'Thank you for reaching out. We will get back to you shortly.'}</p>
                 </div>
               ) : (
                 <form onSubmit={handleContactSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   <div>
-                    <label style={{ fontSize: '0.85rem', color: '#cbd5e1', fontWeight: 600, display: 'block', marginBottom: '0.5rem' }}>{info.contact_form_label_name}</label>
+                    <label style={{ fontSize: '0.85rem', color: '#cbd5e1', fontWeight: 600, display: 'block', marginBottom: '0.5rem' }}>{info.contact_form_label_name || 'Your Name'}</label>
                     <input 
                       type="text" 
                       required 
                       className="form-input" 
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder={info.contact_form_placeholder_name} 
+                      placeholder={info.contact_form_placeholder_name || 'Enter full name'} 
                     />
                   </div>
 
                   <div>
-                    <label style={{ fontSize: '0.85rem', color: '#cbd5e1', fontWeight: 600, display: 'block', marginBottom: '0.5rem' }}>{info.contact_form_label_email}</label>
+                    <label style={{ fontSize: '0.85rem', color: '#cbd5e1', fontWeight: 600, display: 'block', marginBottom: '0.5rem' }}>{info.contact_form_label_email || 'Email Address'}</label>
                     <input 
                       type="email" 
                       required 
                       className="form-input" 
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      placeholder={info.contact_form_placeholder_email} 
+                      placeholder={info.contact_form_placeholder_email || 'Enter email address'} 
                     />
                   </div>
 
                   <div>
-                    <label style={{ fontSize: '0.85rem', color: '#cbd5e1', fontWeight: 600, display: 'block', marginBottom: '0.5rem' }}>{info.contact_form_label_subject}</label>
+                    <label style={{ fontSize: '0.85rem', color: '#cbd5e1', fontWeight: 600, display: 'block', marginBottom: '0.5rem' }}>{info.contact_form_label_subject || 'Subject'}</label>
                     <input 
                       type="text" 
                       required 
                       className="form-input" 
                       value={formData.subject}
                       onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                      placeholder={info.contact_form_placeholder_subject} 
+                      placeholder={info.contact_form_placeholder_subject || 'How can we help?'} 
                     />
                   </div>
 
                   <div>
-                    <label style={{ fontSize: '0.85rem', color: '#cbd5e1', fontWeight: 600, display: 'block', marginBottom: '0.5rem' }}>{info.contact_form_label_message}</label>
+                    <label style={{ fontSize: '0.85rem', color: '#cbd5e1', fontWeight: 600, display: 'block', marginBottom: '0.5rem' }}>{info.contact_form_label_message || 'Message'}</label>
                     <textarea 
                       rows={4} 
                       required 
                       className="form-input" 
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      placeholder={info.contact_form_placeholder_message} 
+                      placeholder={info.contact_form_placeholder_message || 'Type details here...'} 
                     />
                   </div>
 
                   <button type="submit" className="btn btn-primary" style={{ alignSelf: 'flex-start', marginTop: '0.5rem' }}>
-                    {info.contact_form_btn_send}
+                    {info.contact_form_btn_send || 'Send Message'}
                   </button>
                 </form>
               )}
@@ -2506,30 +3092,30 @@ export default function App() {
             {/* Address & Coordinators */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <div className="glass-card">
-                <h3 style={{ fontSize: '1.35rem', color: 'white', marginBottom: '12.25px' }}>{info.contact_sec_title}</h3>
+                <h3 style={{ fontSize: '1.35rem', color: 'white', marginBottom: '12.25px' }}>{info.contact_sec_title || 'Organizing Secretariat'}</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
                   <div style={{ display: 'flex', gap: '0.75rem' }}>
                     <MapPin size={20} className="text-blue-400" style={{ flexShrink: 0 }} />
                     <span style={{ whiteSpace: 'pre-line' }}>
-                      {info.secretariat_address}
+                      {info.secretariat_address || 'Department of EEE / ECE,\nSri Ramakrishna Engineering College,\nVattamalaipalayam, N.G.G.O Colony Post,\nCoimbatore, Tamilnadu - 641022, India.'}
                     </span>
                   </div>
                   
                   <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
                     <Mail size={18} className="text-blue-400" />
-                    <a href={`mailto:${info.secretariat_email}`} style={{ color: '#60a5fa', textDecoration: 'none' }}>{info.secretariat_email}</a>
+                    <a href={`mailto:${info.secretariat_email || 'aectsd2027@srec.ac.in'}`} style={{ color: '#60a5fa', textDecoration: 'none' }}>{info.secretariat_email || 'aectsd2027@srec.ac.in'}</a>
                   </div>
 
                   <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
                     <Phone size={18} className="text-blue-400" />
-                    <span>{info.secretariat_phone}</span>
+                    <span>{info.secretariat_phone || '+91 (422) 2461588 / 2460088'}</span>
                   </div>
                 </div>
               </div>
 
               {/* Coordinators */}
               <div className="glass-card">
-                <h3 style={{ fontSize: '1.35rem', color: 'white', marginBottom: '1.25rem' }}>{info.contact_coord_title}</h3>
+                <h3 style={{ fontSize: '1.35rem', color: 'white', marginBottom: '1.25rem' }}>{info.contact_coord_title || 'Conference Coordinators'}</h3>
                 <div className="grid-2-col" style={{ gap: '1rem' }}>
                   {coordinators.map((coord, cidx) => (
                     <div key={cidx} style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '0.5rem', border: '1px solid rgba(255,255,255,0.04)' }}>
@@ -2549,107 +3135,129 @@ export default function App() {
       </section>
 
       {/* Map & Directions Section */}
-      <section id="venue" className="section" style={{ background: '#ffffff' }}>
+      <section id="location" className="section" style={{ background: '#ffffff' }}>
         <div className="container">
           <motion.div 
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             variants={fadeInUp}
-            style={{ textAlign: 'center', marginBottom: '4rem' }}
+            style={{ textAlign: 'center', marginBottom: '3.5rem' }}
           >
             <span style={{ color: '#3b82f6', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '0.1em' }}>Venue</span>
-            <h2 style={{ fontSize: '2.5rem', color: '#091d36', marginTop: '0.5rem' }}>Map & Directions</h2>
+            <h2 style={{ fontSize: '2.5rem', color: '#091d36', marginTop: '0.5rem' }}>Conference Venue & Reach</h2>
             <div style={{ height: '3px', width: '60px', background: '#3b82f6', margin: '1rem auto 0' }} />
           </motion.div>
 
-          <div className="grid-2-col" style={{ gap: '2rem', marginBottom: '3.5rem', alignItems: 'stretch' }}>
-            {/* College Mini Map */}
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="map-container"
+          {/* Venue Description Card */}
+          <div className="glass-card" style={{ padding: '2rem', marginBottom: '3rem', background: '#f8fafc', border: '1px solid #e2e8f0' }}>
+            <h3 style={{ fontSize: '1.4rem', color: '#091d36', marginBottom: '1rem', fontWeight: 700 }}>Sri Ramakrishna Engineering College (SREC)</h3>
+            <p style={{ color: '#475569', fontSize: '0.95rem', lineHeight: '1.7', margin: '0 0 1.25rem' }}>
+              Sri Ramakrishna Engineering College (SREC), located in Coimbatore, was established in 1994 and is managed by the SNR Sons Charitable Trust. The college offers undergraduate and postgraduate programs in engineering and technology. SREC is known for its strong academic curriculum, research initiatives, and modern facilities, fostering a practical learning environment. The college also emphasizes extracurricular activities and industry collaborations, aiming to produce skilled professionals.
+            </p>
+            <a 
+              href="https://srec.ac.in" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              style={{ color: '#0f52ba', fontWeight: 700, fontSize: '0.95rem', textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
             >
-              <iframe 
-                title="SREC Campus Map"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3915.150328964016!2d76.9632117754871!3d11.102171853099849!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba8f7000afa766b%3A0x2b5757b8d520a3af!2sSri%20Ramakrishna%20Engineering%20College!5e0!3m2!1sen!2sin!4v1780992469751!5m2!1sen!2sin"
-                allowFullScreen={true}
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
-            </motion.div>
+              Visit SREC Official Website <ExternalLink size={14} />
+            </a>
+          </div>
 
-            {/* Directions details */}
+          <div className="grid-2-col" style={{ gap: '2rem', marginBottom: '3.5rem', alignItems: 'stretch' }}>
+            {/* Left: How to Reach & Mini Map */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+              {/* College Mini Map */}
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+                className="map-container"
+                style={{ height: '320px', overflow: 'hidden', borderRadius: '1rem' }}
+              >
+                <iframe 
+                  title="SREC Campus Map"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3915.150328964016!2d76.9632117754871!3d11.102171853099849!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba8f7000afa766b%3A0x2b5757b8d520a3af!2sSri%20Ramakrishna%20Engineering%20College!5e0!3m2!1sen!2sin!4v1780992469751!5m2!1sen!2sin"
+                  allowFullScreen={true}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  style={{ width: '100%', height: '100%', border: 0 }}
+                />
+              </motion.div>
+            </div>
+
+            {/* Right: How to Reach details */}
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
               className="glass-card"
-              style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
+              style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', background: '#f8fafc', border: '1px solid #e2e8f0' }}
             >
-              <h3 style={{ fontSize: '1.5rem', color: '#091d36', marginBottom: '1.25rem' }}>How to Reach SREC</h3>
-              <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '0.95rem', lineHeight: '1.6' }}>
-                Sri Ramakrishna Engineering College is situated in Vattamalaipalayam, Coimbatore. It is well connected by road and public transport from all parts of Coimbatore city.
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <h3 style={{ fontSize: '1.4rem', color: '#091d36', marginBottom: '1.25rem', fontWeight: 700 }}>How to Reach</h3>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '1.5rem' }}>
                 <div style={{ display: 'flex', gap: '0.85rem', alignItems: 'flex-start' }}>
-                  <div style={{ background: 'rgba(59, 130, 246, 0.08)', padding: '0.5rem', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6' }}>
+                  <div style={{ background: 'rgba(59, 130, 246, 0.08)', padding: '0.5rem', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6', flexShrink: 0 }}>
                     <MapPin size={20} />
                   </div>
                   <div>
-                    <h4 style={{ fontSize: '0.95rem', fontWeight: 700, margin: '0 0 0.15rem' }}>Coimbatore International Airport</h4>
-                    <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Distance: ~18 km | Approx. 35 mins drive via Saravanampatti</span>
+                    <h4 style={{ fontSize: '0.95rem', fontWeight: 700, margin: '0 0 0.15rem', color: '#091d36' }}>Coimbatore International Airport</h4>
+                    <span style={{ fontSize: '0.88rem', color: '#475569' }}>Distance: ~20 km | Approx. 40 minutes travel time</span>
                   </div>
                 </div>
                 
                 <div style={{ display: 'flex', gap: '0.85rem', alignItems: 'flex-start' }}>
-                  <div style={{ background: 'rgba(59, 130, 246, 0.08)', padding: '0.5rem', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6' }}>
+                  <div style={{ background: 'rgba(59, 130, 246, 0.08)', padding: '0.5rem', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6', flexShrink: 0 }}>
                     <MapPin size={20} />
                   </div>
                   <div>
-                    <h4 style={{ fontSize: '0.95rem', fontWeight: 700, margin: '0 0 0.15rem' }}>Coimbatore Junction (CBE) Railway Station</h4>
-                    <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Distance: ~14 km | Approx. 30 mins drive via Gandhipuram</span>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', gap: '0.85rem', alignItems: 'flex-start' }}>
-                  <div style={{ background: 'rgba(59, 130, 246, 0.08)', padding: '0.5rem', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6' }}>
-                    <MapPin size={20} />
-                  </div>
-                  <div>
-                    <h4 style={{ fontSize: '0.95rem', fontWeight: 700, margin: '0 0 0.15rem' }}>Gandhipuram Town Bus Stand</h4>
-                    <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Distance: ~12 km | Local city buses (Route 45 series) available frequently</span>
+                    <h4 style={{ fontSize: '0.95rem', fontWeight: 700, margin: '0 0 0.15rem', color: '#091d36' }}>Coimbatore Junction Railway Station</h4>
+                    <span style={{ fontSize: '0.88rem', color: '#475569' }}>Distance: ~15 km | Approx. 30 minutes travel time</span>
                   </div>
                 </div>
               </div>
 
-              <div style={{ marginTop: '1.75rem', borderTop: '1px solid rgba(0,0,0,0.08)', paddingTop: '1.25rem', display: 'flex', justifyContent: 'center' }}>
-                <button
-                  type="button"
-                  onClick={() => scrollToSection('explore')}
-                  className="btn btn-primary"
-                  style={{
-                    background: 'linear-gradient(135deg, var(--accent) 0%, var(--accent-cyan) 100%)',
-                    border: 'none',
-                    padding: '0.65rem 1.25rem',
-                    fontSize: '0.85rem',
-                    fontWeight: 700,
-                    borderRadius: '0.5rem',
-                    color: '#ffffff',
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    boxShadow: '0 4px 12px rgba(15, 82, 186, 0.15)'
-                  }}
-                >
-                  <Sparkles size={14} /> Explore Coimbatore & Nearby Sights
-                </button>
+              <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', padding: '1rem', borderRadius: '0.5rem', fontSize: '0.88rem', color: '#1e3a8a', lineHeight: '1.5' }}>
+                <p style={{ margin: '0 0 0.5rem' }}>
+                  💡 <strong>Cab Hire Note:</strong> Candidates can hire a car (Red Taxi, Go Taxi, or OLA) directly from Coimbatore Airport or Railway Station to reach SREC.
+                </p>
+                <p style={{ margin: 0 }}>
+                  🚗 <strong>Auto-Rickshaw Note:</strong> Candidates can also hire an auto-rickshaw from <strong>Thudiyalur</strong> (nearest town, ~4 km away) to reach SREC.
+                </p>
               </div>
             </motion.div>
+          </div>
+
+          {/* Contact Numbers Directory */}
+          <div className="glass-card" style={{ padding: '2rem', marginBottom: '3.5rem', background: '#f8fafc', border: '1px solid #e2e8f0' }}>
+            <h3 style={{ fontSize: '1.4rem', color: '#091d36', marginBottom: '1.25rem', fontWeight: 700, textAlign: 'center' }}>
+              Transport Contact Directory
+            </h3>
+            <div className="grid-3-col" style={{ gap: '1.5rem' }}>
+              {[
+                { name: 'Red Taxi', phone: '0422 456 7890', action: 'tel:04224567890', note: 'Local Taxi Service' },
+                { name: 'Go Taxi', phone: '0422 4455 6677', action: 'tel:042244556677', note: 'Cab Booking Service' },
+                { name: 'OLA Cabs', phone: '0422 335 5335', action: 'tel:04223355335', note: 'Or book via OLA App' },
+                { name: 'Capital Call Taxi', phone: '0422 245 4444', action: 'tel:04222454444', note: '24/7 Cab Service' },
+                { name: 'Fast Track Call Taxi', phone: '0422 288 8999', action: 'tel:04222888999', note: 'Outstation & Local' },
+                { name: 'Covai Zone Group Auto', phone: '+91 84381 44544', action: 'tel:+918438144544', note: 'Thudiyalur Auto Stand' }
+              ].map((cab, cidx) => (
+                <div key={cidx} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '0.75rem', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                  <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>{cab.note}</span>
+                  <h4 style={{ fontSize: '1.05rem', fontWeight: 800, margin: 0, color: '#091d36' }}>{cab.name}</h4>
+                  <a 
+                    href={cab.action} 
+                    style={{ color: '#0f52ba', fontSize: '0.95rem', fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.25rem' }}
+                  >
+                    <Phone size={14} /> {cab.phone}
+                  </a>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* QR Navigation Cards */}
@@ -2726,37 +3334,17 @@ export default function App() {
           </div>
         </div>
       </section>
-        </>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
 
       {/* Footer */}
-      <footer style={{
-        background: 'var(--bg-deep)',
-        borderTop: '1px solid rgba(255, 255, 255, 0.05)',
-        padding: '3rem 0',
-        textAlign: 'center',
-        position: 'relative',
-        zIndex: 5
-      }}>
-        <div className="container">
-          <a 
-            href={info.srec_url || "https://srec.ac.in/"} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            title="Sri Ramakrishna Engineering College"
-            style={{ display: 'inline-flex', textDecoration: 'none', margin: '0 auto 1.5rem', justifyContent: 'center' }}
-          >
-            <SrecLogo lightText={true} className="justify-center" style={{ justifyContent: 'center' }} />
-          </a>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
-            {info.footer_copyright}
-          </p>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-            {info.footer_sponsor}
-          </p>
-        </div>
-      </footer>
+      <Footer 
+        srecUrl={info.srec_url} 
+        copyright={info.footer_copyright} 
+        sponsor={info.footer_sponsor} 
+      />
 
 
       {/* Call For Papers Scope Modal */}
@@ -2922,44 +3510,7 @@ export default function App() {
               {/* Grid content inside modal */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                 
-                {/* 1. Wire Transfer Instructions */}
-                <div style={{ background: 'rgba(15, 82, 186, 0.02)', border: '1px solid rgba(15, 82, 186, 0.12)', borderRadius: '0.75rem', padding: '1.5rem' }}>
-                  <h4 style={{ fontSize: '1.2rem', color: 'var(--accent)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700 }}>
-                    <DollarSign size={20} style={{ color: 'var(--accent)' }} />
-                    {info.reg_bank_title}
-                  </h4>
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', marginBottom: '1.25rem', lineHeight: 1.5 }}>
-                    {info.reg_bank_desc}
-                  </p>
-                  
-                  <div className="grid-2-col" style={{ gap: '1.5rem', alignItems: 'start' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
-                      <tbody>
-                        {[
-                          { label: info.reg_bank_label_acc_name, value: info.bank_account_name },
-                          { label: info.reg_bank_label_bank_name, value: info.bank_name },
-                          { label: info.reg_bank_label_acc_num, value: info.bank_account_number },
-                          { label: info.reg_bank_label_ifsc, value: info.bank_ifsc_code },
-                          { label: info.reg_bank_label_branch, value: info.bank_branch_location }
-                        ].map((bank, bidx) => (
-                          <tr key={bidx} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                            <td style={{ padding: '0.6rem 0', fontWeight: 600, color: 'var(--text-primary)', textAlign: 'left' }}>{bank.label}</td>
-                            <td style={{ padding: '0.6rem 0', color: 'var(--text-secondary)', textAlign: 'right', fontFamily: 'monospace', fontSize: '0.9rem' }}>{bank.value}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-
-                    <div style={{ background: '#fffbeb', border: '1px solid #fef3c7', borderRadius: '0.5rem', padding: '1.25rem', height: '100%' }}>
-                      <span style={{ fontSize: '0.8rem', color: '#b45309', fontWeight: 800, textTransform: 'uppercase', display: 'block', marginBottom: '0.35rem', letterSpacing: '0.02em' }}>Important Payment Note</span>
-                      <p style={{ fontSize: '0.85rem', color: '#b45309', lineHeight: 1.5, margin: 0 }}>
-                        {info.bank_important_note}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 2. Calculator & Form Grid */}
+                {/* 1. Calculator & Form Grid */}
                 <div className="grid-2-col" style={{ gap: '2rem', alignItems: 'start' }}>
                   
                   {/* Left Column: Selections */}
@@ -4037,6 +4588,34 @@ export default function App() {
                         <h4 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', fontWeight: 700 }}>General Webpage Configurations</h4>
                         
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                          <div className="admin-form-row" style={{ borderBottom: '1px solid #e2e8f0', paddingBottom: '1.5rem', marginBottom: '0.5rem' }}>
+                            <div className="admin-form-group" style={{ flex: 1 }}>
+                              <label htmlFor="info_show_announcement">Show Announcement Banner</label>
+                              <select 
+                                id="info_show_announcement"
+                                className="form-input" 
+                                value={info.show_announcement !== 'false' ? 'true' : 'false'} 
+                                onChange={(e) => handleSaveInfoSetting('show_announcement', e.target.value)}
+                                title="Show Announcement Banner"
+                              >
+                                <option value="true">Show Banner</option>
+                                <option value="false">Hide Banner</option>
+                              </select>
+                            </div>
+                            <div className="admin-form-group" style={{ flex: 3 }}>
+                              <label htmlFor="info_announcement_text">Announcement Banner Text</label>
+                              <input 
+                                id="info_announcement_text"
+                                type="text" 
+                                className="form-input" 
+                                value={info.announcement_text || '📢 Call for Papers! Mark your calendars: The Call for Papers for AECTSD 2027 opens on 15th December 2026. Start preparing your submission'} 
+                                onChange={(e) => handleSaveInfoSetting('announcement_text', e.target.value)} 
+                                placeholder="Enter Banner Text"
+                                title="Announcement Banner Text"
+                              />
+                            </div>
+                          </div>
+
                           <div className="admin-form-row">
                             <div className="admin-form-group">
                               <label htmlFor="info_hero_title">Hero Conference Title</label>
@@ -4241,6 +4820,19 @@ export default function App() {
                           </div>
 
                           <div className="admin-form-group">
+                            <label htmlFor="info_about_conference">About the Conference Description</label>
+                            <textarea 
+                              id="info_about_conference"
+                              rows={4} 
+                              className="form-input" 
+                              value={info.about_conference || ''} 
+                              onChange={(e) => handleSaveInfoSetting('about_conference', e.target.value)} 
+                              placeholder="Enter About the Conference Description"
+                              title="About the Conference Description"
+                            />
+                          </div>
+
+                          <div className="admin-form-group">
                             <label htmlFor="info_about_trust">SNR Sons Trust Description</label>
                             <textarea 
                               id="info_about_trust"
@@ -4250,6 +4842,32 @@ export default function App() {
                               onChange={(e) => handleSaveInfoSetting('about_trust', e.target.value)} 
                               placeholder="Enter SNR Sons Trust Description"
                               title="SNR Sons Trust Description"
+                            />
+                          </div>
+
+                          <div className="admin-form-group">
+                            <label htmlFor="info_advisory_committee_desc">Advisory Committee Description</label>
+                            <textarea 
+                              id="info_advisory_committee_desc"
+                              rows={3} 
+                              className="form-input" 
+                              value={info.advisory_committee_desc || ''} 
+                              onChange={(e) => handleSaveInfoSetting('advisory_committee_desc', e.target.value)} 
+                              placeholder="Enter Advisory Committee Description"
+                              title="Advisory Committee Description"
+                            />
+                          </div>
+
+                          <div className="admin-form-group">
+                            <label htmlFor="info_technical_committee_desc">Technical Committee Description</label>
+                            <textarea 
+                              id="info_technical_committee_desc"
+                              rows={3} 
+                              className="form-input" 
+                              value={info.technical_committee_desc || ''} 
+                              onChange={(e) => handleSaveInfoSetting('technical_committee_desc', e.target.value)} 
+                              placeholder="Enter Technical Committee Description"
+                              title="Technical Committee Description"
                             />
                           </div>
 
