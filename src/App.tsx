@@ -1142,7 +1142,53 @@ export default function App() {
     if (localInfo) setInfo(prev => ({ ...prev, ...JSON.parse(localInfo) }));
 
     const localRegs = localStorage.getItem('srec_offline_registrations');
-    if (localRegs) setSubmittedRegistrations(JSON.parse(localRegs));
+    if (localRegs) {
+      setSubmittedRegistrations(JSON.parse(localRegs));
+    } else {
+      const defaultMockRegs = [
+        {
+          id: 1,
+          paper_id: 'SREC-2027-042',
+          paper_title: 'An Efficient Machine Learning Framework for Edge Devices',
+          author_name: 'Dr. Rajesh Kumar',
+          email: 'rajesh.kumar@srec.ac.in',
+          phone: '+91 9843212345',
+          screenshot_name: 'transaction_proof_rajesh.png',
+          screenshot_size: 124500,
+          register_for_tour: true,
+          preferred_tour_place: 'Ooty Botanical Gardens',
+          created_at: new Date(Date.now() - 3600000 * 2).toISOString()
+        },
+        {
+          id: 2,
+          paper_id: 'SREC-2027-109',
+          paper_title: 'Deep Learning in Precision Agriculture: A Survey',
+          author_name: 'Sarah Jenkins',
+          email: 'sjenkins@mit.edu',
+          phone: '+1 (617) 555-0199',
+          screenshot_name: 'wire_transfer_sarah.pdf',
+          screenshot_size: 453000,
+          register_for_tour: false,
+          preferred_tour_place: null,
+          created_at: new Date(Date.now() - 3600000 * 24).toISOString()
+        },
+        {
+          id: 3,
+          paper_id: 'SREC-2027-087',
+          paper_title: 'Secure Blockchain-based EHR System for Smart Healthcare',
+          author_name: 'Amit Sharma',
+          email: 'amit.sharma@iitb.ac.in',
+          phone: '+91 8877665544',
+          screenshot_name: 'receipt_payment_amit.jpg',
+          screenshot_size: 215000,
+          register_for_tour: true,
+          preferred_tour_place: 'Mudumalai Wildlife Sanctuary',
+          created_at: new Date(Date.now() - 3600000 * 48).toISOString()
+        }
+      ];
+      localStorage.setItem('srec_offline_registrations', JSON.stringify(defaultMockRegs));
+      setSubmittedRegistrations(defaultMockRegs);
+    }
 
     // 2. Fetch from database if Supabase is connected
     if (!isSupabaseConfigured || !supabase) {
