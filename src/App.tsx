@@ -2648,7 +2648,7 @@ export default function App() {
       </section>
 
       {/* Guidelines Section */}
-      <section id="guidelines" className="section">
+      <section id="guidelines" className="section" style={{ paddingBottom: '2rem' }}>
         <div className="container">
           <motion.div 
             initial="hidden"
@@ -2661,39 +2661,6 @@ export default function App() {
             <h2 style={{ fontSize: '2.5rem', color: 'white', marginTop: '0.5rem' }}>{info.guidelines_title}</h2>
             <div style={{ height: '3px', width: '60px', background: '#3b82f6', margin: '1rem auto 0' }} />
           </motion.div>
-
-          {/* 1. Important Dates / Key Deadlines */}
-          <div style={{ marginBottom: '4rem' }}>
-            <h3 style={{ fontSize: '1.5rem', color: 'white', marginBottom: '2rem', textAlign: 'center', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Key Dates & Deadlines
-            </h3>
-            <div className="grid-3-col" style={{ gap: '1.5rem' }}>
-              {importantDates
-                .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
-                .map((dateItem, idx) => (
-                  <div 
-                    key={idx} 
-                    className="glass-card" 
-                    style={{ 
-                      display: 'flex', 
-                      gap: '1rem', 
-                      alignItems: 'center', 
-                      padding: '1.5rem',
-                      borderLeft: '4px solid #10b981',
-                      background: 'rgba(255, 255, 255, 0.03)'
-                    }}
-                  >
-                    <div style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '0.5rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <CheckCircle size={20} />
-                    </div>
-                    <div>
-                      <h4 style={{ fontSize: '0.95rem', fontWeight: 700, margin: '0 0 0.25rem', color: 'white' }}>{dateItem.title}</h4>
-                      <p style={{ fontSize: '0.9rem', color: '#d97706', fontWeight: 600, margin: 0 }}>{dateItem.event_date}</p>
-                    </div>
-                  </div>
-                ))}
-            </div>
-          </div>
 
           {/* 2. Instructions and CMT Procedures */}
           <div className="grid-2-col" style={{ gap: '2rem' }}>
@@ -2793,7 +2760,7 @@ export default function App() {
       </section>
 
       {/* Paper Submission Section */}
-      <section id="paper-submission" className="section">
+      <section id="paper-submission" className="section" style={{ paddingTop: '2rem' }}>
         <div className="container">
           <motion.div 
             initial="hidden"
