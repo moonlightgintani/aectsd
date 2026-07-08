@@ -299,7 +299,7 @@ INSERT INTO conference_info (key, value) VALUES
 ('contact_sec_title', 'Organizing Secretariat'),
 ('secretariat_address', 'Department of EEE / ECE,\nSri Ramakrishna Engineering College,\nVattamalaipalayam, N.G.G.O Colony Post,\nCoimbatore, Tamilnadu - 641022, India.'),
 ('secretariat_email', 'aectsd2027@srec.ac.in'),
-('secretariat_phone', '+91 (422) 2461588 / 2460088'),
+('secretariat_phone', '+91 9080296675'),
 ('contact_coord_title', 'Conference Coordinators')
 ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
 
