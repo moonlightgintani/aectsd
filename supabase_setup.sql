@@ -494,4 +494,32 @@ GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated, service_role;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO anon, authenticated, service_role;
 
+-- 14. Supabase Storage bucket for payment proof screenshots
+-- Run this in Supabase SQL Editor if bucket doesn't exist
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'payment-proofs',
+  'payment-proofs',
+  true,
+  10485760,  -- 10 MB limit
+  ARRAY['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif', 'application/pdf']
+)
+ON CONFLICT (id) DO UPDATE SET
+  public = true,
+  file_size_limit = 10485760,
+  allowed_mime_types = ARRAY['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif', 'application/pdf'];
+
+-- Allow anyone to upload to this bucket (anon INSERT)
+CREATE POLICY "Allow public upload to payment-proofs"
+  ON storage.objects FOR INSERT
+  TO anon, authenticated
+  WITH CHECK (bucket_id = 'payment-proofs');
+
+-- Allow anyone to view files in this bucket (public SELECT)
+CREATE POLICY "Allow public read from payment-proofs"
+  ON storage.objects FOR SELECT
+  TO anon, authenticated, public
+  USING (bucket_id = 'payment-proofs');
+
+
 
