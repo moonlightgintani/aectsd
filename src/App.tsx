@@ -2378,197 +2378,271 @@ export default function App() {
           <div style={{ 
             position: 'relative', 
             width: '100%', 
-            overflowX: 'auto', 
-            padding: '7rem 0 5rem', 
-            margin: '1.5rem 0',
-            scrollbarWidth: 'thin',
-            scrollbarColor: '#3b82f6 rgba(255,255,255,0.05)'
+            overflowX: 'hidden', 
+            padding: '2rem 0', 
+            margin: '1.5rem 0'
           }}>
-            <div style={{ minWidth: '1150px', position: 'relative', height: '220px' }}>
-              
-              {/* Background Winding SVG Road */}
-              <svg 
-                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 1 }}
-                viewBox="0 0 1150 220"
-                preserveAspectRatio="none"
-              >
-                {/* Winding Asphalt Road (Dark Gray) */}
-                <path
-                  d={(() => {
-                    const N = importantDates.length;
-                    if (N <= 1) return "";
-                    let p = "M 50 110"; 
-                    for (let i = 0; i < N; i++) {
-                      const x = (i / (N - 1)) * 1050 + 50;
-                      const y = i % 2 === 0 ? 50 : 170; 
-                      if (i === 0) {
-                        p = `M ${x} ${y}`;
-                      } else {
-                        const prevX = ((i - 1) / (N - 1)) * 1050 + 50;
-                        const prevY = (i - 1) % 2 === 0 ? 50 : 170;
-                        const midX = (prevX + x) / 2;
-                        p += ` C ${midX} ${prevY}, ${midX} ${y}, ${x} ${y}`;
-                      }
-                    }
-                    return p;
-                  })()}
-                  stroke="#1e293b"
-                  strokeWidth="32"
-                  strokeLinecap="round"
-                  fill="none"
-                  style={{ filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.15))' }}
-                />
-                
-                {/* Road center dash markings (White) */}
-                <path
-                  d={(() => {
-                    const N = importantDates.length;
-                    if (N <= 1) return "";
-                    let p = "M 50 110";
-                    for (let i = 0; i < N; i++) {
-                      const x = (i / (N - 1)) * 1050 + 50;
-                      const y = i % 2 === 0 ? 50 : 170;
-                      if (i === 0) {
-                        p = `M ${x} ${y}`;
-                      } else {
-                        const prevX = ((i - 1) / (N - 1)) * 1050 + 50;
-                        const prevY = (i - 1) % 2 === 0 ? 50 : 170;
-                        const midX = (prevX + x) / 2;
-                        p += ` C ${midX} ${prevY}, ${midX} ${y}, ${x} ${y}`;
-                      }
-                    }
-                    return p;
-                  })()}
-                  stroke="#ffffff"
-                  strokeWidth="2.5"
-                  strokeDasharray="8,8"
-                  strokeLinecap="round"
-                  fill="none"
-                />
-              </svg>
-
-              {/* Timeline Nodes & Alternating Cards */}
-              {importantDates.map((evt, idx) => {
-                const { month, day, year } = parseDateDisplay(evt.event_date);
-                const isEven = idx % 2 === 0;
-                
-                const xPercent = (idx / (importantDates.length - 1)) * 91 + 4.5; 
-                const yPos = isEven ? 50 : 170; 
-
-                const nodeColors = [
-                  '#0ea5e9', // Sky Blue
-                  '#ec4899', // Pink/Rose
-                  '#8b5cf6', // Purple
-                  '#0d9488', // Teal
-                  '#f59e0b', // Amber/Orange
-                  '#3b82f6', // Royal Blue
-                  '#ef4444'  // Red
-                ];
-                const activeColor = nodeColors[idx % nodeColors.length];
+            <div style={{ width: '100%', position: 'relative', height: '600px' }}>
+              {(() => {
+                const isPassedArray = importantDates.map(evt => {
+                  try {
+                    // Remove late additions or range indicator extensions to get a clean base date
+                    const cleanDateStr = evt.event_date.replace(/-[0-9]+/g, '').trim(); 
+                    const dateVal = new Date(cleanDateStr);
+                    if (isNaN(dateVal.getTime())) return false;
+                    return dateVal <= new Date();
+                  } catch (e) {
+                    return false;
+                  }
+                });
+                const lastPassedIndex = isPassedArray.reduce((acc, passed, idx) => passed ? idx : acc, -1);
 
                 return (
-                  <div
-                    key={idx}
-                    style={{
-                      position: 'absolute',
-                      left: `${xPercent}%`,
-                      top: `${yPos}px`,
-                      transform: 'translate(-50%, -50%)',
-                      zIndex: 10,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center'
-                    }}
-                  >
-                    {/* Circle Pin Node on the Highway curve (vibrant colored circles) */}
-                    <motion.div
-                      whileHover={{ scale: 1.2 }}
-                      style={{
-                        width: '38px',
-                        height: '38px',
-                        borderRadius: '50%',
-                        background: activeColor,
-                        border: '3px solid #ffffff',
-                        boxShadow: '0 4px 10px rgba(0,0,0,0.25)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#ffffff',
-                        fontWeight: 800,
-                        fontSize: '0.95rem',
-                        cursor: 'pointer',
-                        zIndex: 11
-                      }}
-                      title={`${evt.title} - ${evt.event_date}`}
+                  <>
+                    {/* Background Winding SVG Road */}
+                    <svg 
+                      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 1 }}
+                      viewBox="0 0 1200 600"
+                      preserveAspectRatio="none"
                     >
-                      {idx + 1}
-                    </motion.div>
+                      {/* Winding Asphalt Road (Dark Gray Base for Inactive) */}
+                      <path
+                        d={(() => {
+                          const N = importantDates.length;
+                          if (N <= 1) return "";
+                          let p = "M 100 110"; 
+                          for (let i = 0; i < N; i++) {
+                            const x = (i / (N - 1)) * 1000 + 100;
+                            const y = i % 2 === 0 ? 230 : 350; 
+                            if (i === 0) {
+                              p = `M ${x} ${y}`;
+                            } else {
+                              const prevX = ((i - 1) / (N - 1)) * 1000 + 100;
+                              const prevY = (i - 1) % 2 === 0 ? 230 : 350;
+                              const midX = (prevX + x) / 2;
+                              p += ` C ${midX} ${prevY}, ${midX} ${y}, ${x} ${y}`;
+                            }
+                          }
+                          return p;
+                        })()}
+                        stroke="#334155"
+                        strokeWidth="32"
+                        strokeLinecap="round"
+                        fill="none"
+                        style={{ filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.15))' }}
+                      />
 
-                    {/* Vertical Connector line to its detail card */}
-                    <div style={{
-                      position: 'absolute',
-                      left: '50%',
-                      top: isEven ? '20px' : '-62px',
-                      width: '2.5px',
-                      height: '62px',
-                      background: `linear-gradient(${isEven ? 'to bottom' : 'to top'}, ${activeColor}, rgba(255, 255, 255, 0.05))`,
-                      transform: 'translateX(-50%)',
-                      zIndex: 2
-                    }} />
+                      {/* Active Progress Highway Overlay (Emerald Green) */}
+                      <path
+                        d={(() => {
+                          const N = importantDates.length;
+                          if (N <= 1 || lastPassedIndex < 0) return "";
+                          let p = "M 100 110"; 
+                          for (let i = 0; i <= lastPassedIndex; i++) {
+                            const x = (i / (N - 1)) * 1000 + 100;
+                            const y = i % 2 === 0 ? 230 : 350; 
+                            if (i === 0) {
+                              p = `M ${x} ${y}`;
+                            } else {
+                              const prevX = ((i - 1) / (N - 1)) * 1000 + 100;
+                              const prevY = (i - 1) % 2 === 0 ? 230 : 350;
+                              const midX = (prevX + x) / 2;
+                              p += ` C ${midX} ${prevY}, ${midX} ${y}, ${x} ${y}`;
+                            }
+                          }
+                          return p;
+                        })()}
+                        stroke="#10b981"
+                        strokeWidth="32"
+                        strokeLinecap="round"
+                        fill="none"
+                        style={{ filter: 'drop-shadow(0 0 10px rgba(16, 185, 129, 0.85))' }}
+                      />
+                      
+                      {/* Road center dash markings - Inactive (White with opacity) */}
+                      <path
+                        d={(() => {
+                          const N = importantDates.length;
+                          if (N <= 1) return "";
+                          let p = "M 100 110";
+                          for (let i = 0; i < N; i++) {
+                            const x = (i / (N - 1)) * 1000 + 100;
+                            const y = i % 2 === 0 ? 230 : 350;
+                            if (i === 0) {
+                              p = `M ${x} ${y}`;
+                            } else {
+                              const prevX = ((i - 1) / (N - 1)) * 1000 + 100;
+                              const prevY = (i - 1) % 2 === 0 ? 230 : 350;
+                              const midX = (prevX + x) / 2;
+                              p += ` C ${midX} ${prevY}, ${midX} ${y}, ${x} ${y}`;
+                            }
+                          }
+                          return p;
+                        })()}
+                        stroke="rgba(255, 255, 255, 0.4)"
+                        strokeWidth="2.5"
+                        strokeDasharray="8,8"
+                        strokeLinecap="round"
+                        fill="none"
+                      />
 
-                    {/* Milestone Card above or below the road */}
-                    <div style={{
-                      position: 'absolute',
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      [isEven ? 'bottom' : 'top']: '76px', 
-                      width: '230px',
-                      background: 'rgba(255, 255, 255, 0.98)',
-                      backdropFilter: 'blur(12px)',
-                      border: `2px solid ${activeColor}`,
-                      borderRadius: '0.88rem',
-                      padding: '0.9rem',
-                      boxShadow: '0 10px 25px rgba(0,0,0,0.06)',
-                      textAlign: 'center'
-                    }}>
-                      {/* Calendar mini badge */}
-                      <span style={{
-                        fontSize: '0.7rem',
-                        fontWeight: 800,
-                        color: '#ffffff',
-                        background: activeColor,
-                        padding: '0.25rem 0.65rem',
-                        borderRadius: '1rem',
-                        display: 'inline-block',
-                        marginBottom: '0.45rem',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em'
-                      }}>
-                        {month} {day}, {year}
-                      </span>
+                      {/* Road center dash markings - Active (Solid White) */}
+                      <path
+                        d={(() => {
+                          const N = importantDates.length;
+                          if (N <= 1 || lastPassedIndex < 0) return "";
+                          let p = "M 100 110";
+                          for (let i = 0; i <= lastPassedIndex; i++) {
+                            const x = (i / (N - 1)) * 1000 + 100;
+                            const y = i % 2 === 0 ? 230 : 350;
+                            if (i === 0) {
+                              p = `M ${x} ${y}`;
+                            } else {
+                              const prevX = ((i - 1) / (N - 1)) * 1000 + 100;
+                              const prevY = (i - 1) % 2 === 0 ? 230 : 350;
+                              const midX = (prevX + x) / 2;
+                              p += ` C ${midX} ${prevY}, ${midX} ${y}, ${x} ${y}`;
+                            }
+                          }
+                          return p;
+                        })()}
+                        stroke="#ffffff"
+                        strokeWidth="2.5"
+                        strokeDasharray="8,8"
+                        strokeLinecap="round"
+                        fill="none"
+                        style={{ filter: 'drop-shadow(0 0 5px rgba(255, 255, 255, 0.95))' }}
+                      />
+                    </svg>
+
+                    {/* Timeline Nodes & Alternating Cards */}
+                    {importantDates.map((evt, idx) => {
+                      const { month, day, year } = parseDateDisplay(evt.event_date);
+                      const isEven = idx % 2 === 0;
+                      const isPassed = isPassedArray[idx];
                       
-                      <h4 style={{
-                        fontSize: '0.92rem',
-                        fontWeight: 800,
-                        color: '#0f172a',
-                        margin: '0 0 0.3rem',
-                        lineHeight: 1.3
-                      }}>
-                        {evt.title}
-                      </h4>
-                      
-                      <p style={{
-                        fontSize: '0.75rem',
-                        color: '#64748b',
-                        lineHeight: 1.45,
-                        margin: 0
-                      }}>
-                        {evt.desc}
-                      </p>
-                    </div>
-                  </div>
+                      const xPercent = (idx / (importantDates.length - 1)) * 83.33 + 8.33; 
+                      const yPos = isEven ? 230 : 350; 
+
+                      const nodeColors = [
+                        '#0ea5e9', // Sky Blue
+                        '#ec4899', // Pink/Rose
+                        '#8b5cf6', // Purple
+                        '#0d9488', // Teal
+                        '#f59e0b', // Amber/Orange
+                        '#3b82f6', // Royal Blue
+                        '#ef4444'  // Red
+                      ];
+                      const activeColor = isPassed ? '#10b981' : nodeColors[idx % nodeColors.length];
+
+                      return (
+                        <div
+                          key={idx}
+                          style={{
+                            position: 'absolute',
+                            left: `${xPercent}%`,
+                            top: `${yPos}px`,
+                            transform: 'translate(-50%, -50%)',
+                            zIndex: 10,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center'
+                          }}
+                        >
+                          {/* Circle Pin Node on the Highway curve (vibrant colored circles) */}
+                          <motion.div
+                            whileHover={{ scale: 1.2 }}
+                            style={{
+                              width: '38px',
+                              height: '38px',
+                              borderRadius: '50%',
+                              background: activeColor,
+                              border: '3px solid #ffffff',
+                              boxShadow: isPassed 
+                                ? '0 0 15px rgba(16, 185, 129, 0.8), 0 4px 10px rgba(0,0,0,0.25)' 
+                                : '0 4px 10px rgba(0,0,0,0.25)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: '#ffffff',
+                              fontWeight: 800,
+                              fontSize: '0.95rem',
+                              cursor: 'pointer',
+                              zIndex: 11
+                            }}
+                            title={`${evt.title} - ${evt.event_date}`}
+                          >
+                            {idx + 1}
+                          </motion.div>
+
+                          {/* Vertical Connector line to its detail card */}
+                          <div style={{
+                            position: 'absolute',
+                            left: '50%',
+                            top: isEven ? '20px' : '-62px',
+                            width: '2.5px',
+                            height: '62px',
+                            background: `linear-gradient(${isEven ? 'to bottom' : 'to top'}, ${activeColor}, rgba(255, 255, 255, 0.05))`,
+                            transform: 'translateX(-50%)',
+                            zIndex: 2
+                          }} />
+
+                          {/* Milestone Card above or below the road */}
+                          <div style={{
+                            position: 'absolute',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            [isEven ? 'bottom' : 'top']: '76px', 
+                            width: '210px',
+                            background: 'rgba(255, 255, 255, 0.98)',
+                            backdropFilter: 'blur(12px)',
+                            border: `2px solid ${activeColor}`,
+                            borderRadius: '0.88rem',
+                            padding: '0.9rem',
+                            boxShadow: '0 10px 25px rgba(0,0,0,0.06)',
+                            textAlign: 'center'
+                          }}>
+                            {/* Calendar mini badge */}
+                            <span style={{
+                              fontSize: '0.7rem',
+                              fontWeight: 800,
+                              color: '#ffffff',
+                              background: activeColor,
+                              padding: '0.25rem 0.65rem',
+                              borderRadius: '1rem',
+                              display: 'inline-block',
+                              marginBottom: '0.45rem',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.05em'
+                            }}>
+                              {month} {day}, {year}
+                            </span>
+                            
+                            <h4 style={{
+                              fontSize: '0.92rem',
+                              fontWeight: 800,
+                              color: '#0f172a',
+                              margin: '0 0 0.3rem',
+                              lineHeight: 1.3
+                            }}>
+                              {evt.title}
+                            </h4>
+                            
+                            <p style={{
+                              fontSize: '0.75rem',
+                              color: '#64748b',
+                              lineHeight: 1.45,
+                              margin: 0
+                            }}>
+                              {evt.desc}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </>
                 );
-              })}
+              })()}
 
             </div>
           </div>
