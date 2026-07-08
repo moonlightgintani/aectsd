@@ -41,6 +41,7 @@ import srecLogo from './assets/srec-logo.png';
 import chatbotIcon from './assets/chatbot.gif';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 import ExplorePage from './ExplorePage';
+import AdminPage from './AdminPage';
 
 // Navigation Items
 const NAV_ITEMS = [
@@ -365,7 +366,7 @@ export default function App() {
   const [activeSection, setActiveSection] = useState('home');
   const [currentPage, setCurrentPage] = useState<'main' | 'explore'>('main');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [committeeTab, setCommitteeTab] = useState<'steering' | 'organizing' | 'advisory' | 'technical'>('steering');
+  const [committeeTab, setCommitteeTab] = useState<'steering' | 'organizing' | 'advisory'>('organizing');
   const [activeSubcommittee, setActiveSubcommittee] = useState<string>('leadership');
   const [submissionTab, setSubmissionTab] = useState<'initial' | 'camera-ready'>('initial');
   
@@ -1993,11 +1994,10 @@ export default function App() {
           {/* Committee Tabs */}
           <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginBottom: '3rem', flexWrap: 'wrap' }}>
             {([
-              { id: 'steering', label: info.committee_tab_steering || 'Steering Committee' },
               { id: 'organizing', label: info.committee_tab_org || 'Organizing Committee' },
               { id: 'advisory', label: info.committee_tab_adv || 'Advisory Committee' },
-              { id: 'technical', label: info.committee_tab_tech || 'Technical Program' }
-            ] as { id: 'steering' | 'organizing' | 'advisory' | 'technical', label: string }[]).map((tab) => (
+              { id: 'steering', label: info.committee_tab_steering || 'Steering Committee' }
+            ] as { id: 'steering' | 'organizing' | 'advisory', label: string }[]).map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setCommitteeTab(tab.id)}
@@ -2077,36 +2077,56 @@ export default function App() {
                     </motion.div>
                   )}
                   
-                  <div className="committee-split-container">
-                  {/* Sidebar subgroups stack */}
-                  <div className="committee-sidebar">
-                    {[
-                      { id: 'leadership', label: 'Leadership' },
-                      { id: 'executive', label: 'Executive Committee' },
-                      { id: 'finance', label: 'Finance' },
-                      { id: 'publication', label: 'Publication' },
-                      { id: 'arrangements', label: 'Arrangements' },
-                      { id: 'registration', label: 'Registration' },
-                      { id: 'tutorials', label: 'Tutorials & Workshops' },
-                      { id: 'review', label: 'Technical Review' },
-                      { id: 'outreach', label: 'Outreach & Promotion' },
-                      { id: 'website', label: 'Website & Media' },
-                      { id: 'hospitality', label: 'Hospitality' },
-                      { id: 'members', label: 'General Members' }
-                    ].map((group) => (
-                      <button
-                        key={group.id}
-                        type="button"
-                        onClick={() => setActiveSubcommittee(group.id)}
-                        className={`committee-sidebar-btn ${activeSubcommittee === group.id ? 'active' : ''}`}
-                      >
-                        {group.label}
-                      </button>
-                    ))}
-                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '100%' }}>
+                    {/* Subcommittee Buttons in Two Rows */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', marginBottom: '2rem', width: '100%', alignItems: 'center' }}>
+                      {/* Row 1 */}
+                      <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', flexWrap: 'wrap', width: '100%' }}>
+                        {[
+                          { id: 'leadership', label: 'Leadership' },
+                          { id: 'executive', label: 'Executive Committee' },
+                          { id: 'finance', label: 'Finance' },
+                          { id: 'publication', label: 'Publication' },
+                          { id: 'arrangements', label: 'Arrangements' },
+                          { id: 'registration', label: 'Registration' }
+                        ].map((group) => (
+                          <button
+                            key={group.id}
+                            type="button"
+                            onClick={() => setActiveSubcommittee(group.id)}
+                            className={`committee-tab-btn ${activeSubcommittee === group.id ? 'active' : 'inactive'}`}
+                            style={{ fontSize: '0.85rem', padding: '0.5rem 1rem', textTransform: 'capitalize', minWidth: '120px' }}
+                          >
+                            {group.label}
+                          </button>
+                        ))}
+                      </div>
+                      
+                      {/* Row 2 */}
+                      <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', flexWrap: 'wrap', width: '100%' }}>
+                        {[
+                          { id: 'tutorials', label: 'Tutorials & Workshops' },
+                          { id: 'review', label: 'Technical Review' },
+                          { id: 'outreach', label: 'Outreach & Promotion' },
+                          { id: 'website', label: 'Website & Media' },
+                          { id: 'hospitality', label: 'Hospitality' },
+                          { id: 'members', label: 'General Members' }
+                        ].map((group) => (
+                          <button
+                            key={group.id}
+                            type="button"
+                            onClick={() => setActiveSubcommittee(group.id)}
+                            className={`committee-tab-btn ${activeSubcommittee === group.id ? 'active' : 'inactive'}`}
+                            style={{ fontSize: '0.85rem', padding: '0.5rem 1rem', textTransform: 'capitalize', minWidth: '120px' }}
+                          >
+                            {group.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
 
-                  {/* Active Panel Members Grid */}
-                  <div className="grid-3-col">
+                    {/* Active Panel Members Grid */}
+                    <div className="grid-3-col">
                     {committeeMembers
                       .filter((member) => {
                         if (member.category !== 'organizing') return false;
@@ -2208,35 +2228,7 @@ export default function App() {
                 </div>
               )}
 
-              {committeeTab === 'technical' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                  {info.technical_committee_desc && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="glass-card"
-                      style={{ padding: '2rem', textAlign: 'center', maxWidth: '800px', margin: '0 auto 0.5rem', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)' }}
-                    >
-                      <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>
-                        Technical Committee
-                      </h3>
-                      <p style={{ color: 'var(--text-secondary)', lineHeight: '1.7', fontSize: '0.95rem', margin: 0 }}>
-                        {info.technical_committee_desc}
-                      </p>
-                    </motion.div>
-                  )}
-                  
-                  <div className="grid-3-col">
-                    {committeeMembers.filter(m => m.category === 'technical').map((tech, index) => (
-                      <div key={index} className="member-profile-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '1.75rem 1.5rem', borderLeft: '4px solid #10b981', justifyContent: 'center' }}>
-                        <span className="member-role-badge" style={{ marginBottom: '0.75rem', alignSelf: 'center' }}>{tech.role || 'Technical Reviewer'}</span>
-                        <h4 className="member-name" style={{ fontSize: '1.15rem', fontWeight: 700, color: 'white', marginBottom: '0.5rem', marginTop: 0 }}>{tech.name}</h4>
-                        <p className="member-desc" style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.5' }}>{tech.desc}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+
             </motion.div>
           </AnimatePresence>
         </div>
@@ -2387,7 +2379,7 @@ export default function App() {
       </section>
 
       {/* Important Dates Section */}
-      <section id="important-dates" className="section">
+      <section id="important-dates" className="section" style={{ background: '#ffffff', color: '#0f172a', padding: '6rem 0' }}>
         <div className="container">
           <motion.div 
             initial="hidden"
@@ -2397,99 +2389,216 @@ export default function App() {
             style={{ textAlign: 'center', marginBottom: '4rem' }}
           >
             <span style={{ color: '#3b82f6', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '0.1em' }}>{info.dates_badge}</span>
-            <h2 style={{ fontSize: '2.5rem', color: 'white', marginTop: '0.5rem' }}>{info.dates_title}</h2>
+            <h2 style={{ fontSize: '2.5rem', color: '#091d36', marginTop: '0.5rem' }}>{info.dates_title}</h2>
             <div style={{ height: '3px', width: '60px', background: '#3b82f6', margin: '1rem auto 0' }} />
           </motion.div>
 
-          {/* Grid of Important Dates */}
-          <div className="grid-3-col" style={{ gap: '2rem' }}>
-            {importantDates.map((evt, idx) => {
-              const { month, day, year } = parseDateDisplay(evt.event_date);
-              return (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, y: 25 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: idx * 0.1 }}
-                  className="important-date-card"
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    gap: '1.25rem',
-                    alignItems: 'center',
-                    padding: '1.5rem',
-                    background: 'var(--glass-bg)',
-                    border: '1px solid var(--glass-border)',
-                    borderRadius: '1rem',
-                    boxShadow: 'var(--shadow-lg)',
-                    height: '100%'
-                  }}
-                >
-                  {/* Calendar Badge */}
-                  <div style={{
-                    width: '75px',
-                    height: '85px',
-                    background: '#ffffff',
-                    borderRadius: '0.75rem',
-                    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.08)',
-                    border: '1px solid rgba(0, 0, 0, 0.08)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    overflow: 'hidden',
-                    flexShrink: 0,
-                    textAlign: 'center'
-                  }}>
-                    <div style={{
-                      background: 'linear-gradient(135deg, #0f52ba 0%, #091d36 100%)',
-                      color: '#ffffff',
-                      fontSize: '0.75rem',
-                      fontWeight: 800,
-                      padding: '0.35rem 0',
-                      letterSpacing: '0.05em',
-                      textTransform: 'uppercase'
-                    }}>
-                      {month}
-                    </div>
-                    <div style={{
+          {/* Horizontal Winding Timeline Roadmap Infographic */}
+          <div style={{ 
+            position: 'relative', 
+            width: '100%', 
+            overflowX: 'auto', 
+            padding: '7rem 0 5rem', 
+            margin: '1.5rem 0',
+            scrollbarWidth: 'thin',
+            scrollbarColor: '#3b82f6 rgba(255,255,255,0.05)'
+          }}>
+            <div style={{ minWidth: '1150px', position: 'relative', height: '220px' }}>
+              
+              {/* Background Winding SVG Road */}
+              <svg 
+                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 1 }}
+                viewBox="0 0 1150 220"
+                preserveAspectRatio="none"
+              >
+                {/* Winding Asphalt Road (Navy) */}
+                <path
+                  d={(() => {
+                    const N = importantDates.length;
+                    if (N <= 1) return "";
+                    let p = "M 50 110"; 
+                    for (let i = 0; i < N; i++) {
+                      const x = (i / (N - 1)) * 1050 + 50;
+                      const y = i % 2 === 0 ? 50 : 170; 
+                      if (i === 0) {
+                        p = `M ${x} ${y}`;
+                      } else {
+                        const prevX = ((i - 1) / (N - 1)) * 1050 + 50;
+                        const prevY = (i - 1) % 2 === 0 ? 50 : 170;
+                        const midX = (prevX + x) / 2;
+                        p += ` C ${midX} ${prevY}, ${midX} ${y}, ${x} ${y}`;
+                      }
+                    }
+                    return p;
+                  })()}
+                  stroke="rgba(15, 23, 42, 0.95)"
+                  strokeWidth="28"
+                  strokeLinecap="round"
+                  fill="none"
+                  style={{ filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))' }}
+                />
+                
+                {/* Road center dash markings */}
+                <path
+                  d={(() => {
+                    const N = importantDates.length;
+                    if (N <= 1) return "";
+                    let p = "M 50 110";
+                    for (let i = 0; i < N; i++) {
+                      const x = (i / (N - 1)) * 1050 + 50;
+                      const y = i % 2 === 0 ? 50 : 170;
+                      if (i === 0) {
+                        p = `M ${x} ${y}`;
+                      } else {
+                        const prevX = ((i - 1) / (N - 1)) * 1050 + 50;
+                        const prevY = (i - 1) % 2 === 0 ? 50 : 170;
+                        const midX = (prevX + x) / 2;
+                        p += ` C ${midX} ${prevY}, ${midX} ${y}, ${x} ${y}`;
+                      }
+                    }
+                    return p;
+                  })()}
+                  stroke="#3b82f6"
+                  strokeWidth="2"
+                  strokeDasharray="6,6"
+                  strokeLinecap="round"
+                  fill="none"
+                />
+              </svg>
+
+              {/* Timeline Nodes & Alternating Cards */}
+              {importantDates.map((evt, idx) => {
+                const { month, day, year } = parseDateDisplay(evt.event_date);
+                const isEven = idx % 2 === 0;
+                
+                // Compare with current date:
+                const isPassed = (() => {
+                  try {
+                    const cleanDateStr = evt.event_date.replace(/-[0-9]+/g, '').trim(); 
+                    const dateVal = new Date(cleanDateStr);
+                    if (isNaN(dateVal.getTime())) return false;
+                    return dateVal <= new Date();
+                  } catch (e) {
+                    return false;
+                  }
+                })();
+
+                const xPercent = (idx / (importantDates.length - 1)) * 91 + 4.5; 
+                const yPos = isEven ? 50 : 170; 
+
+                // If date has passed: Emerald Green color. Otherwise: Gray color.
+                const primaryColor = isPassed ? '#10b981' : '#64748b';
+                const glowShadow = isPassed ? '0 0 15px rgba(16, 185, 129, 0.6)' : 'none';
+
+                return (
+                  <div
+                    key={idx}
+                    style={{
+                      position: 'absolute',
+                      left: `${xPercent}%`,
+                      top: `${yPos}px`,
+                      transform: 'translate(-50%, -50%)',
+                      zIndex: 10,
                       display: 'flex',
                       flexDirection: 'column',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      flexGrow: 1,
-                      padding: '0.25rem 0'
+                      alignItems: 'center'
+                    }}
+                  >
+                    {/* Circle Pin Node on the Highway curve with alternating custom shapes */}
+                    <motion.div
+                      whileHover={{ scale: 1.2 }}
+                      style={{
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: idx % 5 === 0 ? '50%' : idx % 5 === 1 ? '8px' : '0px',
+                        clipPath: idx % 5 === 2 ? 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)' : idx % 5 === 3 ? 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' : idx % 5 === 4 ? 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)' : 'none',
+                        background: '#ffffff',
+                        border: `4px solid ${primaryColor}`,
+                        boxShadow: `0 4px 10px rgba(0,0,0,0.15), ${glowShadow}`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        zIndex: 11
+                      }}
+                      title={`${evt.title} - ${evt.event_date}`}
+                    >
+                      {/* Inner Indicator circle */}
+                      <div style={{
+                        width: '12px',
+                        height: '12px',
+                        borderRadius: '50%',
+                        background: primaryColor
+                      }} />
+                    </motion.div>
+
+                    {/* Vertical Connector line to its detail card */}
+                    <div style={{
+                      position: 'absolute',
+                      left: '50%',
+                      top: isEven ? '18px' : '-58px',
+                      width: '2px',
+                      height: '58px',
+                      background: `linear-gradient(${isEven ? 'to bottom' : 'to top'}, ${primaryColor}, rgba(255, 255, 255, 0.05))`,
+                      transform: 'translateX(-50%)',
+                      zIndex: 2
+                    }} />
+
+                    {/* Milestone Card above or below the road */}
+                    <div style={{
+                      position: 'absolute',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      [isEven ? 'bottom' : 'top']: '72px', 
+                      width: '230px',
+                      background: 'rgba(255, 255, 255, 0.98)',
+                      backdropFilter: 'blur(12px)',
+                      border: `2px solid ${isPassed ? '#10b981' : '#e2e8f0'}`,
+                      borderRadius: '0.88rem',
+                      padding: '0.9rem',
+                      boxShadow: isPassed ? '0 10px 25px rgba(16, 185, 129, 0.12)' : '0 4px 15px rgba(0,0,0,0.05)',
+                      textAlign: 'center'
                     }}>
+                      {/* Calendar mini badge */}
                       <span style={{
-                        fontSize: day.length > 2 ? '1.15rem' : '1.75rem',
+                        fontSize: '0.7rem',
+                        fontWeight: 800,
+                        color: isPassed ? '#ffffff' : '#475569',
+                        background: isPassed ? '#10b981' : '#f1f5f9',
+                        padding: '0.25rem 0.65rem',
+                        borderRadius: '1rem',
+                        display: 'inline-block',
+                        marginBottom: '0.45rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em'
+                      }}>
+                        {month} {day}, {year}
+                      </span>
+                      
+                      <h4 style={{
+                        fontSize: '0.92rem',
                         fontWeight: 800,
                         color: '#0f172a',
-                        lineHeight: 1
+                        margin: '0 0 0.3rem',
+                        lineHeight: 1.3
                       }}>
-                        {day}
-                      </span>
-                      <span style={{
-                        fontSize: '0.65rem',
+                        {evt.title}
+                      </h4>
+                      
+                      <p style={{
+                        fontSize: '0.75rem',
                         color: '#64748b',
-                        fontWeight: 600,
-                        marginTop: '0.15rem'
+                        lineHeight: 1.45,
+                        margin: 0
                       }}>
-                        {year}
-                      </span>
+                        {evt.desc}
+                      </p>
                     </div>
                   </div>
+                );
+              })}
 
-                  {/* Date details */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', textAlign: 'left', flexGrow: 1 }}>
-                    <h4 style={{ fontSize: '1.15rem', margin: 0, fontWeight: 700, lineHeight: '1.3', color: '#091d36' }}>
-                      {evt.title}
-                    </h4>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0, lineHeight: '1.5' }}>
-                      {evt.desc}
-                    </p>
-                  </div>
-                </motion.div>
-              );
-            })}
+            </div>
           </div>
         </div>
       </section>
@@ -3232,33 +3341,7 @@ export default function App() {
             </motion.div>
           </div>
 
-          {/* Contact Numbers Directory */}
-          <div className="glass-card" style={{ padding: '2rem', marginBottom: '3.5rem', background: '#f8fafc', border: '1px solid #e2e8f0' }}>
-            <h3 style={{ fontSize: '1.4rem', color: '#091d36', marginBottom: '1.25rem', fontWeight: 700, textAlign: 'center' }}>
-              Transport Contact Directory
-            </h3>
-            <div className="grid-3-col" style={{ gap: '1.5rem' }}>
-              {[
-                { name: 'Red Taxi', phone: '0422 456 7890', action: 'tel:04224567890', note: 'Local Taxi Service' },
-                { name: 'Go Taxi', phone: '0422 4455 6677', action: 'tel:042244556677', note: 'Cab Booking Service' },
-                { name: 'OLA Cabs', phone: '0422 335 5335', action: 'tel:04223355335', note: 'Or book via OLA App' },
-                { name: 'Capital Call Taxi', phone: '0422 245 4444', action: 'tel:04222454444', note: '24/7 Cab Service' },
-                { name: 'Fast Track Call Taxi', phone: '0422 288 8999', action: 'tel:04222888999', note: 'Outstation & Local' },
-                { name: 'Covai Zone Group Auto', phone: '+91 84381 44544', action: 'tel:+918438144544', note: 'Thudiyalur Auto Stand' }
-              ].map((cab, cidx) => (
-                <div key={cidx} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '0.75rem', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-                  <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>{cab.note}</span>
-                  <h4 style={{ fontSize: '1.05rem', fontWeight: 800, margin: 0, color: '#091d36' }}>{cab.name}</h4>
-                  <a 
-                    href={cab.action} 
-                    style={{ color: '#0f52ba', fontSize: '0.95rem', fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.25rem' }}
-                  >
-                    <Phone size={14} /> {cab.phone}
-                  </a>
-                </div>
-              ))}
-            </div>
-          </div>
+
 
           {/* QR Navigation Cards */}
           <div className="qr-section">
