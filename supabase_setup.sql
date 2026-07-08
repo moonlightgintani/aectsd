@@ -138,6 +138,8 @@ CREATE POLICY "Allow public SELECT on registration_pricing" ON registration_pric
 
 -- Create policy to allow anonymous insert into registrations (to submit forms)
 CREATE POLICY "Allow public INSERT on registrations" ON registrations FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public SELECT on registrations" ON registrations FOR SELECT USING (true);
+
 
 -- 12. website_admins table
 CREATE TABLE IF NOT EXISTS website_admins (
