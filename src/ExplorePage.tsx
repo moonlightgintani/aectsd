@@ -544,6 +544,23 @@ export default function ExplorePage({ adminUser }: { adminUser: string | null })
           object-fit: cover;
           flex-shrink: 0;
         }
+        .list-selector-card h4 {
+          font-size: 1.05rem;
+          color: #091d36;
+          font-weight: 800;
+          margin: 0.15rem 0;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .list-selector-card p {
+          font-size: 0.82rem;
+          color: #64748b;
+          margin: 0;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
         
         @media (max-width: 991px) {
           .explore-dashboard-grid {
@@ -557,6 +574,122 @@ export default function ExplorePage({ adminUser }: { adminUser: string | null })
           .category-tab-container {
             grid-template-columns: 1fr;
             gap: 0.5rem;
+          }
+        }
+
+        /* ================= MOBILE FIX ================= */
+
+        @media (max-width: 768px) {
+
+          .explore-container{
+            padding:90px 14px 80px;
+            overflow-x:hidden;
+          }
+
+          /* Dashboard */
+          .explore-dashboard-grid{
+            display:flex;
+            flex-direction:column;
+            gap:20px;
+          }
+
+          .explore-showcase-panel{
+            position:relative;
+            top:0;
+            width:100%;
+            order:1;
+          }
+
+          .explore-sidebar{
+            width:100%;
+            order:2;
+          }
+
+          /* Featured card */
+
+          .explore-showcase-panel img{
+            height:220px !important;
+            width:100%;
+            object-fit:cover;
+          }
+
+          .explore-showcase-panel h3{
+            font-size:28px;
+            line-height:1.3;
+            word-break:break-word;
+          }
+
+          .explore-showcase-panel p{
+            font-size:15px;
+            line-height:1.6;
+          }
+
+          /* Category buttons */
+
+          .category-tab-container{
+            display:grid;
+            grid-template-columns:1fr;
+            gap:12px;
+          }
+
+          .category-tab-card{
+            width:100%;
+          }
+
+          /* Filter chips */
+
+          .filter-tabs-container,
+          .hotel-tabs-wrapper{
+            display:flex;
+            flex-wrap:wrap;
+            gap:8px;
+            width:100%;
+          }
+
+          .filter-tab-btn,
+          .hotel-tab-btn{
+            flex:1 1 auto;
+            min-width:90px;
+          }
+
+          /* List cards */
+
+          .list-selector-card{
+            display:flex;
+            align-items:flex-start;
+            gap:12px;
+            padding:12px;
+          }
+
+          .list-selector-thumb{
+            width:80px;
+            height:80px;
+            flex-shrink:0;
+          }
+
+          .list-selector-card h4{
+            font-size:18px;
+            white-space:normal;
+            overflow:visible;
+            text-overflow:unset;
+          }
+
+          .list-selector-card p{
+            white-space:normal;
+          }
+
+          /* Prevent horizontal scroll */
+
+          img{
+            max-width:100%;
+          }
+
+          *{
+            box-sizing:border-box;
+          }
+
+          body{
+            overflow-x:hidden;
           }
         }
       `}} />
@@ -787,39 +920,7 @@ export default function ExplorePage({ adminUser }: { adminUser: string | null })
             </div>
 
             {/* Right Column: List Selector Panel */}
-            <div className="explore-sidebar">
-              {/* Sight / Hotel Category Specific Filters inside side pane */}
-              {activeCategory === 'sights' && (
-                <div style={{ display: 'flex', gap: '0.35rem', background: '#f1f5f9', padding: '0.25rem', borderRadius: '2rem', width: 'fit-content' }}>
-                  {['All', 'Religious', 'Shopping'].map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => setActiveSightCategory(cat)}
-                      className={`btn ${activeSightCategory === cat ? 'btn-primary' : 'btn-secondary'}`}
-                      style={{ fontSize: '0.75rem', padding: '0.35rem 0.85rem', borderRadius: '2rem', border: 'none', background: activeSightCategory === cat ? '#3b82f6' : 'transparent', color: activeSightCategory === cat ? 'white' : '#64748b' }}
-                    >
-                      {cat === 'All' ? 'All' : cat === 'Religious' ? 'Spiritual' : 'Shopping'}
-                    </button>
-                  ))}
-                </div>
-              )}
 
-              {activeCategory === 'hotels' && (
-                <div style={{ display: 'flex', gap: '0.35rem', background: '#f1f5f9', padding: '0.25rem', borderRadius: '2rem', width: 'fit-content' }}>
-                  {['All Hotels', 'Luxury Hotels', 'Mid-Range Hotels', 'Budget-Friendly Hotels'].map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => setActiveHotelTab(cat)}
-                      className={`btn ${activeHotelTab === cat ? 'btn-primary' : 'btn-secondary'}`}
-                      style={{ fontSize: '0.75rem', padding: '0.35rem 0.85rem', borderRadius: '2rem', border: 'none', background: activeHotelTab === cat ? '#3b82f6' : 'transparent', color: activeHotelTab === cat ? 'white' : '#64748b' }}
-                    >
-                      {cat.replace(' Hotels', '').replace('-Friendly', '')}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {/* Items List */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '720px', overflowY: 'auto', paddingRight: '0.25rem' }}>
                 {(() => {
                   let list: any[] = [];
