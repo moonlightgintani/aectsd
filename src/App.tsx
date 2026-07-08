@@ -60,38 +60,7 @@ const NAV_ITEMS = [
     { id: 'location', label: 'Directions' },
     { id: 'ieee-sb', label: 'IEEE SB', external: true }
   ];
-  
-  const DESKTOP_NAV_ITEMS = [
-    { id: 'home', label: 'Home' },
-    {
-      label: 'About',
-      dropdown: [
-        { id: 'about', label: 'About Us' },
-        { id: 'committee', label: 'Committee' },
-        { id: 'location', label: 'Directions' }
-      ]
-    },
-    { id: 'speakers', label: 'Speakers' },
-    {
-      label: 'Authors',
-      dropdown: [
-        { id: 'call-for-papers', label: 'Call For Papers' },
-        { id: 'guidelines', label: 'Guidelines' },
-        { id: 'paper-submission', label: 'Paper Submission' }
-      ]
-    },
-    {
-      label: 'Timeline & Events',
-      dropdown: [
-        { id: 'important-dates', label: 'Important Dates' },
-        { id: 'workshops', label: 'Workshops' }
-      ]
-    },
-    { id: 'registration', label: 'Registration' },
-    { id: 'explore', label: 'Explore Coimbatore' },
-    { id: 'contact-us', label: 'Contact Us' },
-    { id: 'ieee-sb', label: 'IEEE SB', external: true }
-];
+
 
 interface Department {
   id?: any;
@@ -1516,36 +1485,9 @@ export default function App() {
         </a>
 
         {/* Desktop Navigation Links */}
-        <nav className="desktop-nav">
-          <ul style={{ display: 'flex', gap: '1rem', listStyle: 'none', alignItems: 'center', margin: 0, padding: 0 }}>
-            {DESKTOP_NAV_ITEMS.map((item: any, idx) => {
-              if (item.dropdown) {
-                const isAnyDropdownActive = item.dropdown.some((sub: any) => activeSection === sub.id);
-                return (
-                  <li key={idx} className="nav-dropdown">
-                    <button
-                      className={`nav-link ${isAnyDropdownActive ? 'active' : ''}`}
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
-                    >
-                      {item.label}
-                      <span className="dropdown-arrow">▼</span>
-                    </button>
-                    <ul className="dropdown-content">
-                      {item.dropdown.map((subItem: any) => (
-                        <li key={subItem.id}>
-                          <button
-                            onClick={() => scrollToSection(subItem.id)}
-                            style={activeSection === subItem.id ? { color: '#3b82f6' } : undefined}
-                          >
-                            {navLabelMap[subItem.id] || subItem.label}
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </li>
-                );
-              }
-
+        <nav className="desktop-nav" style={{ width: '100%', justifyContent: 'center' }}>
+          <ul style={{ display: 'flex', gap: '0.5rem 1rem', listStyle: 'none', alignItems: 'center', margin: 0, padding: 0, flexWrap: 'wrap', justifyContent: 'center' }}>
+            {NAV_ITEMS.map((item: any) => {
               return (
                 <li key={item.id}>
                   {item.external ? (
@@ -2395,11 +2337,21 @@ export default function App() {
 
           {/* Template Downloads */}
           <div style={{ marginTop: '3.5rem', display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-            <a href="#" className="btn btn-secondary" onClick={(e) => { e.preventDefault(); alert(info.alert_download_word); }}>
+            <a 
+              href="https://www.ieee.org/content/dam/ieee-org/ieee/web/org/conferences/conference-template-a4.docx" 
+              className="btn btn-secondary"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <Download size={16} />
               {info.cfp_btn_word}
             </a>
-            <a href="#" className="btn btn-secondary" onClick={(e) => { e.preventDefault(); alert(info.alert_download_latex); }}>
+            <a 
+              href="https://www.ieee.org/content/dam/ieee-org/ieee/web/org/conferences/Style_files_LaTeX.zip" 
+              className="btn btn-secondary"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <Download size={16} />
               {info.cfp_btn_latex}
             </a>
@@ -2440,7 +2392,7 @@ export default function App() {
                 viewBox="0 0 1150 220"
                 preserveAspectRatio="none"
               >
-                {/* Winding Asphalt Road (Navy) */}
+                {/* Winding Asphalt Road (Dark Gray) */}
                 <path
                   d={(() => {
                     const N = importantDates.length;
@@ -2460,14 +2412,14 @@ export default function App() {
                     }
                     return p;
                   })()}
-                  stroke="rgba(15, 23, 42, 0.95)"
-                  strokeWidth="28"
+                  stroke="#1e293b"
+                  strokeWidth="32"
                   strokeLinecap="round"
                   fill="none"
-                  style={{ filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))' }}
+                  style={{ filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.15))' }}
                 />
                 
-                {/* Road center dash markings */}
+                {/* Road center dash markings (White) */}
                 <path
                   d={(() => {
                     const N = importantDates.length;
@@ -2487,9 +2439,9 @@ export default function App() {
                     }
                     return p;
                   })()}
-                  stroke="#3b82f6"
-                  strokeWidth="2"
-                  strokeDasharray="6,6"
+                  stroke="#ffffff"
+                  strokeWidth="2.5"
+                  strokeDasharray="8,8"
                   strokeLinecap="round"
                   fill="none"
                 />
@@ -2500,24 +2452,19 @@ export default function App() {
                 const { month, day, year } = parseDateDisplay(evt.event_date);
                 const isEven = idx % 2 === 0;
                 
-                // Compare with current date:
-                const isPassed = (() => {
-                  try {
-                    const cleanDateStr = evt.event_date.replace(/-[0-9]+/g, '').trim(); 
-                    const dateVal = new Date(cleanDateStr);
-                    if (isNaN(dateVal.getTime())) return false;
-                    return dateVal <= new Date();
-                  } catch (e) {
-                    return false;
-                  }
-                })();
-
                 const xPercent = (idx / (importantDates.length - 1)) * 91 + 4.5; 
                 const yPos = isEven ? 50 : 170; 
 
-                // If date has passed: Emerald Green color. Otherwise: Gray color.
-                const primaryColor = isPassed ? '#10b981' : '#64748b';
-                const glowShadow = isPassed ? '0 0 15px rgba(16, 185, 129, 0.6)' : 'none';
+                const nodeColors = [
+                  '#0ea5e9', // Sky Blue
+                  '#ec4899', // Pink/Rose
+                  '#8b5cf6', // Purple
+                  '#0d9488', // Teal
+                  '#f59e0b', // Amber/Orange
+                  '#3b82f6', // Royal Blue
+                  '#ef4444'  // Red
+                ];
+                const activeColor = nodeColors[idx % nodeColors.length];
 
                 return (
                   <div
@@ -2533,42 +2480,38 @@ export default function App() {
                       alignItems: 'center'
                     }}
                   >
-                    {/* Circle Pin Node on the Highway curve with alternating custom shapes */}
+                    {/* Circle Pin Node on the Highway curve (vibrant colored circles) */}
                     <motion.div
                       whileHover={{ scale: 1.2 }}
                       style={{
-                        width: '36px',
-                        height: '36px',
-                        borderRadius: idx % 5 === 0 ? '50%' : idx % 5 === 1 ? '8px' : '0px',
-                        clipPath: idx % 5 === 2 ? 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)' : idx % 5 === 3 ? 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' : idx % 5 === 4 ? 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)' : 'none',
-                        background: '#ffffff',
-                        border: `4px solid ${primaryColor}`,
-                        boxShadow: `0 4px 10px rgba(0,0,0,0.15), ${glowShadow}`,
+                        width: '38px',
+                        height: '38px',
+                        borderRadius: '50%',
+                        background: activeColor,
+                        border: '3px solid #ffffff',
+                        boxShadow: '0 4px 10px rgba(0,0,0,0.25)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
+                        color: '#ffffff',
+                        fontWeight: 800,
+                        fontSize: '0.95rem',
                         cursor: 'pointer',
                         zIndex: 11
                       }}
                       title={`${evt.title} - ${evt.event_date}`}
                     >
-                      {/* Inner Indicator circle */}
-                      <div style={{
-                        width: '12px',
-                        height: '12px',
-                        borderRadius: '50%',
-                        background: primaryColor
-                      }} />
+                      {idx + 1}
                     </motion.div>
 
                     {/* Vertical Connector line to its detail card */}
                     <div style={{
                       position: 'absolute',
                       left: '50%',
-                      top: isEven ? '18px' : '-58px',
-                      width: '2px',
-                      height: '58px',
-                      background: `linear-gradient(${isEven ? 'to bottom' : 'to top'}, ${primaryColor}, rgba(255, 255, 255, 0.05))`,
+                      top: isEven ? '20px' : '-62px',
+                      width: '2.5px',
+                      height: '62px',
+                      background: `linear-gradient(${isEven ? 'to bottom' : 'to top'}, ${activeColor}, rgba(255, 255, 255, 0.05))`,
                       transform: 'translateX(-50%)',
                       zIndex: 2
                     }} />
@@ -2578,22 +2521,22 @@ export default function App() {
                       position: 'absolute',
                       left: '50%',
                       transform: 'translateX(-50%)',
-                      [isEven ? 'bottom' : 'top']: '72px', 
+                      [isEven ? 'bottom' : 'top']: '76px', 
                       width: '230px',
                       background: 'rgba(255, 255, 255, 0.98)',
                       backdropFilter: 'blur(12px)',
-                      border: `2px solid ${isPassed ? '#10b981' : '#e2e8f0'}`,
+                      border: `2px solid ${activeColor}`,
                       borderRadius: '0.88rem',
                       padding: '0.9rem',
-                      boxShadow: isPassed ? '0 10px 25px rgba(16, 185, 129, 0.12)' : '0 4px 15px rgba(0,0,0,0.05)',
+                      boxShadow: '0 10px 25px rgba(0,0,0,0.06)',
                       textAlign: 'center'
                     }}>
                       {/* Calendar mini badge */}
                       <span style={{
                         fontSize: '0.7rem',
                         fontWeight: 800,
-                        color: isPassed ? '#ffffff' : '#475569',
-                        background: isPassed ? '#10b981' : '#f1f5f9',
+                        color: '#ffffff',
+                        background: activeColor,
                         padding: '0.25rem 0.65rem',
                         borderRadius: '1rem',
                         display: 'inline-block',
