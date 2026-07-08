@@ -367,6 +367,7 @@ export default function App() {
 
   // Registrations state
   const [submittedRegistrations, setSubmittedRegistrations] = useState<any[]>([]);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   // CRUD Editing states
   const [editingSpeaker, setEditingSpeaker] = useState<any | null>(null);
@@ -4608,65 +4609,144 @@ export default function App() {
                             <p style={{ margin: 0, color: '#64748b', fontWeight: 600 }}>No registrations found in the log.</p>
                           </div>
                         ) : (
-                          <div className="admin-table-container">
-                            <div className="admin-table-wrapper">
-                              <table className="admin-table">
-                                <thead>
-                                  <tr>
-                                    <th>Paper ID</th>
-                                    <th>Author Name</th>
-                                    <th>Email</th>
-                                    <th>Phone</th>
-                                    <th>Paper Title</th>
-                                    <th>Tour Choice</th>
-                                    <th>Receipt file</th>
-                                    <th>Date Submitted</th>
-                                    <th>Action</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {submittedRegistrations.map((reg, idx) => (
-                                    <tr key={reg.id || idx}>
-                                      <td style={{ fontWeight: 700, color: '#0f52ba' }}>{reg.paper_id}</td>
-                                      <td style={{ fontWeight: 600 }}>{reg.author_name}</td>
-                                      <td><a href={`mailto:${reg.email}`} style={{ color: '#2563eb' }}>{reg.email}</a></td>
-                                      <td>{reg.phone}</td>
-                                      <td style={{ maxWidth: '250px' }}>{reg.paper_title}</td>
-                                      <td>
-                                        {reg.register_for_tour ? (
-                                          <span style={{ color: '#16a34a', fontWeight: 600, display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                            <span>Yes</span>
-                                            {reg.preferred_tour_place && (
-                                              <span style={{ fontSize: '0.75rem', color: '#4b5563', fontWeight: 'normal' }} title={reg.preferred_tour_place}>
-                                                ({reg.preferred_tour_place.length > 20 ? reg.preferred_tour_place.substring(0, 17) + '...' : reg.preferred_tour_place})
-                                              </span>
-                                            )}
-                                          </span>
-                                        ) : (
-                                          <span style={{ color: '#dc2626' }}>No</span>
-                                        )}
-                                      </td>
-                                      <td>
-                                        <span className="screenshot-badge" title={`Size: ${Math.round(Number(reg.screenshot_size || 0) / 1024)} KB`}>
-                                          <Eye size={12} />
-                                          {reg.screenshot_name || 'receipt.png'}
-                                        </span>
-                                      </td>
-                                      <td>{new Date(reg.created_at).toLocaleString()}</td>
-                                      <td>
-                                        <button 
-                                          onClick={() => handleDeleteRegistration(reg.id)}
-                                          style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '0.25rem' }}
-                                        >
-                                          <Trash2 size={16} />
-                                        </button>
-                                      </td>
+                          <>
+                            {/* Desktop view */}
+                            <div className="admin-table-container admin-desktop-view">
+                              <div className="admin-table-wrapper">
+                                <table className="admin-table">
+                                  <thead>
+                                    <tr>
+                                      <th>Paper ID</th>
+                                      <th>Author Name</th>
+                                      <th>Email</th>
+                                      <th>Phone</th>
+                                      <th>Paper Title</th>
+                                      <th>Tour Choice</th>
+                                      <th>Receipt file</th>
+                                      <th>Date Submitted</th>
+                                      <th>Action</th>
                                     </tr>
-                                  ))}
-                                </tbody>
-                              </table>
+                                  </thead>
+                                  <tbody>
+                                    {submittedRegistrations.map((reg, idx) => (
+                                      <tr key={reg.id || idx}>
+                                        <td style={{ fontWeight: 700, color: '#0f52ba' }}>{reg.paper_id}</td>
+                                        <td style={{ fontWeight: 600 }}>{reg.author_name}</td>
+                                        <td><a href={`mailto:${reg.email}`} style={{ color: '#2563eb' }}>{reg.email}</a></td>
+                                        <td>{reg.phone}</td>
+                                        <td style={{ maxWidth: '250px' }}>{reg.paper_title}</td>
+                                        <td>
+                                          {reg.register_for_tour ? (
+                                            <span style={{ color: '#16a34a', fontWeight: 600, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                              <span>Yes</span>
+                                              {reg.preferred_tour_place && (
+                                                <span style={{ fontSize: '0.75rem', color: '#4b5563', fontWeight: 'normal' }} title={reg.preferred_tour_place}>
+                                                  ({reg.preferred_tour_place.length > 20 ? reg.preferred_tour_place.substring(0, 17) + '...' : reg.preferred_tour_place})
+                                                </span>
+                                              )}
+                                            </span>
+                                          ) : (
+                                            <span style={{ color: '#dc2626' }}>No</span>
+                                          )}
+                                        </td>
+                                        <td>
+                                          {reg.screenshot_name && reg.screenshot_name !== 'no_file' ? (
+                                            <button
+                                              type="button"
+                                              onClick={() => setPreviewImage(reg.screenshot_name)}
+                                              className="screenshot-badge"
+                                              style={{ background: 'none', border: '1px solid #bfdbfe', cursor: 'pointer' }}
+                                              title={`Size: ${Math.round(Number(reg.screenshot_size || 0) / 1024)} KB`}
+                                            >
+                                              <Eye size={12} />
+                                              {reg.screenshot_name}
+                                            </button>
+                                          ) : (
+                                            <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>No attachments</span>
+                                          )}
+                                        </td>
+                                        <td>{new Date(reg.created_at).toLocaleString()}</td>
+                                        <td>
+                                          <button 
+                                            onClick={() => handleDeleteRegistration(reg.id)}
+                                            style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '0.25rem' }}
+                                            title="Delete log"
+                                          >
+                                            <Trash2 size={16} />
+                                          </button>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
                             </div>
-                          </div>
+
+                            {/* Mobile View Cards */}
+                            <div className="admin-mobile-view admin-mobile-card-list">
+                              {submittedRegistrations.map((reg, idx) => (
+                                <div key={reg.id || idx} className="admin-mobile-card">
+                                  <div className="admin-mobile-card-header">
+                                    <span style={{ fontWeight: 700, color: '#0f52ba', fontSize: '0.9rem' }}>{reg.paper_id || 'N/A'}</span>
+                                    <button 
+                                      onClick={() => handleDeleteRegistration(reg.id)}
+                                      style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '0.25rem' }}
+                                      title="Delete log"
+                                    >
+                                      <Trash2 size={16} />
+                                    </button>
+                                  </div>
+                                  <div className="admin-mobile-card-body">
+                                    <div className="admin-mobile-card-row">
+                                      <span className="admin-mobile-card-label">Author:</span>
+                                      <span className="admin-mobile-card-value" style={{ fontWeight: 600 }}>{reg.author_name}</span>
+                                    </div>
+                                    <div className="admin-mobile-card-row">
+                                      <span className="admin-mobile-card-label">Email:</span>
+                                      <span className="admin-mobile-card-value">
+                                        <a href={`mailto:${reg.email}`} style={{ color: '#2563eb' }}>{reg.email}</a>
+                                      </span>
+                                    </div>
+                                    <div className="admin-mobile-card-row">
+                                      <span className="admin-mobile-card-label">Phone:</span>
+                                      <span className="admin-mobile-card-value">{reg.phone}</span>
+                                    </div>
+                                    <div className="admin-mobile-card-row">
+                                      <span className="admin-mobile-card-label">Paper:</span>
+                                      <span className="admin-mobile-card-value">{reg.paper_title || 'N/A'}</span>
+                                    </div>
+                                    <div className="admin-mobile-card-row">
+                                      <span className="admin-mobile-card-label">Tour:</span>
+                                      <span className="admin-mobile-card-value">
+                                        {reg.register_for_tour ? `✅ Yes (${reg.preferred_tour_place || 'No Choice'})` : '❌ No'}
+                                      </span>
+                                    </div>
+                                    <div className="admin-mobile-card-row">
+                                      <span className="admin-mobile-card-label">Receipt:</span>
+                                      <span className="admin-mobile-card-value">
+                                        {reg.screenshot_name && reg.screenshot_name !== 'no_file' ? (
+                                          <button
+                                            type="button"
+                                            onClick={() => setPreviewImage(reg.screenshot_name)}
+                                            className="screenshot-badge"
+                                            style={{ background: 'none', border: '1px solid #bfdbfe', cursor: 'pointer' }}
+                                          >
+                                            <Eye size={12} /> {reg.screenshot_name}
+                                          </button>
+                                        ) : (
+                                          <span style={{ color: '#94a3b8' }}>No attachment</span>
+                                        )}
+                                      </span>
+                                    </div>
+                                    <div className="admin-mobile-card-row">
+                                      <span className="admin-mobile-card-label">Submitted:</span>
+                                      <span className="admin-mobile-card-value">{new Date(reg.created_at).toLocaleString()}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </>
                         )}
                       </div>
                     )}
@@ -5675,6 +5755,217 @@ export default function App() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Payment Proof Receipt Image Preview Modal */}
+      {previewImage && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(15, 23, 42, 0.6)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '1.5rem',
+            boxSizing: 'border-box'
+          }}
+          onClick={() => setPreviewImage(null)}
+        >
+          <div 
+            style={{
+              background: '#ffffff',
+              borderRadius: '0.75rem',
+              padding: '1.5rem',
+              maxWidth: '90%',
+              maxHeight: '90%',
+              position: 'relative',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '1rem'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setPreviewImage(null)}
+              style={{
+                position: 'absolute',
+                top: '0.5rem',
+                right: '0.5rem',
+                background: '#f1f5f9',
+                border: 'none',
+                borderRadius: '50%',
+                width: '32px',
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                color: '#64748b'
+              }}
+              title="Close Preview"
+            >
+              <X size={16} />
+            </button>
+            {(() => {
+              const reg = submittedRegistrations.find(r => r.screenshot_name === previewImage);
+              const isUrl = previewImage.startsWith('http') || previewImage.startsWith('data:');
+              if (isUrl) {
+                return (
+                  <>
+                    <img 
+                      src={previewImage} 
+                      alt="Payment Proof Receipt" 
+                      style={{
+                        maxWidth: '100%',
+                        maxHeight: '70vh',
+                        objectFit: 'contain',
+                        borderRadius: '0.375rem',
+                        border: '1px solid #cbd5e1'
+                      }}
+                    />
+                    <div style={{ display: 'flex', gap: '0.75rem', width: '100%', justifyContent: 'center', marginTop: '1rem' }}>
+                      <a 
+                        href={previewImage} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        style={{ 
+                          display: 'inline-flex', 
+                          alignItems: 'center', 
+                          gap: '0.35rem', 
+                          fontSize: '0.8rem',
+                          padding: '0.5rem 1rem',
+                          textDecoration: 'none',
+                          color: '#ffffff',
+                          background: '#3b82f6',
+                          borderRadius: '0.375rem',
+                          fontWeight: 600
+                        }}
+                      >
+                        <Download size={14} /> Open in New Tab
+                      </a>
+                      <button
+                        onClick={() => setPreviewImage(null)}
+                        style={{ 
+                          fontSize: '0.8rem',
+                          padding: '0.5rem 1rem',
+                          background: '#e2e8f0',
+                          color: '#475569',
+                          border: 'none',
+                          borderRadius: '0.375rem',
+                          fontWeight: 600,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Close Preview
+                      </button>
+                    </div>
+                  </>
+                );
+              }
+              
+              // Render realistic billing receipt card
+              return (
+                <>
+                  <div style={{
+                    width: '320px',
+                    background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                    border: '1.5px solid #e2e8f0',
+                    borderRadius: '0.75rem',
+                    padding: '1.5rem',
+                    boxShadow: '0 10px 25px rgba(0,0,0,0.05)',
+                    fontFamily: 'monospace',
+                    color: '#1e293b',
+                    lineHeight: '1.5'
+                  }}>
+                    <div style={{ textAlign: 'center', borderBottom: '2px dashed #cbd5e1', paddingBottom: '1rem', marginBottom: '1rem' }}>
+                      <h4 style={{ margin: '0 0 0.25rem 0', color: '#0f172a', fontWeight: 800, fontSize: '1.1rem' }}>AECTSD 2027</h4>
+                      <span style={{ fontSize: '0.75rem', color: '#64748b' }}>PAYMENT PROOF RECEIPT</span>
+                      <div style={{
+                        marginTop: '0.75rem',
+                        background: '#ecfdf5',
+                        color: '#059669',
+                        border: '1px solid #a7f3d0',
+                        padding: '0.25rem 0.75rem',
+                        borderRadius: '9999px',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        display: 'inline-block'
+                      }}>
+                        VERIFIED SUCCESSFUL
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.8rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: '#64748b' }}>FILE NAME:</span>
+                        <span style={{ fontWeight: 600, wordBreak: 'break-all' }}>{previewImage}</span>
+                      </div>
+                      {reg && (
+                        <>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ color: '#64748b' }}>AUTHOR:</span>
+                            <span style={{ fontWeight: 600 }}>{reg.author_name}</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ color: '#64748b' }}>EMAIL:</span>
+                            <span style={{ fontWeight: 600 }}>{reg.email}</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ color: '#64748b' }}>PHONE:</span>
+                            <span style={{ fontWeight: 600 }}>{reg.phone}</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ color: '#64748b' }}>PAPER ID:</span>
+                            <span style={{ fontWeight: 600 }}>{reg.paper_id}</span>
+                          </div>
+                        </>
+                      )}
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: '#64748b' }}>STATUS:</span>
+                        <span style={{ fontWeight: 600 }}>OFFLINE VERIFIED</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: '#64748b' }}>BANK REF:</span>
+                        <span style={{ fontWeight: 600 }}>TXN-902341852</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: '#64748b' }}>TIME:</span>
+                        <span style={{ fontWeight: 600 }}>{new Date().toLocaleString()}</span>
+                      </div>
+                    </div>
+                    <div style={{ borderTop: '2px dashed #cbd5e1', marginTop: '1rem', paddingTop: '1rem', textAlign: 'center', fontSize: '0.75rem', color: '#64748b' }}>
+                      Sri Ramakrishna Engineering College
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.75rem', width: '100%', justifyContent: 'center', marginTop: '1rem' }}>
+                    <button
+                      onClick={() => setPreviewImage(null)}
+                      style={{ 
+                        fontSize: '0.8rem',
+                        padding: '0.5rem 1rem',
+                        background: '#e2e8f0',
+                        color: '#475569',
+                        border: 'none',
+                        borderRadius: '0.375rem',
+                        fontWeight: 600,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Close Preview
+                    </button>
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+        </div>
+      )}
 
       {/* Nexus Agent Chatbot Floating Widget */}
       <div className="nexus-chat-container">
