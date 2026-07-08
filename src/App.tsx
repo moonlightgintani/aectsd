@@ -364,7 +364,7 @@ function CounterUp({ target, duration = 1.2 }: { target: string; duration?: numb
 
 export default function App() {
   const [activeSection, setActiveSection] = useState('home');
-  const [currentPage, setCurrentPage] = useState<'main' | 'explore'>('main');
+  const [currentPage, setCurrentPage] = useState<'main' | 'explore' | 'admin'>('main');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [committeeTab, setCommitteeTab] = useState<'steering' | 'organizing' | 'advisory'>('organizing');
   const [activeSubcommittee, setActiveSubcommittee] = useState<string>('leadership');
