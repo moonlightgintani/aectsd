@@ -920,7 +920,39 @@ export default function ExplorePage({ adminUser }: { adminUser: string | null })
             </div>
 
             {/* Right Column: List Selector Panel */}
+            <div className="explore-sidebar">
+              {/* Sight / Hotel Category Specific Filters inside side pane */}
+              {activeCategory === 'sights' && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', background: '#f1f5f9', padding: '6px', borderRadius: '16px', width: '100%', marginBottom: '1rem' }}>
+                  {['All', 'Religious', 'Shopping'].map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => setActiveSightCategory(cat)}
+                      className={`btn ${activeSightCategory === cat ? 'btn-primary' : 'btn-secondary'}`}
+                      style={{ fontSize: '0.75rem', padding: '0.35rem 0.85rem', borderRadius: '2rem', border: 'none', background: activeSightCategory === cat ? '#3b82f6' : 'transparent', color: activeSightCategory === cat ? 'white' : '#64748b' }}
+                    >
+                      {cat === 'All' ? 'All' : cat === 'Religious' ? 'Spiritual' : 'Shopping'}
+                    </button>
+                  ))}
+                </div>
+              )}
 
+              {activeCategory === 'hotels' && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', background: '#f1f5f9', padding: '6px', borderRadius: '16px', width: '100%', marginBottom: '1rem' }}>
+                  {['All Hotels', 'Luxury Hotels', 'Mid-Range Hotels', 'Budget-Friendly Hotels'].map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => setActiveHotelTab(cat)}
+                      className={`btn ${activeHotelTab === cat ? 'btn-primary' : 'btn-secondary'}`}
+                      style={{ fontSize: '0.75rem', padding: '0.35rem 0.85rem', borderRadius: '2rem', border: 'none', background: activeHotelTab === cat ? '#3b82f6' : 'transparent', color: activeHotelTab === cat ? 'white' : '#64748b' }}
+                    >
+                      {cat.replace(' Hotels', '').replace('-Friendly', '')}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Items List */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '720px', overflowY: 'auto', paddingRight: '0.25rem' }}>
                 {(() => {
                   let list: any[] = [];
@@ -954,7 +986,20 @@ export default function ExplorePage({ adminUser }: { adminUser: string | null })
                     return (
                       <div
                         key={itemId}
-                        onClick={() => setSelectedId(itemId)}
+                        onClick={() => {
+                          setSelectedId(itemId);
+                          if (window.innerWidth <= 768) {
+                            const el = document.querySelector('.explore-showcase-panel');
+                            if (el) {
+                              const headerEl = document.querySelector('.main-header');
+                              const offset = headerEl ? headerEl.clientHeight : 76;
+                              window.scrollTo({
+                                top: el.getBoundingClientRect().top + window.scrollY - offset - 10,
+                                behavior: 'smooth'
+                              });
+                            }
+                          }
+                        }}
                         className={`list-selector-card ${isActive ? 'active' : ''}`}
                       >
                         <img
@@ -966,12 +1011,12 @@ export default function ExplorePage({ adminUser }: { adminUser: string | null })
                           <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                             {item.category}
                           </span>
-                          <h4 style={{ fontSize: '1.05rem', color: '#091d36', fontWeight: 800, margin: '0.15rem 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          <h4>
                             {item.name}
                           </h4>
-                          <span style={{ fontSize: '0.82rem', color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          <p>
                             {item.description}
-                          </span>
+                          </p>
                         </div>
                       </div>
                     );
