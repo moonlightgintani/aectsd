@@ -3515,18 +3515,8 @@ export default function App() {
                 {selectedDept.description}
               </p>
 
-              {/* PDF Link & Action Buttons */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-                <a
-                  href="https://www.ieee.org/content/dam/ieee-org/ieee/web/org/pubs/format-guidelines-for-conference-papers.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-secondary"
-                  style={{ fontSize: '0.9rem', gap: '0.5rem', display: 'flex', alignItems: 'center' }}
-                >
-                  <Download size={16} />
-                  Open Paper Format (PDF)
-                </a>
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
                 <button
                   onClick={() => setSelectedDept(null)}
                   className="btn btn-primary"
