@@ -1728,8 +1728,37 @@ export default function App() {
           >
             <ExplorePage adminUser={adminUser} />
           </motion.div>
+        ) : currentPage === 'admin' ? (
+          <motion.div
+            key="admin"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.35, ease: 'easeInOut' }}
+          >
+            <AdminPage
+              supabase={supabase}
+              isSupabaseConfigured={isSupabaseConfigured}
+              fetchDbData={fetchDbData}
+              departments={departments}
+              committeeMembers={committeeMembers}
+              speakers={speakers}
+              importantDates={importantDates}
+              workshops={workshops}
+              submittedRegistrations={submittedRegistrations}
+              info={info}
+              pricing={pricing}
+              stats={stats}
+              coordinators={coordinators}
+              setInfo={setInfo}
+              setPricing={setPricing}
+              setStats={setStats}
+              setCoordinators={setCoordinators}
+              onClose={() => setCurrentPage('main')}
+            />
+          </motion.div>
         ) : (
-<motion.div
+          <motion.div
             key="home"
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
