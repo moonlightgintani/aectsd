@@ -2342,24 +2342,16 @@ export default function App() {
           </div>
 
           {/* Template Downloads */}
-          <div style={{ marginTop: '3.5rem', display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+          <div style={{ marginTop: '3.5rem', display: 'flex', justifyContent: 'center', flexWrap: 'wrap' }}>
             <a 
-              href="https://www.ieee.org/content/dam/ieee-org/ieee/web/org/conferences/conference-template-a4.docx" 
-              className="btn btn-secondary"
+              href="https://template-selector.ieee.org/" 
+              className="btn btn-primary"
               target="_blank"
               rel="noopener noreferrer"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontSize: '1rem', padding: '0.8rem 2.2rem' }}
             >
-              <Download size={16} />
-              {info.cfp_btn_word}
-            </a>
-            <a 
-              href="https://www.ieee.org/content/dam/ieee-org/ieee/web/org/conferences/Style_files_LaTeX.zip" 
-              className="btn btn-secondary"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Download size={16} />
-              {info.cfp_btn_latex}
+              <Download size={18} />
+              Download IEEE Paper Templates
             </a>
           </div>
         </div>
