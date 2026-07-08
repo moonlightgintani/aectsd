@@ -156,7 +156,7 @@ export default function AdminPage({
 
   // Tab state
   const [activeTab, setActiveTab] = useState<string>('registrations');
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [] = useState<string | null>(null);
 
   // Search & Filter
   const [searchTerm, setSearchTerm] = useState<string>('');
