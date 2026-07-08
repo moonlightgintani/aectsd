@@ -1062,13 +1062,41 @@ export default function App() {
         return;
       }
       
+      // Upload screenshot to Supabase Storage
+      let screenshotUrl = 'no_file';
+      let screenshotFileName = 'no_file';
+      if (regScreenshot) {
+        screenshotFileName = regScreenshot.name;
+        try {
+          // Sanitize filename: replace spaces with underscores, prefix with timestamp
+          const safeFileName = `${Date.now()}_${regScreenshot.name.replace(/\s+/g, '_')}`;
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('payment-proofs')
+            .upload(safeFileName, regScreenshot, { cacheControl: '3600', upsert: false });
+          
+          if (uploadError) {
+            console.warn('File upload failed, saving filename only:', uploadError.message);
+            screenshotUrl = screenshotFileName;
+          } else {
+            // Get the public URL
+            const { data: urlData } = supabase.storage
+              .from('payment-proofs')
+              .getPublicUrl(uploadData.path);
+            screenshotUrl = urlData?.publicUrl || screenshotFileName;
+          }
+        } catch (uploadErr) {
+          console.warn('Storage upload error:', uploadErr);
+          screenshotUrl = screenshotFileName;
+        }
+      }
+
       const { error } = await supabase.from('registrations').insert({
         paper_id: regPaperId,
         paper_title: regPaperTitle,
         author_name: regAuthorName,
         email: regEmail,
         phone: fullPhone,
-        screenshot_name: regScreenshot ? regScreenshot.name : 'no_file',
+        screenshot_name: screenshotUrl,
         screenshot_size: regScreenshot ? regScreenshot.size : 0,
         register_for_tour: regRegisterForTour,
         preferred_tour_place: regPreferredTourPlace || null
