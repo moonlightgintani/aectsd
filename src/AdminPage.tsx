@@ -17,7 +17,9 @@ import {
   BookOpen, 
   Layers, 
   Activity,
-  Briefcase
+  Briefcase,
+  Eye,
+  X
 } from 'lucide-react';
 
 const ADMIN_MASTER_KEY = "MRBB2026";
@@ -156,7 +158,7 @@ export default function AdminPage({
 
   // Tab state
   const [activeTab, setActiveTab] = useState<string>('registrations');
-  const [] = useState<string | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   // Search & Filter
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -1251,9 +1253,25 @@ export default function AdminPage({
                           <td style={{ padding: '1rem 0.75rem' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                               {r.payment_proof_url && (
-                                <a href={r.payment_proof_url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', color: '#3b82f6', textDecoration: 'none', fontWeight: 600, fontSize: '0.75rem' }}>
-                                  <Download size={12} /> Payment Proof
-                                </a>
+                                <button
+                                  type="button"
+                                  onClick={() => setPreviewImage(r.payment_proof_url)}
+                                  style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    padding: 0,
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.25rem',
+                                    color: '#3b82f6',
+                                    textDecoration: 'underline',
+                                    fontWeight: 600,
+                                    fontSize: '0.75rem',
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  <Eye size={12} /> View Payment Proof
+                                </button>
                               )}
                               {r.pdf_file_url && (
                                 <a href={r.pdf_file_url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', color: '#3b82f6', textDecoration: 'none', fontWeight: 600, fontSize: '0.75rem' }}>
@@ -2486,6 +2504,110 @@ export default function AdminPage({
           </div>
         )}
       </main>
+
+      {/* Image Preview Modal Overlay Container */}
+      {previewImage && (
+        <div 
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.75)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 99999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '2rem'
+          }}
+          onClick={() => setPreviewImage(null)}
+        >
+          <div 
+            style={{
+              position: 'relative',
+              backgroundColor: '#ffffff',
+              borderRadius: '0.75rem',
+              padding: '2rem 1.5rem 1.5rem',
+              maxWidth: '90%',
+              maxHeight: '90%',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '1rem'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setPreviewImage(null)}
+              style={{
+                position: 'absolute',
+                top: '0.5rem',
+                right: '0.5rem',
+                background: '#f1f5f9',
+                border: 'none',
+                borderRadius: '50%',
+                width: '32px',
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                color: '#64748b'
+              }}
+              title="Close Preview"
+            >
+              <X size={16} />
+            </button>
+            <img 
+              src={previewImage} 
+              alt="Payment Proof Receipt" 
+              style={{
+                maxWidth: '100%',
+                maxHeight: '70vh',
+                objectFit: 'contain',
+                borderRadius: '0.375rem',
+                border: '1px solid #cbd5e1'
+              }}
+            />
+            <div style={{ display: 'flex', gap: '0.75rem', width: '100%', justifyContent: 'center' }}>
+              <a 
+                href={previewImage} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                style={{ 
+                  display: 'inline-flex', 
+                  alignItems: 'center', 
+                  gap: '0.35rem', 
+                  fontSize: '0.8rem',
+                  padding: '0.5rem 1rem',
+                  textDecoration: 'none',
+                  color: '#ffffff',
+                  background: '#3b82f6',
+                  borderRadius: '0.375rem',
+                  fontWeight: 600
+                }}
+              >
+                <Download size={14} /> Open in New Tab
+              </a>
+              <button
+                onClick={() => setPreviewImage(null)}
+                style={{ 
+                  fontSize: '0.8rem',
+                  padding: '0.5rem 1rem',
+                  background: '#e2e8f0',
+                  color: '#475569',
+                  border: 'none',
+                  borderRadius: '0.375rem',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                Close Preview
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
