@@ -957,6 +957,558 @@ export default function AdminPage({
     { id: 'stats', label: 'Dashboard Stats', icon: <BarChart2 size={16} /> }
   ];
 
+  const isEditingAny = editingSpeaker || editingWorkshop || editingCommittee || editingDept || editingMilestone || editingCoordinator || editingStat;
+
+  if (isEditingAny) {
+    return (
+      <div className="admin-layout" style={{
+        minHeight: '100vh',
+        width: '100%',
+        background: '#f8fafc',
+        color: '#0f172a',
+        padding: '3rem 1.5rem',
+        boxSizing: 'border-box',
+        display: 'flex',
+        justifyContent: 'center',
+        fontFamily: 'Inter, system-ui, sans-serif'
+      }}>
+        <div style={{ width: '100%', maxWidth: '800px' }}>
+          {/* Editor Header / Back Button */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '2rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '1.25rem' }}>
+            <button 
+              onClick={() => {
+                setEditingSpeaker(null);
+                setEditingWorkshop(null);
+                setEditingCommittee(null);
+                setEditingDept(null);
+                setEditingMilestone(null);
+                setEditingCoordinator(null);
+                setEditingStat(null);
+              }}
+              style={{
+                border: 'none',
+                background: 'rgba(15, 23, 42, 0.05)',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                color: '#475569',
+                fontWeight: 700,
+                fontSize: '0.85rem',
+                padding: '0.5rem 1rem',
+                borderRadius: '0.375rem'
+              }}
+            >
+              <ArrowLeft size={16} /> Back to Dashboard
+            </button>
+            <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, marginLeft: '1rem', color: '#0f172a' }}>
+              {editingSpeaker && (editingSpeaker.id ? '✏️ Edit Speaker Details' : '➕ Add New Speaker')}
+              {editingWorkshop && (editingWorkshop.id ? '✏️ Edit Workshop Details' : '➕ Add New Workshop')}
+              {editingCommittee && (editingCommittee.id ? '✏️ Edit Committee Member' : '➕ Add New Committee Member')}
+              {editingDept && (editingDept.id ? '✏️ Edit Track Details' : '➕ Add New Track')}
+              {editingMilestone && (editingMilestone.id ? '✏️ Edit Timeline Date' : '➕ Add New Timeline Date')}
+              {editingCoordinator && (editingCoordinator.id ? '✏️ Edit Coordinator Contact' : '➕ Add New Coordinator')}
+              {editingStat && (editingStat.id ? '✏️ Edit Stat Parameter' : '➕ Add New Stat')}
+            </h2>
+          </div>
+
+          {/* Form Card */}
+          <div style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '0.75rem', padding: '2rem', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.05)' }}>
+            {/* 1. Milestone Form */}
+            {editingMilestone && (
+              <form onSubmit={handleSaveMilestone}>
+                <h4 style={{ margin: '0 0 1rem 0', fontWeight: 700 }}>{editingMilestone.id ? 'Edit Milestone' : 'Add New Milestone'}</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                  <div>
+                    <label htmlFor="ms_date" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Date Display (e.g. 15 Dec 2026)</label>
+                    <input
+                      id="ms_date"
+                      type="text"
+                      required
+                      value={editingMilestone.event_date}
+                      onChange={(e) => setEditingMilestone({ ...editingMilestone, event_date: e.target.value })}
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="ms_title" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Milestone Title</label>
+                    <input
+                      id="ms_title"
+                      type="text"
+                      required
+                      value={editingMilestone.title}
+                      onChange={(e) => setEditingMilestone({ ...editingMilestone, title: e.target.value })}
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="ms_sort" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Sort Order</label>
+                    <input
+                      id="ms_sort"
+                      type="number"
+                      required
+                      value={editingMilestone.sort_order || 1}
+                      onChange={(e) => setEditingMilestone({ ...editingMilestone, sort_order: Number(e.target.value) })}
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                    />
+                  </div>
+                </div>
+                <div style={{ marginBottom: '1rem' }}>
+                  <label htmlFor="ms_desc" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Short Description</label>
+                  <input
+                    id="ms_desc"
+                    type="text"
+                    value={editingMilestone.desc || ''}
+                    onChange={(e) => setEditingMilestone({ ...editingMilestone, desc: e.target.value })}
+                    style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.5rem' }}>
+                  <button type="submit" className="btn btn-primary" style={{ padding: '0.6rem 1.2rem', fontSize: '0.85rem' }}>Save Milestone</button>
+                  <button type="button" onClick={() => setEditingMilestone(null)} className="btn btn-secondary" style={{ padding: '0.6rem 1.2rem', fontSize: '0.85rem' }}>Cancel</button>
+                </div>
+              </form>
+            )}
+
+            {/* 2. Speaker Form */}
+            {editingSpeaker && (
+              <form onSubmit={handleSaveSpeaker}>
+                <h4 style={{ margin: '0 0 1rem 0', fontWeight: 700 }}>{editingSpeaker.id ? 'Edit Speaker' : 'Add New Speaker'}</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                  <div>
+                    <label htmlFor="spk_name" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Speaker Name</label>
+                    <input
+                      id="spk_name"
+                      type="text"
+                      required
+                      value={editingSpeaker.name}
+                      onChange={(e) => setEditingSpeaker({ ...editingSpeaker, name: e.target.value })}
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="spk_img" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Photo / Image URL</label>
+                    <input
+                      id="spk_img"
+                      type="text"
+                      value={editingSpeaker.image_url || ''}
+                      onChange={(e) => setEditingSpeaker({ ...editingSpeaker, image_url: e.target.value })}
+                      placeholder="https://example.com/avatar.jpg"
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                    />
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                  <div>
+                    <label htmlFor="spk_des" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Designation (Title)</label>
+                    <input
+                      id="spk_des"
+                      type="text"
+                      required
+                      value={editingSpeaker.title || ''}
+                      onChange={(e) => setEditingSpeaker({ ...editingSpeaker, title: e.target.value })}
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="spk_inst" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Institution / University (Role)</label>
+                    <input
+                      id="spk_inst"
+                      type="text"
+                      required
+                      value={editingSpeaker.role || ''}
+                      onChange={(e) => setEditingSpeaker({ ...editingSpeaker, role: e.target.value })}
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                    />
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '3fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                  <div>
+                    <label htmlFor="spk_talk" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Talk Title (Topic)</label>
+                    <input
+                      id="spk_talk"
+                      type="text"
+                      required
+                      value={editingSpeaker.talk || ''}
+                      onChange={(e) => setEditingSpeaker({ ...editingSpeaker, talk: e.target.value })}
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="spk_color" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Theme Color</label>
+                    <input
+                      id="spk_color"
+                      type="text"
+                      required
+                      value={editingSpeaker.color || '#3b82f6'}
+                      onChange={(e) => setEditingSpeaker({ ...editingSpeaker, color: e.target.value })}
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                    />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.5rem' }}>
+                  <button type="submit" className="btn btn-primary" style={{ padding: '0.6rem 1.2rem', fontSize: '0.85rem' }}>Save Speaker</button>
+                  <button type="button" onClick={() => setEditingSpeaker(null)} className="btn btn-secondary" style={{ padding: '0.6rem 1.2rem', fontSize: '0.85rem' }}>Cancel</button>
+                </div>
+              </form>
+            )}
+
+            {/* 3. Track Form */}
+            {editingDept && (
+              <form onSubmit={handleSaveDept}>
+                <h4 style={{ margin: '0 0 1rem 0', fontWeight: 700 }}>{editingDept.id ? 'Edit Academic Track' : 'Add New Academic Track'}</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: '3fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                  <div>
+                    <label htmlFor="trk_name" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Track Name</label>
+                    <input
+                      id="trk_name"
+                      type="text"
+                      required
+                      value={editingDept.name}
+                      onChange={(e) => setEditingDept({ ...editingDept, name: e.target.value })}
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="trk_sort" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Sort Order</label>
+                    <input
+                      id="trk_sort"
+                      type="number"
+                      required
+                      value={editingDept.sort_order || 1}
+                      onChange={(e) => setEditingDept({ ...editingDept, sort_order: Number(e.target.value) })}
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                    />
+                  </div>
+                </div>
+                <div style={{ marginBottom: '1rem' }}>
+                  <label htmlFor="trk_desc" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Description (Topics list, comma separated)</label>
+                  <textarea
+                    id="trk_desc"
+                    value={editingDept.description || ''}
+                    onChange={(e) => setEditingDept({ ...editingDept, description: e.target.value })}
+                    rows={6}
+                    style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem', fontFamily: 'inherit' }}
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.5rem' }}>
+                  <button type="submit" className="btn btn-primary" style={{ padding: '0.6rem 1.2rem', fontSize: '0.85rem' }}>Save Track</button>
+                  <button type="button" onClick={() => setEditingDept(null)} className="btn btn-secondary" style={{ padding: '0.6rem 1.2rem', fontSize: '0.85rem' }}>Cancel</button>
+                </div>
+              </form>
+            )}
+
+            {/* 4. Committee Form */}
+            {editingCommittee && (
+              <form onSubmit={handleSaveCommittee}>
+                <h4 style={{ margin: '0 0 1rem 0', fontWeight: 700 }}>{editingCommittee.id ? 'Edit Committee Member' : 'Add Committee Member'}</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                  <div>
+                    <label htmlFor="mem_name" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Member Name</label>
+                    <input
+                      id="mem_name"
+                      type="text"
+                      required
+                      value={editingCommittee.name}
+                      onChange={(e) => setEditingCommittee({ ...editingCommittee, name: e.target.value })}
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="mem_cat" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Category Group</label>
+                    <select
+                      id="mem_cat"
+                      value={editingCommittee.category}
+                      onChange={(e) => setEditingCommittee({ ...editingCommittee, category: e.target.value })}
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                    >
+                      <option value="steering">Steering / Advisory / Leadership</option>
+                      <option value="organizing">Organizing Committee</option>
+                      <option value="advisory">National / International Advisory</option>
+                      <option value="technical">Technical Program Committee</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="mem_sort" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Sort Order</label>
+                    <input
+                      id="mem_sort"
+                      type="number"
+                      required
+                      value={editingCommittee.sort_order || 1}
+                      onChange={(e) => setEditingCommittee({ ...editingCommittee, sort_order: Number(e.target.value) })}
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                    />
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                  <div>
+                    <label htmlFor="mem_des" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Designation (e.g. Professor)</label>
+                    <input
+                      id="mem_des"
+                      type="text"
+                      value={editingCommittee.designation || ''}
+                      onChange={(e) => setEditingCommittee({ ...editingCommittee, designation: e.target.value })}
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="mem_inst" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Institution / University</label>
+                    <input
+                      id="mem_inst"
+                      type="text"
+                      value={editingCommittee.institution || ''}
+                      onChange={(e) => setEditingCommittee({ ...editingCommittee, institution: e.target.value })}
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="mem_sub" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Subgroup Title (For Organizing Committee)</label>
+                    <input
+                      id="mem_sub"
+                      type="text"
+                      placeholder="e.g. Finance, Registration, etc."
+                      value={editingCommittee.subgroup || ''}
+                      onChange={(e) => setEditingCommittee({ ...editingCommittee, subgroup: e.target.value })}
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                    />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.5rem' }}>
+                  <button type="submit" className="btn btn-primary" style={{ padding: '0.6rem 1.2rem', fontSize: '0.85rem' }}>Save Member</button>
+                  <button type="button" onClick={() => setEditingCommittee(null)} className="btn btn-secondary" style={{ padding: '0.6rem 1.2rem', fontSize: '0.85rem' }}>Cancel</button>
+                </div>
+              </form>
+            )}
+
+            {/* 5. Workshop Form */}
+            {editingWorkshop && (
+              <form onSubmit={handleSaveWorkshop}>
+                <h4 style={{ margin: '0 0 1rem 0', fontWeight: 700 }}>{editingWorkshop.id ? 'Edit Workshop' : 'Add New Workshop'}</h4>
+                <div style={{ marginBottom: '1rem' }}>
+                  <label htmlFor="wk_title" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Workshop Title</label>
+                  <input
+                    id="wk_title"
+                    type="text"
+                    required
+                    value={editingWorkshop.title}
+                    onChange={(e) => setEditingWorkshop({ ...editingWorkshop, title: e.target.value })}
+                    style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                  />
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                  <div>
+                    <label htmlFor="wk_spk" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Lead Instructor Name</label>
+                    <input
+                      id="wk_spk"
+                      type="text"
+                      required
+                      value={editingWorkshop.speaker}
+                      onChange={(e) => setEditingWorkshop({ ...editingWorkshop, speaker: e.target.value })}
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="wk_des" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Instructor Designation</label>
+                    <input
+                      id="wk_des"
+                      type="text"
+                      value={editingWorkshop.speaker_designation || ''}
+                      onChange={(e) => setEditingWorkshop({ ...editingWorkshop, speaker_designation: e.target.value })}
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                    />
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                  <div>
+                    <label htmlFor="wk_inst" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Instructor University / Organization</label>
+                    <input
+                      id="wk_inst"
+                      type="text"
+                      value={editingWorkshop.speaker_institution || ''}
+                      onChange={(e) => setEditingWorkshop({ ...editingWorkshop, speaker_institution: e.target.value })}
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="wk_date" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Date</label>
+                    <input
+                      id="wk_date"
+                      type="text"
+                      value={editingWorkshop.date || ''}
+                      onChange={(e) => setEditingWorkshop({ ...editingWorkshop, date: e.target.value })}
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="wk_time" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Time</label>
+                    <input
+                      id="wk_time"
+                      type="text"
+                      value={editingWorkshop.time || ''}
+                      onChange={(e) => setEditingWorkshop({ ...editingWorkshop, time: e.target.value })}
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                    />
+                  </div>
+                </div>
+                <div style={{ marginBottom: '1rem' }}>
+                  <label htmlFor="wk_desc" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Short Abstract / Outline</label>
+                  <textarea
+                    id="wk_desc"
+                    value={editingWorkshop.desc || ''}
+                    onChange={(e) => setEditingWorkshop({ ...editingWorkshop, desc: e.target.value })}
+                    rows={4}
+                    style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem', fontFamily: 'inherit' }}
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.5rem' }}>
+                  <button type="submit" className="btn btn-primary" style={{ padding: '0.6rem 1.2rem', fontSize: '0.85rem' }}>Save Workshop</button>
+                  <button type="button" onClick={() => setEditingWorkshop(null)} className="btn btn-secondary" style={{ padding: '0.6rem 1.2rem', fontSize: '0.85rem' }}>Cancel</button>
+                </div>
+              </form>
+            )}
+
+            {/* 6. Coordinator Form */}
+            {editingCoordinator && (
+              <form onSubmit={handleSaveCoordinator}>
+                <h4 style={{ margin: '0 0 1rem 0', fontWeight: 700 }}>{editingCoordinator.id ? 'Edit Coordinator Details' : 'Add New Coordinator'}</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                  <div>
+                    <label htmlFor="co_name" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Coordinator Name</label>
+                    <input
+                      id="co_name"
+                      type="text"
+                      required
+                      value={editingCoordinator.name}
+                      onChange={(e) => setEditingCoordinator({ ...editingCoordinator, name: e.target.value })}
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="co_role" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Role / Association (e.g. Co-convenor)</label>
+                    <input
+                      id="co_role"
+                      type="text"
+                      value={editingCoordinator.role || ''}
+                      onChange={(e) => setEditingCoordinator({ ...editingCoordinator, role: e.target.value })}
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="co_sort" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Sort Order</label>
+                    <input
+                      id="co_sort"
+                      type="number"
+                      required
+                      value={editingCoordinator.sort_order || 1}
+                      onChange={(e) => setEditingCoordinator({ ...editingCoordinator, sort_order: Number(e.target.value) })}
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                    />
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                  <div>
+                    <label htmlFor="co_phone" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Mobile Number</label>
+                    <input
+                      id="co_phone"
+                      type="text"
+                      required
+                      value={editingCoordinator.phone}
+                      onChange={(e) => setEditingCoordinator({ ...editingCoordinator, phone: e.target.value })}
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="co_email" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Email Address</label>
+                    <input
+                      id="co_email"
+                      type="email"
+                      required
+                      value={editingCoordinator.email}
+                      onChange={(e) => setEditingCoordinator({ ...editingCoordinator, email: e.target.value })}
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                    />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.5rem' }}>
+                  <button type="submit" className="btn btn-primary" style={{ padding: '0.6rem 1.2rem', fontSize: '0.85rem' }}>Save Contact</button>
+                  <button type="button" onClick={() => setEditingCoordinator(null)} className="btn btn-secondary" style={{ padding: '0.6rem 1.2rem', fontSize: '0.85rem' }}>Cancel</button>
+                </div>
+              </form>
+            )}
+
+            {/* 7. Stat Form */}
+            {editingStat && (
+              <form onSubmit={handleSaveStat}>
+                <h4 style={{ margin: '0 0 1rem 0', fontWeight: 700 }}>{editingStat.id ? 'Edit Stat Metric' : 'Add New Stat Metric'}</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                  <div>
+                    <label htmlFor="st_key" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Unique Database Key</label>
+                    <input
+                      id="st_key"
+                      type="text"
+                      required
+                      placeholder="e.g. tracks_count"
+                      value={editingStat.key}
+                      onChange={(e) => setEditingStat({ ...editingStat, key: e.target.value })}
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="st_val" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Value Display (e.g. 10+, 500+)</label>
+                    <input
+                      id="st_val"
+                      type="text"
+                      required
+                      value={editingStat.value}
+                      onChange={(e) => setEditingStat({ ...editingStat, value: e.target.value })}
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="st_lbl" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Metric Label</label>
+                    <input
+                      id="st_lbl"
+                      type="text"
+                      required
+                      value={editingStat.label}
+                      onChange={(e) => setEditingStat({ ...editingStat, label: e.target.value })}
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="st_sort" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Sort Order</label>
+                    <input
+                      id="st_sort"
+                      type="number"
+                      required
+                      value={editingStat.sort_order || 1}
+                      onChange={(e) => setEditingStat({ ...editingStat, sort_order: Number(e.target.value) })}
+                      style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                    />
+                  </div>
+                </div>
+                <div style={{ marginBottom: '1rem' }}>
+                  <label htmlFor="st_ico" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Icon Name (e.g. Users, Layers, Award, Sparkles)</label>
+                  <input
+                    id="st_ico"
+                    type="text"
+                    value={editingStat.icon || ''}
+                    onChange={(e) => setEditingStat({ ...editingStat, icon: e.target.value })}
+                    style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '0.25rem', marginTop: '0.25rem' }}
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.5rem' }}>
+                  <button type="submit" className="btn btn-primary" style={{ padding: '0.6rem 1.2rem', fontSize: '0.85rem' }}>Save Metric</button>
+                  <button type="button" onClick={() => setEditingStat(null)} className="btn btn-secondary" style={{ padding: '0.6rem 1.2rem', fontSize: '0.85rem' }}>Cancel</button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="admin-layout" style={{
       minHeight: '100vh',
@@ -1213,9 +1765,8 @@ export default function AdminPage({
                       <th style={{ padding: '0.75rem' }}>Date</th>
                       <th style={{ padding: '0.75rem' }}>Author Details</th>
                       <th style={{ padding: '0.75rem' }}>Paper Info</th>
-                      <th style={{ padding: '0.75rem' }}>Category</th>
-                      <th style={{ padding: '0.75rem' }}>Amount Paid</th>
-                      <th style={{ padding: '0.75rem' }}>Attachments</th>
+                      <th style={{ padding: '0.75rem' }}>Tour Details</th>
+                      <th style={{ padding: '0.75rem' }}>Receipt Attachment</th>
                       <th style={{ padding: '0.75rem', textAlign: 'center' }}>Actions</th>
                     </tr>
                   </thead>
@@ -1234,8 +1785,8 @@ export default function AdminPage({
                           </td>
                           <td style={{ padding: '1rem 0.75rem' }}>
                             <div style={{ fontWeight: 700, color: '#0f172a' }}>{r.author_name}</div>
-                            <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{r.author_email}</div>
-                            <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{r.author_phone}</div>
+                            <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{r.email}</div>
+                            <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{r.phone}</div>
                           </td>
                           <td style={{ padding: '1rem 0.75rem', maxWidth: '260px' }}>
                             <span style={{ display: 'inline-block', background: 'rgba(59, 130, 246, 0.1)', color: '#1d4ed8', padding: '0.15rem 0.4rem', borderRadius: '0.25rem', fontSize: '0.7rem', fontWeight: 700, marginBottom: '0.25rem' }}>
@@ -1244,18 +1795,19 @@ export default function AdminPage({
                             <div style={{ fontWeight: 600, fontSize: '0.8rem', lineHeight: '1.3' }}>{r.paper_title || 'N/A'}</div>
                           </td>
                           <td style={{ padding: '1rem 0.75rem' }}>
-                            <div style={{ textTransform: 'capitalize', fontWeight: 500 }}>{r.region === 'foreign' ? '🌎 International' : '🇮🇳 National'}</div>
-                            <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{r.author_type} • {r.ieee_member ? 'IEEE Member' : 'Non-IEEE'}</div>
-                          </td>
-                          <td style={{ padding: '1rem 0.75rem', fontWeight: 700, color: '#059669' }}>
-                            {r.currency === 'USD' ? '$' : '₹'}{r.amount_paid}
+                            <div style={{ fontWeight: 600 }}>{r.register_for_tour ? '✅ Registered' : '❌ No Tour'}</div>
+                            {r.register_for_tour && r.preferred_tour_place && (
+                              <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.25rem' }}>
+                                Choice: {r.preferred_tour_place}
+                              </div>
+                            )}
                           </td>
                           <td style={{ padding: '1rem 0.75rem' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                              {r.payment_proof_url && (
+                              {r.screenshot_name && r.screenshot_name !== 'no_file' ? (
                                 <button
                                   type="button"
-                                  onClick={() => setPreviewImage(r.payment_proof_url)}
+                                  onClick={() => setPreviewImage(r.screenshot_name)}
                                   style={{
                                     background: 'none',
                                     border: 'none',
@@ -1270,15 +1822,11 @@ export default function AdminPage({
                                     cursor: 'pointer'
                                   }}
                                 >
-                                  <Eye size={12} /> View Payment Proof
+                                  <Eye size={12} /> {r.screenshot_name}
                                 </button>
+                              ) : (
+                                <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>No attachments</span>
                               )}
-                              {r.pdf_file_url && (
-                                <a href={r.pdf_file_url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', color: '#3b82f6', textDecoration: 'none', fontWeight: 600, fontSize: '0.75rem' }}>
-                                  <Download size={12} /> Paper PDF
-                                </a>
-                              )}
-                              {!r.payment_proof_url && !r.pdf_file_url && <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>No attachments</span>}
                             </div>
                           </td>
                           <td style={{ padding: '1rem 0.75rem', textAlign: 'center' }}>
@@ -2558,53 +3106,156 @@ export default function AdminPage({
             >
               <X size={16} />
             </button>
-            <img 
-              src={previewImage} 
-              alt="Payment Proof Receipt" 
-              style={{
-                maxWidth: '100%',
-                maxHeight: '70vh',
-                objectFit: 'contain',
-                borderRadius: '0.375rem',
-                border: '1px solid #cbd5e1'
-              }}
-            />
-            <div style={{ display: 'flex', gap: '0.75rem', width: '100%', justifyContent: 'center' }}>
-              <a 
-                href={previewImage} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                style={{ 
-                  display: 'inline-flex', 
-                  alignItems: 'center', 
-                  gap: '0.35rem', 
-                  fontSize: '0.8rem',
-                  padding: '0.5rem 1rem',
-                  textDecoration: 'none',
-                  color: '#ffffff',
-                  background: '#3b82f6',
-                  borderRadius: '0.375rem',
-                  fontWeight: 600
-                }}
-              >
-                <Download size={14} /> Open in New Tab
-              </a>
-              <button
-                onClick={() => setPreviewImage(null)}
-                style={{ 
-                  fontSize: '0.8rem',
-                  padding: '0.5rem 1rem',
-                  background: '#e2e8f0',
-                  color: '#475569',
-                  border: 'none',
-                  borderRadius: '0.375rem',
-                  fontWeight: 600,
-                  cursor: 'pointer'
-                }}
-              >
-                Close Preview
-              </button>
-            </div>
+            {(() => {
+              const reg = submittedRegistrations.find(r => r.screenshot_name === previewImage);
+              const isUrl = previewImage.startsWith('http') || previewImage.startsWith('data:');
+              if (isUrl) {
+                return (
+                  <>
+                    <img 
+                      src={previewImage} 
+                      alt="Payment Proof Receipt" 
+                      style={{
+                        maxWidth: '100%',
+                        maxHeight: '70vh',
+                        objectFit: 'contain',
+                        borderRadius: '0.375rem',
+                        border: '1px solid #cbd5e1'
+                      }}
+                    />
+                    <div style={{ display: 'flex', gap: '0.75rem', width: '100%', justifyContent: 'center', marginTop: '1rem' }}>
+                      <a 
+                        href={previewImage} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        style={{ 
+                          display: 'inline-flex', 
+                          alignItems: 'center', 
+                          gap: '0.35rem', 
+                          fontSize: '0.8rem',
+                          padding: '0.5rem 1rem',
+                          textDecoration: 'none',
+                          color: '#ffffff',
+                          background: '#3b82f6',
+                          borderRadius: '0.375rem',
+                          fontWeight: 600
+                        }}
+                      >
+                        <Download size={14} /> Open in New Tab
+                      </a>
+                      <button
+                        onClick={() => setPreviewImage(null)}
+                        style={{ 
+                          fontSize: '0.8rem',
+                          padding: '0.5rem 1rem',
+                          background: '#e2e8f0',
+                          color: '#475569',
+                          border: 'none',
+                          borderRadius: '0.375rem',
+                          fontWeight: 600,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Close Preview
+                      </button>
+                    </div>
+                  </>
+                );
+              }
+              
+              // Render realistic billing receipt card
+              return (
+                <>
+                  <div style={{
+                    width: '400px',
+                    background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                    border: '1.5px solid #e2e8f0',
+                    borderRadius: '0.75rem',
+                    padding: '1.5rem',
+                    boxShadow: '0 10px 25px rgba(0,0,0,0.05)',
+                    fontFamily: 'monospace',
+                    color: '#1e293b',
+                    lineHeight: '1.5'
+                  }}>
+                    <div style={{ textAlign: 'center', borderBottom: '2px dashed #cbd5e1', paddingBottom: '1rem', marginBottom: '1rem' }}>
+                      <h4 style={{ margin: '0 0 0.25rem 0', color: '#0f172a', fontWeight: 800, fontSize: '1.1rem' }}>AECTSD 2027</h4>
+                      <span style={{ fontSize: '0.75rem', color: '#64748b' }}>PAYMENT PROOF RECEIPT</span>
+                      <div style={{
+                        marginTop: '0.75rem',
+                        background: '#ecfdf5',
+                        color: '#059669',
+                        border: '1px solid #a7f3d0',
+                        padding: '0.25rem 0.75rem',
+                        borderRadius: '9999px',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        display: 'inline-block'
+                      }}>
+                        VERIFIED SUCCESSFUL
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.8rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: '#64748b' }}>FILE NAME:</span>
+                        <span style={{ fontWeight: 600, wordBreak: 'break-all' }}>{previewImage}</span>
+                      </div>
+                      {reg && (
+                        <>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ color: '#64748b' }}>AUTHOR:</span>
+                            <span style={{ fontWeight: 600 }}>{reg.author_name}</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ color: '#64748b' }}>EMAIL:</span>
+                            <span style={{ fontWeight: 600 }}>{reg.email}</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ color: '#64748b' }}>PHONE:</span>
+                            <span style={{ fontWeight: 600 }}>{reg.phone}</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ color: '#64748b' }}>PAPER ID:</span>
+                            <span style={{ fontWeight: 600 }}>{reg.paper_id}</span>
+                          </div>
+                        </>
+                      )}
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: '#64748b' }}>STATUS:</span>
+                        <span style={{ fontWeight: 600 }}>OFFLINE VERIFIED</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: '#64748b' }}>BANK REF:</span>
+                        <span style={{ fontWeight: 600 }}>TXN-902341852</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: '#64748b' }}>TIME:</span>
+                        <span style={{ fontWeight: 600 }}>{new Date().toLocaleString()}</span>
+                      </div>
+                    </div>
+                    <div style={{ borderTop: '2px dashed #cbd5e1', marginTop: '1rem', paddingTop: '1rem', textAlign: 'center', fontSize: '0.75rem', color: '#64748b' }}>
+                      Sri Ramakrishna Engineering College
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.75rem', width: '100%', justifyContent: 'center', marginTop: '1rem' }}>
+                    <button
+                      onClick={() => setPreviewImage(null)}
+                      style={{ 
+                        fontSize: '0.8rem',
+                        padding: '0.5rem 1rem',
+                        background: '#e2e8f0',
+                        color: '#475569',
+                        border: 'none',
+                        borderRadius: '0.375rem',
+                        fontWeight: 600,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Close Preview
+                    </button>
+                  </div>
+                </>
+              );
+            })()}
           </div>
         </div>
       )}
