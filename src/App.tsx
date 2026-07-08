@@ -1881,11 +1881,13 @@ export default function App() {
                 <Layers className="text-blue-400" size={26} />
                 <h3 style={{ fontSize: '1.6rem', color: 'white', fontWeight: 700 }}>About the Conference</h3>
               </div>
-              <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', whiteSpace: 'pre-line', lineHeight: '1.8', fontSize: '0.975rem' }}>
-                {info.about_conference}
-              </p>
+              {info.about_conference?.split('\n\n').filter(Boolean).map((para: string, idx: number) => (
+                <p key={idx} style={{ color: 'var(--text-secondary)', marginBottom: '1rem', textIndent: '2rem', textAlign: 'justify', lineHeight: '1.8', fontSize: '0.975rem' }}>
+                  {para}
+                </p>
+              ))}
             </motion.div>
-
+ 
             <div className="grid-2-col" style={{ gap: '2rem' }}>
               <motion.div
                 initial={{ opacity: 0, x: -30 }}
@@ -1898,11 +1900,13 @@ export default function App() {
                   <BookOpen className="text-cyan-400" size={24} />
                   <h3 style={{ fontSize: '1.5rem', color: 'white', fontWeight: 700 }}>{info.about_card_conf_title || "About the Trust"}</h3>
                 </div>
-                <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', whiteSpace: 'pre-line', lineHeight: '1.7', fontSize: '0.95rem' }}>
-                  {info.about_trust}
-                </p>
+                {info.about_trust?.split('\n\n').filter(Boolean).map((para: string, idx: number) => (
+                  <p key={idx} style={{ color: 'var(--text-secondary)', marginBottom: '1rem', textIndent: '2rem', textAlign: 'justify', lineHeight: '1.7', fontSize: '0.95rem' }}>
+                    {para}
+                  </p>
+                ))}
               </motion.div>
-
+ 
               <motion.div
                 initial={{ opacity: 0, x: 30 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -1914,9 +1918,11 @@ export default function App() {
                   <Award className="text-amber-400" size={24} />
                   <h3 style={{ fontSize: '1.5rem', color: 'white', fontWeight: 700 }}>{info.about_card_inst_title || "About the Institution"}</h3>
                 </div>
-                <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', whiteSpace: 'pre-line', lineHeight: '1.7', fontSize: '0.95rem' }}>
-                  {info.about_institution}
-                </p>
+                {info.about_institution?.split('\n\n').filter(Boolean).map((para: string, idx: number) => (
+                  <p key={idx} style={{ color: 'var(--text-secondary)', marginBottom: '1rem', textIndent: '2rem', textAlign: 'justify', lineHeight: '1.7', fontSize: '0.95rem' }}>
+                    {para}
+                  </p>
+                ))}
               </motion.div>
             </div>
           </div>
