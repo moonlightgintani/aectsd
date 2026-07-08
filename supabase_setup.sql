@@ -300,7 +300,21 @@ INSERT INTO conference_info (key, value) VALUES
 ('secretariat_address', 'Department of EEE / ECE,\nSri Ramakrishna Engineering College,\nVattamalaipalayam, N.G.G.O Colony Post,\nCoimbatore, Tamilnadu - 641022, India.'),
 ('secretariat_email', 'aectsd2027@srec.ac.in'),
 ('secretariat_phone', '+91 9080296675'),
-('contact_coord_title', 'Conference Coordinators')
+('contact_coord_title', 'Conference Coordinators'),
+('cfp_badge', 'Track'),
+('cfp_title', 'Call for Papers'),
+('cfp_desc', 'Authors are invited to submit original, unpublished research papers in standard IEEE format. All accepted and registered papers will be published in the conference proceedings.'),
+('cfp_btn_word', 'Download Word Template'),
+('cfp_btn_latex', 'Download LaTeX Template'),
+('alert_download_word', 'Downloading Microsoft Word template...'),
+('alert_download_latex', 'Downloading LaTeX template...'),
+('guidelines_badge', 'Guidelines'),
+('guidelines_title', 'Submission Guidelines'),
+('workshops_badge', 'Tutorials'),
+('workshops_btn_reg', 'Register for Workshops'),
+('workshop_label', 'Workshop'),
+('label_lead_instructor', 'Lead Instructor:'),
+('label_fee', 'Registration Fee:')
 ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
 
 -- Seed tourist places

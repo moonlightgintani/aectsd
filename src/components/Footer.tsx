@@ -7,7 +7,7 @@ interface FooterProps {
 }
 
 export default function Footer({ srecUrl, copyright, sponsor }: FooterProps) {
-  const defaultCopyright = `© ${new Date().getFullYear()} Sri Ramakrishna Engineering College. All rights reserved.`;
+  const defaultCopyright = `© 2027  Sri Ramakrishna Engineering College. All rights reserved.`;
   const defaultSponsor = "Sponsored by SNR Sons Charitable Trust | Approved by AICTE | Affiliated to Anna University | Accredited by NBA & NAAC with 'A+' Grade";
 
   return (
