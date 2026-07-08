@@ -1267,9 +1267,15 @@ export default function App() {
 
       // Fetch registrations log
       const { data: registrationsLog, error: errReg } = await supabase.from('registrations').select('*').order('created_at', { ascending: false });
-      if (!errReg && registrationsLog) {
+      console.log('[REGISTRATIONS FETCH]', { data: registrationsLog, error: errReg });
+      if (errReg) {
+        console.error('[REGISTRATIONS ERROR]', errReg);
+      } else if (registrationsLog && registrationsLog.length > 0) {
         setSubmittedRegistrations(registrationsLog);
         localStorage.setItem('srec_offline_registrations', JSON.stringify(registrationsLog));
+        console.log('[REGISTRATIONS LOADED] Count:', registrationsLog.length);
+      } else {
+        console.warn('[REGISTRATIONS] DB returned empty array - keeping existing data. Check Supabase RLS SELECT policy.');
       }
     } catch (err) {
       console.warn('Failed to load online data. Falling back to offline fallback state.', err);
