@@ -2894,133 +2894,138 @@ export default function App() {
             </div>
           </div>
 
-          {/* Indian Authors Table */}
-          <div style={{ marginBottom: '3.5rem' }}>
-            <h3 style={{ fontSize: '1.35rem', color: 'white', marginBottom: '1.25rem', fontWeight: 700 }}>
-              Indian Authors (Fees in INR, GST Inclusive)
-            </h3>
-            <div className="registration-table-container">
-              <table className="registration-table">
-                <thead>
-                  <tr>
-                    <th rowSpan={2} style={{ width: '30%', verticalAlign: 'middle', textAlign: 'left' }}>Categories</th>
-                    <th colSpan={2}>Graduate Student / Research Scholar</th>
-                    <th colSpan={2}>Professionals</th>
-                  </tr>
-                  <tr>
-                    <th>IEEE Member</th>
-                    <th>Non-IEEE Member</th>
-                    <th>IEEE Member</th>
-                    <th>Non-IEEE Member</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td style={{ fontWeight: 600, textAlign: 'left' }}>Conference only</td>
-                    <td>₹6,000*</td>
-                    <td>₹7,000*</td>
-                    <td>₹7,000*</td>
-                    <td>₹8,000*</td>
-                  </tr>
-                  <tr>
-                    <td style={{ fontWeight: 600, textAlign: 'left' }}>Tutorial only</td>
-                    <td>₹1,000</td>
-                    <td>₹1,250</td>
-                    <td>₹1,250</td>
-                    <td>₹1,500</td>
-                  </tr>
-                  <tr>
-                    <td style={{ fontWeight: 600, textAlign: 'left' }}>Conference plus Tutorial</td>
-                    <td>₹6,500*</td>
-                    <td>₹7,500*</td>
-                    <td>₹7,500*</td>
-                    <td>₹8,500*</td>
-                  </tr>
-                  <tr>
-                    <td style={{ fontWeight: 600, textAlign: 'left' }}>Indian Non-Author Attendee</td>
-                    <td>₹3,500</td>
-                    <td>₹5,000</td>
-                    <td>₹4,500</td>
-                    <td>₹6,000</td>
-                  </tr>
-                  <tr>
-                    <td style={{ fontWeight: 600, textAlign: 'left' }}>Rate per Additional Paper</td>
-                    <td>₹3,000</td>
-                    <td>₹3,000</td>
-                    <td>₹3,000</td>
-                    <td>₹3,000</td>
-                  </tr>
-                  <tr>
-                    <td style={{ fontWeight: 600, textAlign: 'left' }}>Extra Page (after 6 pages)</td>
-                    <td>₹500</td>
-                    <td>₹500</td>
-                    <td>₹500</td>
-                    <td>₹500</td>
-                  </tr>
-                </tbody>
-              </table>
+          {/* Registration Tables Side-by-Side */}
+          <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', marginBottom: '3.5rem' }}>
+            
+            {/* Indian Authors Table */}
+            <div style={{ flex: '1 1 500px', minWidth: '0' }}>
+              <h3 style={{ fontSize: '1.35rem', color: 'white', marginBottom: '1.25rem', fontWeight: 700 }}>
+                Indian Authors (Fees in INR, GST Inclusive)
+              </h3>
+              <div className="registration-table-container" style={{ width: '100%', overflowX: 'auto' }}>
+                <table className="registration-table">
+                  <thead>
+                    <tr>
+                      <th rowSpan={2} style={{ width: '30%', verticalAlign: 'middle', textAlign: 'left' }}>Categories</th>
+                      <th colSpan={2}>Graduate Student / Research Scholar</th>
+                      <th colSpan={2}>Professionals</th>
+                    </tr>
+                    <tr>
+                      <th>IEEE Member</th>
+                      <th>Non-IEEE Member</th>
+                      <th>IEEE Member</th>
+                      <th>Non-IEEE Member</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style={{ fontWeight: 600, textAlign: 'left' }}>Conference only</td>
+                      <td>₹6,000*</td>
+                      <td>₹7,000*</td>
+                      <td>₹7,000*</td>
+                      <td>₹8,000*</td>
+                    </tr>
+                    <tr>
+                      <td style={{ fontWeight: 600, textAlign: 'left' }}>Tutorial only</td>
+                      <td>₹1,000</td>
+                      <td>₹1,250</td>
+                      <td>₹1,250</td>
+                      <td>₹1,500</td>
+                    </tr>
+                    <tr>
+                      <td style={{ fontWeight: 600, textAlign: 'left' }}>Conference plus Tutorial</td>
+                      <td>₹6,500*</td>
+                      <td>₹7,500*</td>
+                      <td>₹7,500*</td>
+                      <td>₹8,500*</td>
+                    </tr>
+                    <tr>
+                      <td style={{ fontWeight: 600, textAlign: 'left' }}>Indian Non-Author Attendee</td>
+                      <td>₹3,500</td>
+                      <td>₹5,000</td>
+                      <td>₹4,500</td>
+                      <td>₹6,000</td>
+                    </tr>
+                    <tr>
+                      <td style={{ fontWeight: 600, textAlign: 'left' }}>Rate per Additional Paper</td>
+                      <td>₹3,000</td>
+                      <td>₹3,000</td>
+                      <td>₹3,000</td>
+                      <td>₹3,000</td>
+                    </tr>
+                    <tr>
+                      <td style={{ fontWeight: 600, textAlign: 'left' }}>Extra Page (after 6 pages)</td>
+                      <td>₹500</td>
+                      <td>₹500</td>
+                      <td>₹500</td>
+                      <td>₹500</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
 
-          {/* Foreign Authors Table */}
-          <div style={{ marginBottom: '3.5rem' }}>
-            <h3 style={{ fontSize: '1.35rem', color: 'white', marginBottom: '1.25rem', fontWeight: 700 }}>
-              Foreign Authors (Fees in USD, GST Inclusive)
-            </h3>
-            <div className="registration-table-container">
-              <table className="registration-table">
-                <thead>
-                  <tr>
-                    <th rowSpan={2} style={{ width: '30%', verticalAlign: 'middle', textAlign: 'left' }}>Categories</th>
-                    <th colSpan={2}>Graduate Student / Research Scholar</th>
-                    <th colSpan={2}>Professionals</th>
-                  </tr>
-                  <tr>
-                    <th>IEEE Member</th>
-                    <th>Non-IEEE Member</th>
-                    <th>IEEE Member</th>
-                    <th>Non-IEEE Member</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td style={{ fontWeight: 600, textAlign: 'left' }}>Conference only</td>
-                    <td>$150*</td>
-                    <td>$200*</td>
-                    <td>$200*</td>
-                    <td>$250*</td>
-                  </tr>
-                  <tr>
-                    <td style={{ fontWeight: 600, textAlign: 'left' }}>Tutorial only</td>
-                    <td>$40</td>
-                    <td>$50</td>
-                    <td>$50</td>
-                    <td>$75</td>
-                  </tr>
-                  <tr>
-                    <td style={{ fontWeight: 600, textAlign: 'left' }}>Conference plus Tutorial</td>
-                    <td>$175*</td>
-                    <td>$225*</td>
-                    <td>$225*</td>
-                    <td>$300*</td>
-                  </tr>
-                  <tr>
-                    <td style={{ fontWeight: 600, textAlign: 'left' }}>Rate per Additional Paper</td>
-                    <td>$50</td>
-                    <td>$50</td>
-                    <td>$50</td>
-                    <td>$50</td>
-                  </tr>
-                  <tr>
-                    <td style={{ fontWeight: 600, textAlign: 'left' }}>Extra Page (after 6 pages)</td>
-                    <td>$20</td>
-                    <td>$20</td>
-                    <td>$20</td>
-                    <td>$20</td>
-                  </tr>
-                </tbody>
-              </table>
+            {/* Foreign Authors Table */}
+            <div style={{ flex: '1 1 500px', minWidth: '0' }}>
+              <h3 style={{ fontSize: '1.35rem', color: 'white', marginBottom: '1.25rem', fontWeight: 700 }}>
+                Foreign Authors (Fees in USD, GST Inclusive)
+              </h3>
+              <div className="registration-table-container" style={{ width: '100%', overflowX: 'auto' }}>
+                <table className="registration-table">
+                  <thead>
+                    <tr>
+                      <th rowSpan={2} style={{ width: '30%', verticalAlign: 'middle', textAlign: 'left' }}>Categories</th>
+                      <th colSpan={2}>Graduate Student / Research Scholar</th>
+                      <th colSpan={2}>Professionals</th>
+                    </tr>
+                    <tr>
+                      <th>IEEE Member</th>
+                      <th>Non-IEEE Member</th>
+                      <th>IEEE Member</th>
+                      <th>Non-IEEE Member</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style={{ fontWeight: 600, textAlign: 'left' }}>Conference only</td>
+                      <td>$150*</td>
+                      <td>$200*</td>
+                      <td>$200*</td>
+                      <td>$250*</td>
+                    </tr>
+                    <tr>
+                      <td style={{ fontWeight: 600, textAlign: 'left' }}>Tutorial only</td>
+                      <td>$40</td>
+                      <td>$50</td>
+                      <td>$50</td>
+                      <td>$75</td>
+                    </tr>
+                    <tr>
+                      <td style={{ fontWeight: 600, textAlign: 'left' }}>Conference plus Tutorial</td>
+                      <td>$175*</td>
+                      <td>$225*</td>
+                      <td>$225*</td>
+                      <td>$300*</td>
+                    </tr>
+                    <tr>
+                      <td style={{ fontWeight: 600, textAlign: 'left' }}>Rate per Additional Paper</td>
+                      <td>$50</td>
+                      <td>$50</td>
+                      <td>$50</td>
+                      <td>$50</td>
+                    </tr>
+                    <tr>
+                      <td style={{ fontWeight: 600, textAlign: 'left' }}>Extra Page (after 6 pages)</td>
+                      <td>$20</td>
+                      <td>$20</td>
+                      <td>$20</td>
+                      <td>$20</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
+
           </div>
 
           {/* Bank Account Details */}
