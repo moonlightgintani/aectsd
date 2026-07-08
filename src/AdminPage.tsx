@@ -121,6 +121,7 @@ interface AdminPageProps {
   setPricing: React.Dispatch<React.SetStateAction<Record<string, number>>>;
   setStats: React.Dispatch<React.SetStateAction<any[]>>;
   setCoordinators: React.Dispatch<React.SetStateAction<any[]>>;
+  onClose?: () => void;
 }
 
 export default function AdminPage({
@@ -140,7 +141,8 @@ export default function AdminPage({
   setInfo,
   setPricing,
   setStats,
-  setCoordinators
+  setCoordinators,
+  onClose
 }: AdminPageProps) {
   // Auth states
   const [adminUser, setAdminUser] = useState<string | null>(() => localStorage.getItem('srec_logged_in_admin'));
@@ -154,6 +156,7 @@ export default function AdminPage({
 
   // Tab state
   const [activeTab, setActiveTab] = useState<string>('registrations');
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   // Search & Filter
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -1096,7 +1099,10 @@ export default function AdminPage({
           </button>
 
           <button
-            onClick={() => { window.location.hash = '#/'; }}
+            onClick={() => { 
+              if (onClose) onClose();
+              else window.location.hash = '#/'; 
+            }}
             style={{
               width: '100%',
               padding: '0.6rem',
