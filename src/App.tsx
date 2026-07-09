@@ -157,6 +157,42 @@ const getFilenameFromUrl = (url: string) => {
   return url;
 };
 
+const getCommitteeEmail = (name: string) => {
+  const n = name.toLowerCase();
+  if (n.includes('soundarrajan')) return 'drasoundarrajan@srec.ac.in';
+  if (n.includes('sundar ramakrishnan')) return 'sundar.ramakrishnan@snrst.org';
+  if (n.includes('narendran')) return 's.narendran@snrst.org';
+  if (n.includes('sakthivel')) return 'sakthivel.p@annauniv.edu';
+  if (n.includes('radha')) return 'radha.s@ssn.edu.in';
+  if (n.includes('brindha')) return 'brindha.s@srec.ac.in';
+  return '';
+};
+
+const getCommitteeImage = (name: string) => {
+  const n = name.toLowerCase();
+  if (n.includes('soundarrajan')) return 'https://srec.ac.in/uploads/Faculty/asoundarrajan240814084632.jpg';
+  if (n.includes('sundar ramakrishnan')) return 'https://srec.ac.in/uploads/Faculty/ram240816072918.jpg';
+  return '';
+};
+
+const getCommitteeLocation = (name: string, fallbackDesc: string) => {
+  const n = name.toLowerCase();
+  if (n.includes('soundarrajan')) return 'Sri Ramakrishna Engineering College';
+  if (n.includes('sundar ramakrishnan')) return 'SNR Sons Charitable Trust, Coimbatore';
+  if (n.includes('narendran')) return 'SNR Sons Charitable Trust, Coimbatore';
+  if (n.includes('sakthivel')) return 'IEEE Madras Section';
+  if (n.includes('radha')) return 'IEEE Madras Section';
+  if (n.includes('brindha')) return 'IEEE Madras Section';
+  return fallbackDesc;
+};
+
+const getCoordinatorImage = (name: string) => {
+  const n = name.toLowerCase();
+  if (n.includes('karpagam')) return 'https://srec.ac.in/uploads/Faculty/whatsappimage2023-08-05at9.46.42am(1)230816083910.jpeg';
+  if (n.includes('jansi')) return 'https://srec.ac.in/uploads/Faculty/jan240816094910.png';
+  return '';
+};
+
 const parseDateDisplay = (dateStr: string) => {
   const cleaned = dateStr.trim();
   const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -2249,23 +2285,70 @@ export default function App() {
                       .map((member, mIdx) => {
                         const showAvatar = activeSubcommittee === 'patrons' || activeSubcommittee === 'general-chairs';
                         if (showAvatar) {
+                          const memberImg = member.image_url || getCommitteeImage(member.name) || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`;
+                          const memberEmail = getCommitteeEmail(member.name);
+                          const memberLocation = getCommitteeLocation(member.name, member.desc);
+
                           return (
-                            <div key={mIdx} className="member-profile-card">
-                              <div className="member-avatar-wrapper">
+                            <div key={mIdx} className="member-profile-card-rect">
+                              {/* Rectangular Image Container */}
+                              <div style={{ position: 'relative', width: '100%', height: '260px', overflow: 'hidden', background: '#f1f5f9' }}>
                                 <img 
-                                  src={member.image_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`}
+                                  src={memberImg} 
                                   onError={(e) => {
                                     (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`;
                                   }}
                                   alt={member.name}
-                                  className="member-avatar-img"
+                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                 />
+                                
+                                {/* Overlay Role Badge */}
+                                <div style={{
+                                  position: 'absolute',
+                                  bottom: '0.75rem',
+                                  left: '50%',
+                                  transform: 'translateX(-50%)',
+                                  background: 'rgba(248, 250, 252, 0.95)',
+                                  border: '1px solid #e2e8f0',
+                                  padding: '0.4rem 1rem',
+                                  borderRadius: '2rem',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '0.35rem',
+                                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                                  whiteSpace: 'nowrap',
+                                  maxWidth: '90%',
+                                  justifyContent: 'center'
+                                }}>
+                                  <Award size={14} style={{ color: '#0f52ba' }} />
+                                  <span style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', color: '#0f172a', letterSpacing: '0.05em' }}>
+                                    {member.role && member.role !== 'Member' ? member.role : 'Organizing Member'}
+                                  </span>
+                                </div>
                               </div>
-                              <span className="member-role-badge">
-                                {member.role && member.role !== 'Member' ? member.role : 'Organizing Member'}
-                              </span>
-                              <h4 className="member-name">{member.name}</h4>
-                              <p className="member-desc">{member.desc}</p>
+                              
+                              {/* Bottom Details Section */}
+                              <div style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                                <h4 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#091d36', margin: '0 0 0.75rem 0', lineHeight: '1.3' }}>
+                                  {member.name}
+                                </h4>
+                                
+                                <div style={{ height: '1px', background: '#cbd5e1', width: '100%', marginBottom: '0.75rem' }} />
+                                
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: 'auto' }}>
+                                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', fontSize: '0.85rem', color: '#475569' }}>
+                                    <MapPin size={16} style={{ color: '#3b82f6', flexShrink: 0, marginTop: '0.1rem' }} />
+                                    <span>{memberLocation}</span>
+                                  </div>
+                                  
+                                  {memberEmail && (
+                                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontSize: '0.85rem', color: '#475569' }}>
+                                      <Mail size={16} style={{ color: '#3b82f6', flexShrink: 0 }} />
+                                      <a href={`mailto:${memberEmail}`} style={{ color: '#2563eb', textDecoration: 'none' }}>{memberEmail}</a>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
                             </div>
                           );
                         } else {
@@ -3342,7 +3425,7 @@ export default function App() {
                       return '';
                     })();
                     
-                    const coordImg = coord.image_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(coord.name)}&backgroundColor=0f52ba,06b6d4,f58220`;
+                    const coordImg = coord.image_url || getCoordinatorImage(coord.name) || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(coord.name)}&backgroundColor=0f52ba,06b6d4,f58220`;
 
                     return (
                       <div key={cidx} style={{ 
@@ -5587,16 +5670,94 @@ export default function App() {
 
                               <div className="admin-form-row">
                                 <div className="admin-form-group">
-                                  <label htmlFor="committee_role">Role / Position Title (e.g. Patron, General Chair)</label>
-                                  <input 
+                                  <label htmlFor="committee_role">Role / Position Title</label>
+                                  <select
                                     id="committee_role"
-                                    type="text" 
                                     className="form-input"
-                                    value={editingCommittee.role || ''}
-                                    onChange={(e) => setEditingCommittee({ ...editingCommittee, role: e.target.value })}
-                                    placeholder="Leave blank if standard member"
+                                    value={(() => {
+                                      const knownRoles = ['Chief Patron','Patron','General Chair','Conference Chair','Session Chair','Program and Finance Chair','Program and Finance Committee Member','Publication Chair','Publication Committee Member','Local Arrangements Chair','Local Arrangements Committee Member','Registration Chair','Registration Committee Member','Conference Pre-Tutorial Sessions Chair','Pre-Tutorial Sessions Committee Member','Technical Review Committee Convener','Technical Review Committee Member','Outreach and Promotion Committee Convener','Outreach and Promotion Committee Member','Website and Social Media Promotion Committee Chair','Website and Social Media Promotion Committee Member','Hospitality Committee Convener','Hospitality Committee Member','Member','Advisory Committee Member'];
+                                      const v = editingCommittee.role || '';
+                                      return knownRoles.includes(v) ? v : (v ? '__custom__' : '');
+                                    })()}
+                                    onChange={(e) => {
+                                      if (e.target.value !== '__custom__') {
+                                        setEditingCommittee({ ...editingCommittee, role: e.target.value });
+                                      }
+                                    }}
                                     title="Role / Position Title"
-                                  />
+                                    style={{ cursor: 'pointer' }}
+                                  >
+                                    <option value="">— Standard Member / No Role —</option>
+                                    <optgroup label="Patrons">
+                                      <option value="Chief Patron">Chief Patron</option>
+                                      <option value="Patron">Patron</option>
+                                    </optgroup>
+                                    <optgroup label="General Chairs">
+                                      <option value="General Chair">General Chair</option>
+                                    </optgroup>
+                                    <optgroup label="Conference Leadership">
+                                      <option value="Conference Chair">Conference Chair</option>
+                                      <option value="Session Chair">Session Chair</option>
+                                    </optgroup>
+                                    <optgroup label="Program & Finance">
+                                      <option value="Program and Finance Chair">Program and Finance Chair</option>
+                                      <option value="Program and Finance Committee Member">Program and Finance Committee Member</option>
+                                    </optgroup>
+                                    <optgroup label="Publication">
+                                      <option value="Publication Chair">Publication Chair</option>
+                                      <option value="Publication Committee Member">Publication Committee Member</option>
+                                    </optgroup>
+                                    <optgroup label="Local Arrangements">
+                                      <option value="Local Arrangements Chair">Local Arrangements Chair</option>
+                                      <option value="Local Arrangements Committee Member">Local Arrangements Committee Member</option>
+                                    </optgroup>
+                                    <optgroup label="Registration">
+                                      <option value="Registration Chair">Registration Chair</option>
+                                      <option value="Registration Committee Member">Registration Committee Member</option>
+                                    </optgroup>
+                                    <optgroup label="Pre-Tutorial Sessions">
+                                      <option value="Conference Pre-Tutorial Sessions Chair">Conference Pre-Tutorial Sessions Chair</option>
+                                      <option value="Pre-Tutorial Sessions Committee Member">Pre-Tutorial Sessions Committee Member</option>
+                                    </optgroup>
+                                    <optgroup label="Technical Review">
+                                      <option value="Technical Review Committee Convener">Technical Review Committee Convener</option>
+                                      <option value="Technical Review Committee Member">Technical Review Committee Member</option>
+                                    </optgroup>
+                                    <optgroup label="Outreach">
+                                      <option value="Outreach and Promotion Committee Convener">Outreach and Promotion Committee Convener</option>
+                                      <option value="Outreach and Promotion Committee Member">Outreach and Promotion Committee Member</option>
+                                    </optgroup>
+                                    <optgroup label="Website & Social Media">
+                                      <option value="Website and Social Media Promotion Committee Chair">Website and Social Media Promotion Committee Chair</option>
+                                      <option value="Website and Social Media Promotion Committee Member">Website and Social Media Promotion Committee Member</option>
+                                    </optgroup>
+                                    <optgroup label="Hospitality">
+                                      <option value="Hospitality Committee Convener">Hospitality Committee Convener</option>
+                                      <option value="Hospitality Committee Member">Hospitality Committee Member</option>
+                                    </optgroup>
+                                    <optgroup label="Advisory">
+                                      <option value="Advisory Committee Member">Advisory Committee Member</option>
+                                    </optgroup>
+                                    <optgroup label="Other">
+                                      <option value="Member">Member</option>
+                                      <option value="__custom__">Custom (type below)...</option>
+                                    </optgroup>
+                                  </select>
+                                  {(() => {
+                                    const knownRoles = ['Chief Patron','Patron','General Chair','Conference Chair','Session Chair','Program and Finance Chair','Program and Finance Committee Member','Publication Chair','Publication Committee Member','Local Arrangements Chair','Local Arrangements Committee Member','Registration Chair','Registration Committee Member','Conference Pre-Tutorial Sessions Chair','Pre-Tutorial Sessions Committee Member','Technical Review Committee Convener','Technical Review Committee Member','Outreach and Promotion Committee Convener','Outreach and Promotion Committee Member','Website and Social Media Promotion Committee Chair','Website and Social Media Promotion Committee Member','Hospitality Committee Convener','Hospitality Committee Member','Member','Advisory Committee Member'];
+                                    const v = editingCommittee.role || '';
+                                    const isCustom = v && !knownRoles.includes(v);
+                                    return isCustom ? (
+                                      <input
+                                        type="text"
+                                        className="form-input"
+                                        value={editingCommittee.role || ''}
+                                        onChange={(e) => setEditingCommittee({ ...editingCommittee, role: e.target.value })}
+                                        placeholder="Enter custom role..."
+                                        style={{ marginTop: '0.5rem' }}
+                                      />
+                                    ) : null;
+                                  })()}
                                 </div>
                                 <div className="admin-form-group">
                                   <label htmlFor="committee_desc">Institution / Bio Description</label>
