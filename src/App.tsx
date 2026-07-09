@@ -3300,27 +3300,7 @@ export default function App() {
 
             {/* Address & Coordinators */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              <div className="glass-card">
-                <h3 style={{ fontSize: '1.35rem', color: 'white', marginBottom: '12.25px' }}>{info.contact_sec_title || 'Organizing Secretariat'}</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
-                  <div style={{ display: 'flex', gap: '0.75rem' }}>
-                    <MapPin size={20} className="text-blue-400" style={{ flexShrink: 0 }} />
-                    <span style={{ whiteSpace: 'pre-line' }}>
-                      {info.secretariat_address || 'Department of EEE / ECE,\nSri Ramakrishna Engineering College,\nVattamalaipalayam, N.G.G.O Colony Post,\nCoimbatore, Tamilnadu - 641022, India.'}
-                    </span>
-                  </div>
-                  
-                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                    <Mail size={18} className="text-blue-400" />
-                    <a href={`mailto:${info.secretariat_email || 'aectsd2027@srec.ac.in'}`} style={{ color: '#60a5fa', textDecoration: 'none' }}>{info.secretariat_email || 'aectsd2027@srec.ac.in'}</a>
-                  </div>
 
-                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                    <Phone size={18} className="text-blue-400" />
-                    <span>{info.secretariat_phone || '+91 (422) 2461588 / 2460088'}</span>
-                  </div>
-                </div>
-              </div>
 
               {/* Coordinators */}
               <div className="glass-card">
