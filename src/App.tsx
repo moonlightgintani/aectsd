@@ -3331,7 +3331,7 @@ export default function App() {
               {/* Coordinators */}
               <div className="glass-card">
                 <h3 style={{ fontSize: '1.35rem', color: 'white', marginBottom: '1.25rem' }}>{info.contact_coord_title || 'Conference Coordinators'}</h3>
-                <div className="grid-2-col" style={{ gap: '1rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   {coordinators.map((coord, cidx) => {
                     const coordEmail = coord.email || (() => {
                       const n = coord.name.toLowerCase();
@@ -4866,16 +4866,21 @@ export default function App() {
                                     <div className="admin-mobile-card-row">
                                       <span className="admin-mobile-card-label">Receipt:</span>
                                       <span className="admin-mobile-card-value">
-                                        {reg.screenshot_name && reg.screenshot_name !== 'no_file' ? (
-                                          <button
-                                            type="button"
-                                            onClick={() => setPreviewImage(reg.screenshot_name)}
-                                            className="screenshot-badge"
-                                            style={{ background: 'none', border: '1px solid #bfdbfe', cursor: 'pointer' }}
-                                          >
-                                            <Eye size={12} /> {reg.screenshot_name}
-                                          </button>
-                                        ) : (
+                                        {reg.screenshot_name && reg.screenshot_name !== 'no_file' ? (() => {
+                                          const cleanName = getFilenameFromUrl(reg.screenshot_name);
+                                          const displayName = cleanName.length > 25 ? cleanName.substring(0, 22) + '...' : cleanName;
+                                          return (
+                                            <button
+                                              type="button"
+                                              onClick={() => setPreviewImage(reg.screenshot_name)}
+                                              className="screenshot-badge"
+                                              style={{ background: 'none', border: '1px solid #bfdbfe', cursor: 'pointer', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                                              title={cleanName}
+                                            >
+                                              <Eye size={12} /> {displayName}
+                                            </button>
+                                          );
+                                        })() : (
                                           <span style={{ color: '#94a3b8' }}>No attachment</span>
                                         )}
                                       </span>
