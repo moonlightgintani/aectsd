@@ -336,7 +336,7 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState<'main' | 'explore' | 'admin'>('main');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [committeeTab, setCommitteeTab] = useState<'steering' | 'organizing' | 'advisory'>('organizing');
-  const [activeSubcommittee, setActiveSubcommittee] = useState<string>('leadership');
+  const [activeSubcommittee, setActiveSubcommittee] = useState<string>('patrons');
   const [submissionTab, setSubmissionTab] = useState<'initial' | 'camera-ready'>('initial');
   
   // Database content states
@@ -1567,7 +1567,7 @@ export default function App() {
 
         {/* Desktop Navigation Links */}
         <nav className="desktop-nav" style={{ width: '100%', justifyContent: 'center' }}>
-          <ul style={{ display: 'flex', gap: '0.5rem 1rem', listStyle: 'none', alignItems: 'center', margin: 0, padding: 0, flexWrap: 'wrap', justifyContent: 'center' }}>
+          <ul style={{ display: 'flex', gap: '0.25rem 0.5rem', listStyle: 'none', alignItems: 'center', margin: 0, padding: 0, flexWrap: 'nowrap', justifyContent: 'center' }}>
             {NAV_ITEMS.map((item: any) => {
               return (
                 <li key={item.id}>
@@ -2141,7 +2141,8 @@ export default function App() {
                       {/* Row 1 */}
                       <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', flexWrap: 'wrap', width: '100%' }}>
                         {[
-                          { id: 'leadership', label: 'Leadership' },
+                          { id: 'patrons', label: 'Patrons' },
+                          { id: 'general-chairs', label: 'General Chairs' },
                           { id: 'executive', label: 'Executive Committee' },
                           { id: 'finance', label: 'Finance' },
                           { id: 'publication', label: 'Publication' },
@@ -2189,8 +2190,10 @@ export default function App() {
                       .filter((member) => {
                         if (member.category !== 'organizing') return false;
                         switch (activeSubcommittee) {
-                          case 'leadership':
-                            return member.role === 'Chief Patron' || member.role === 'Patron' || member.role === 'General Chair';
+                          case 'patrons':
+                            return member.role === 'Chief Patron' || member.role === 'Patron';
+                          case 'general-chairs':
+                            return member.role === 'General Chair';
                           case 'executive':
                             return member.role === 'Conference Chair' || member.role === 'Conference Chair & Organizing Secretary' || member.role === 'Session Chair';
                           case 'finance':
@@ -2218,7 +2221,7 @@ export default function App() {
                         }
                       })
                       .map((member, mIdx) => {
-                        const showAvatar = activeSubcommittee === 'leadership';
+                        const showAvatar = activeSubcommittee === 'patrons' || activeSubcommittee === 'general-chairs';
                         if (showAvatar) {
                           return (
                             <div key={mIdx} className="member-profile-card">

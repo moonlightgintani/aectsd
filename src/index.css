@@ -398,8 +398,8 @@ h1, h2, h3, h4, h5, h6 {
 
 @media (min-width: 1024px) and (max-width: 1440px) {
   .nav-link {
-    font-size: 0.78rem !important;
-    padding: 0.25rem 0.45rem !important;
+    font-size: 0.7rem !important;
+    padding: 0.2rem 0.3rem !important;
   }
 }
 
@@ -408,10 +408,10 @@ h1, h2, h3, h4, h5, h6 {
   background: none;
   border: none;
   font-weight: 600;
-  font-size: 0.95rem; /* Larger font size as requested */
+  font-size: 0.75rem;
   cursor: pointer;
   position: relative;
-  padding: 0.5rem 0.8rem; /* Extra padding for spacious look */
+  padding: 0.35rem 0.5rem;
   transition: all 0.2s ease;
   font-family: var(--font-sans);
   color: #334155;
