@@ -126,10 +126,36 @@ interface Coordinator {
   name: string;
   role: string;
   phone: string;
+  email?: string;
+  image_url?: string;
 }
 
 
 
+
+const getFilenameFromUrl = (url: string) => {
+  if (!url) return '';
+  if (url === 'no_file' || url === 'offline_mode_proof.png' || url === 'transaction_proof_rajesh.png' || url === 'wire_transfer_sarah.pdf' || url === 'receipt_payment_amit.jpg') {
+    return url;
+  }
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    try {
+      const parts = url.split('/');
+      const lastSegment = parts[parts.length - 1];
+      const cleanName = decodeURIComponent(lastSegment);
+      if (cleanName.includes('_')) {
+        const subParts = cleanName.split('_');
+        if (/^\d+$/.test(subParts[0])) {
+          return subParts.slice(1).join('_');
+        }
+      }
+      return cleanName;
+    } catch (e) {
+      return url;
+    }
+  }
+  return url;
+};
 
 const parseDateDisplay = (dateStr: string) => {
   const cleaned = dateStr.trim();
@@ -3306,16 +3332,65 @@ export default function App() {
               <div className="glass-card">
                 <h3 style={{ fontSize: '1.35rem', color: 'white', marginBottom: '1.25rem' }}>{info.contact_coord_title || 'Conference Coordinators'}</h3>
                 <div className="grid-2-col" style={{ gap: '1rem' }}>
-                  {coordinators.map((coord, cidx) => (
-                    <div key={cidx} style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '0.5rem', border: '1px solid rgba(255,255,255,0.04)' }}>
-                      <span style={{ fontSize: '0.75rem', color: '#f59e0b', fontWeight: 800, textTransform: 'uppercase' }}>{coord.role}</span>
-                      <h4 style={{ fontSize: '1.05rem', color: 'white', margin: '0.25rem 0' }}>{coord.name}</h4>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                        <Phone size={12} />
-                        <span>{coord.phone}</span>
+                  {coordinators.map((coord, cidx) => {
+                    const coordEmail = coord.email || (() => {
+                      const n = coord.name.toLowerCase();
+                      if (n.includes('karpagam')) return 'karpagam.vilvanathan@srec.ac.in';
+                      if (n.includes('jansi')) return 'jansi.sankar@srec.ac.in';
+                      if (n.includes('jagadeeswari')) return 'jagadeeswari.m@srec.ac.in';
+                      if (n.includes('grace selvarani')) return 'graceselvarani.a@srec.ac.in';
+                      return '';
+                    })();
+                    
+                    const coordImg = coord.image_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(coord.name)}&backgroundColor=0f52ba,06b6d4,f58220`;
+
+                    return (
+                      <div key={cidx} style={{ 
+                        background: 'rgba(255,255,255,0.02)', 
+                        padding: '1.25rem', 
+                        borderRadius: '0.75rem', 
+                        border: '1px solid rgba(255,255,255,0.04)',
+                        display: 'flex',
+                        gap: '1.25rem',
+                        alignItems: 'center'
+                      }}>
+                        <div style={{ 
+                          width: '64px', 
+                          height: '64px', 
+                          borderRadius: '50%', 
+                          overflow: 'hidden', 
+                          border: '2px solid rgba(255,255,255,0.1)',
+                          flexShrink: 0,
+                          background: 'rgba(255,255,255,0.05)'
+                        }}>
+                          <img 
+                            src={coordImg} 
+                            alt={coord.name} 
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(coord.name)}&backgroundColor=0f52ba,06b6d4,f58220`;
+                            }}
+                          />
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', minWidth: 0 }}>
+                          <h4 style={{ fontSize: '1.15rem', color: 'white', margin: 0, fontWeight: 700 }}>{coord.name}</h4>
+                          <span style={{ fontSize: '0.7rem', color: '#f59e0b', fontWeight: 800, textTransform: 'uppercase', lineHeight: '1.3' }}>{coord.role}</span>
+                          
+                          {coordEmail && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
+                              <Mail size={12} style={{ color: '#60a5fa' }} />
+                              <a href={`mailto:${coordEmail}`} style={{ color: '#60a5fa', textDecoration: 'none', wordBreak: 'break-all' }}>{coordEmail}</a>
+                            </div>
+                          )}
+                          
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                            <Phone size={12} style={{ color: '#60a5fa' }} />
+                            <a href={`tel:${coord.phone}`} style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>{coord.phone}</a>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -4713,18 +4788,22 @@ export default function App() {
                                           )}
                                         </td>
                                         <td>
-                                          {reg.screenshot_name && reg.screenshot_name !== 'no_file' ? (
-                                            <button
-                                              type="button"
-                                              onClick={() => setPreviewImage(reg.screenshot_name)}
-                                              className="screenshot-badge"
-                                              style={{ background: 'none', border: '1px solid #bfdbfe', cursor: 'pointer' }}
-                                              title={`Size: ${Math.round(Number(reg.screenshot_size || 0) / 1024)} KB`}
-                                            >
-                                              <Eye size={12} />
-                                              {reg.screenshot_name}
-                                            </button>
-                                          ) : (
+                                          {reg.screenshot_name && reg.screenshot_name !== 'no_file' ? (() => {
+                                            const cleanName = getFilenameFromUrl(reg.screenshot_name);
+                                            const displayName = cleanName.length > 25 ? cleanName.substring(0, 22) + '...' : cleanName;
+                                            return (
+                                              <button
+                                                type="button"
+                                                onClick={() => setPreviewImage(reg.screenshot_name)}
+                                                className="screenshot-badge"
+                                                style={{ background: 'none', border: '1px solid #bfdbfe', cursor: 'pointer', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                                                title={`${cleanName} (Size: ${Math.round(Number(reg.screenshot_size || 0) / 1024)} KB)`}
+                                              >
+                                                <Eye size={12} />
+                                                {displayName}
+                                              </button>
+                                            );
+                                          })() : (
                                             <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>No attachments</span>
                                           )}
                                         </td>
