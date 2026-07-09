@@ -126,72 +126,10 @@ interface Coordinator {
   name: string;
   role: string;
   phone: string;
-  email?: string;
-  image_url?: string;
 }
 
 
 
-
-const getFilenameFromUrl = (url: string) => {
-  if (!url) return '';
-  if (url === 'no_file' || url === 'offline_mode_proof.png' || url === 'transaction_proof_rajesh.png' || url === 'wire_transfer_sarah.pdf' || url === 'receipt_payment_amit.jpg') {
-    return url;
-  }
-  if (url.startsWith('http://') || url.startsWith('https://')) {
-    try {
-      const parts = url.split('/');
-      const lastSegment = parts[parts.length - 1];
-      const cleanName = decodeURIComponent(lastSegment);
-      if (cleanName.includes('_')) {
-        const subParts = cleanName.split('_');
-        if (/^\d+$/.test(subParts[0])) {
-          return subParts.slice(1).join('_');
-        }
-      }
-      return cleanName;
-    } catch (e) {
-      return url;
-    }
-  }
-  return url;
-};
-
-const getCommitteeEmail = (name: string) => {
-  const n = name.toLowerCase();
-  if (n.includes('soundarrajan')) return 'drasoundarrajan@srec.ac.in';
-  if (n.includes('sundar ramakrishnan')) return 'sundar.ramakrishnan@snrst.org';
-  if (n.includes('narendran')) return 's.narendran@snrst.org';
-  if (n.includes('sakthivel')) return 'sakthivel.p@annauniv.edu';
-  if (n.includes('radha')) return 'radha.s@ssn.edu.in';
-  if (n.includes('brindha')) return 'brindha.s@srec.ac.in';
-  return '';
-};
-
-const getCommitteeImage = (name: string) => {
-  const n = name.toLowerCase();
-  if (n.includes('soundarrajan')) return 'https://srec.ac.in/uploads/Faculty/asoundarrajan240814084632.jpg';
-  if (n.includes('sundar ramakrishnan')) return 'https://srec.ac.in/uploads/Faculty/ram240816072918.jpg';
-  return '';
-};
-
-const getCommitteeLocation = (name: string, fallbackDesc: string) => {
-  const n = name.toLowerCase();
-  if (n.includes('soundarrajan')) return 'Sri Ramakrishna Engineering College';
-  if (n.includes('sundar ramakrishnan')) return 'SNR Sons Charitable Trust, Coimbatore';
-  if (n.includes('narendran')) return 'SNR Sons Charitable Trust, Coimbatore';
-  if (n.includes('sakthivel')) return 'IEEE Madras Section';
-  if (n.includes('radha')) return 'IEEE Madras Section';
-  if (n.includes('brindha')) return 'IEEE Madras Section';
-  return fallbackDesc;
-};
-
-const getCoordinatorImage = (name: string) => {
-  const n = name.toLowerCase();
-  if (n.includes('karpagam')) return 'https://srec.ac.in/uploads/Faculty/whatsappimage2023-08-05at9.46.42am(1)230816083910.jpeg';
-  if (n.includes('jansi')) return 'https://srec.ac.in/uploads/Faculty/jan240816094910.png';
-  return '';
-};
 
 const parseDateDisplay = (dateStr: string) => {
   const cleaned = dateStr.trim();
@@ -398,7 +336,7 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState<'main' | 'explore' | 'admin'>('main');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [committeeTab, setCommitteeTab] = useState<'steering' | 'organizing' | 'advisory'>('organizing');
-  const [activeSubcommittee, setActiveSubcommittee] = useState<string>('patrons');
+  const [activeSubcommittee, setActiveSubcommittee] = useState<string>('leadership');
   const [submissionTab, setSubmissionTab] = useState<'initial' | 'camera-ready'>('initial');
   
   // Database content states
@@ -472,6 +410,7 @@ export default function App() {
   const [regEmail, setRegEmail] = useState<string>('');
   const [regPhone, setRegPhone] = useState<string>('');
   const [regScreenshot, setRegScreenshot] = useState<File | null>(null);
+  const [regPaymentUrl, setRegPaymentUrl] = useState<string>('');
   const [regRegisterForTour, setRegRegisterForTour] = useState<boolean>(false);
   const [regPreferredTourPlace, setRegPreferredTourPlace] = useState<string>('');
   
@@ -1081,9 +1020,9 @@ export default function App() {
   const handleRegistrationSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!regPaperId || !regAuthorName || !regPaperTitle || !regEmail || !regPhone || !regScreenshot) {
+    if (!regPaperId || !regAuthorName || !regPaperTitle || !regEmail || !regPhone || (!regScreenshot && !regPaymentUrl)) {
       setShowRegValidation(true);
-      setRegError('Please fill out all required fields and upload the payment screenshot.');
+      setRegError('Please fill out all required fields and upload the payment screenshot or enter a valid proof URL.');
       return;
     }
 
@@ -1097,6 +1036,7 @@ export default function App() {
       if (!isSupabaseConfigured || !supabase) {
         // Mock success if Supabase is offline
         setTimeout(async () => {
+          const finalScreenshotName = regScreenshot ? regScreenshot.name : regPaymentUrl ? regPaymentUrl.trim() : 'offline_mode_proof.png';
           const newReg = {
             id: Date.now(),
             paper_id: regPaperId || 'N/A',
@@ -1104,8 +1044,8 @@ export default function App() {
             author_name: regAuthorName,
             email: regEmail,
             phone: fullPhone,
-            screenshot_name: regScreenshot ? regScreenshot.name : 'offline_mode_proof.png',
-            screenshot_size: regScreenshot ? regScreenshot.size : 102450,
+            screenshot_name: finalScreenshotName,
+            screenshot_size: regScreenshot ? regScreenshot.size : 0,
             register_for_tour: regRegisterForTour,
             preferred_tour_place: regPreferredTourPlace || null,
             created_at: new Date().toISOString()
@@ -1124,10 +1064,13 @@ export default function App() {
         return;
       }
       
-      // Upload screenshot to Supabase Storage
+      // Upload screenshot to Supabase Storage or use manual URL.
       let screenshotUrl = 'no_file';
       let screenshotFileName = 'no_file';
-      if (regScreenshot) {
+      if (regPaymentUrl && !regScreenshot) {
+        screenshotUrl = regPaymentUrl.trim();
+        screenshotFileName = screenshotUrl;
+      } else if (regScreenshot) {
         screenshotFileName = regScreenshot.name;
         try {
           // Sanitize filename: replace spaces with underscores, prefix with timestamp
@@ -1200,7 +1143,6 @@ export default function App() {
 
   // Parallax transforms for Hero background scroll animation
   const heroBgY = useTransform(scrollY, [0, 600], ['0%', '25%']);
-  const heroBgScale = useTransform(scrollY, [0, 600], [1, 1.08]);
 
   // Countdown timer calculation
   const [timeLeft, setTimeLeft] = useState({
@@ -1364,8 +1306,12 @@ export default function App() {
         setSubmittedRegistrations(registrationsLog);
         localStorage.setItem('srec_offline_registrations', JSON.stringify(registrationsLog));
         console.log('[REGISTRATIONS LOADED] Count:', registrationsLog.length);
+      } else if (registrationsLog && registrationsLog.length === 0) {
+        setSubmittedRegistrations([]);
+        localStorage.setItem('srec_offline_registrations', JSON.stringify([]));
+        console.log('[REGISTRATIONS] DB returned no rows. Showing no data.');
       } else {
-        console.warn('[REGISTRATIONS] DB returned empty array - keeping existing data. Check Supabase RLS SELECT policy.');
+        console.warn('[REGISTRATIONS] DB returned null or undefined. Keeping existing data. Check Supabase RLS SELECT policy.');
       }
     } catch (err) {
       console.warn('Failed to load online data. Falling back to offline fallback state.', err);
@@ -1629,7 +1575,7 @@ export default function App() {
 
         {/* Desktop Navigation Links */}
         <nav className="desktop-nav" style={{ width: '100%', justifyContent: 'center' }}>
-          <ul style={{ display: 'flex', gap: '0.25rem 0.5rem', listStyle: 'none', alignItems: 'center', margin: 0, padding: 0, flexWrap: 'nowrap', justifyContent: 'center' }}>
+          <ul style={{ display: 'flex', gap: '0.5rem 1rem', listStyle: 'none', alignItems: 'center', margin: 0, padding: 0, flexWrap: 'wrap', justifyContent: 'center' }}>
             {NAV_ITEMS.map((item: any) => {
               return (
                 <li key={item.id}>
@@ -1870,14 +1816,14 @@ export default function App() {
               style={{
                 position: 'absolute',
                 inset: 0,
-                backgroundImage: `url(${info.hero_bg_url || 'https://images.shiksha.com/mediadata/images/1488263707phpWPR1Pb.jpeg'})`,
+                backgroundImage: `url(${info.hero_background_image || heroBgY})`,'})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 y: heroBgY,
                 scale: heroBgScale,
                 zIndex: 0
-              }}
-            />
+              &rbrace;&rbrace;
+            /&gt;
 
             {/* Light overlay for exact readability and style match */}
             <div style={{
@@ -2203,8 +2149,7 @@ export default function App() {
                       {/* Row 1 */}
                       <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', flexWrap: 'wrap', width: '100%' }}>
                         {[
-                          { id: 'patrons', label: 'Patrons' },
-                          { id: 'general-chairs', label: 'General Chairs' },
+                          { id: 'leadership', label: 'Leadership' },
                           { id: 'executive', label: 'Executive Committee' },
                           { id: 'finance', label: 'Finance' },
                           { id: 'publication', label: 'Publication' },
@@ -2252,10 +2197,8 @@ export default function App() {
                       .filter((member) => {
                         if (member.category !== 'organizing') return false;
                         switch (activeSubcommittee) {
-                          case 'patrons':
-                            return member.role === 'Chief Patron' || member.role === 'Patron';
-                          case 'general-chairs':
-                            return member.role === 'General Chair';
+                          case 'leadership':
+                            return member.role === 'Chief Patron' || member.role === 'Patron' || member.role === 'General Chair';
                           case 'executive':
                             return member.role === 'Conference Chair' || member.role === 'Conference Chair & Organizing Secretary' || member.role === 'Session Chair';
                           case 'finance':
@@ -2283,72 +2226,25 @@ export default function App() {
                         }
                       })
                       .map((member, mIdx) => {
-                        const showAvatar = activeSubcommittee === 'patrons' || activeSubcommittee === 'general-chairs';
+                        const showAvatar = activeSubcommittee === 'leadership';
                         if (showAvatar) {
-                          const memberImg = member.image_url || getCommitteeImage(member.name) || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`;
-                          const memberEmail = getCommitteeEmail(member.name);
-                          const memberLocation = getCommitteeLocation(member.name, member.desc);
-
                           return (
-                            <div key={mIdx} className="member-profile-card-rect">
-                              {/* Rectangular Image Container */}
-                              <div style={{ position: 'relative', width: '100%', height: '260px', overflow: 'hidden', background: '#f1f5f9' }}>
+                            <div key={mIdx} className="member-profile-card">
+                              <div className="member-avatar-wrapper">
                                 <img 
-                                  src={memberImg} 
+                                  src={member.image_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`}
                                   onError={(e) => {
                                     (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(member.name)}&backgroundColor=0f52ba,06b6d4,f58220`;
                                   }}
                                   alt={member.name}
-                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                  className="member-avatar-img"
                                 />
-                                
-                                {/* Overlay Role Badge */}
-                                <div style={{
-                                  position: 'absolute',
-                                  bottom: '0.75rem',
-                                  left: '50%',
-                                  transform: 'translateX(-50%)',
-                                  background: 'rgba(248, 250, 252, 0.95)',
-                                  border: '1px solid #e2e8f0',
-                                  padding: '0.4rem 1rem',
-                                  borderRadius: '2rem',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '0.35rem',
-                                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                                  whiteSpace: 'nowrap',
-                                  maxWidth: '90%',
-                                  justifyContent: 'center'
-                                }}>
-                                  <Award size={14} style={{ color: '#0f52ba' }} />
-                                  <span style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', color: '#0f172a', letterSpacing: '0.05em' }}>
-                                    {member.role && member.role !== 'Member' ? member.role : 'Organizing Member'}
-                                  </span>
-                                </div>
                               </div>
-                              
-                              {/* Bottom Details Section */}
-                              <div style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                                <h4 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#091d36', margin: '0 0 0.75rem 0', lineHeight: '1.3' }}>
-                                  {member.name}
-                                </h4>
-                                
-                                <div style={{ height: '1px', background: '#cbd5e1', width: '100%', marginBottom: '0.75rem' }} />
-                                
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: 'auto' }}>
-                                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', fontSize: '0.85rem', color: '#475569' }}>
-                                    <MapPin size={16} style={{ color: '#3b82f6', flexShrink: 0, marginTop: '0.1rem' }} />
-                                    <span>{memberLocation}</span>
-                                  </div>
-                                  
-                                  {memberEmail && (
-                                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontSize: '0.85rem', color: '#475569' }}>
-                                      <Mail size={16} style={{ color: '#3b82f6', flexShrink: 0 }} />
-                                      <a href={`mailto:${memberEmail}`} style={{ color: '#2563eb', textDecoration: 'none' }}>{memberEmail}</a>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
+                              <span className="member-role-badge">
+                                {member.role && member.role !== 'Member' ? member.role : 'Organizing Member'}
+                              </span>
+                              <h4 className="member-name">{member.name}</h4>
+                              <p className="member-desc">{member.desc}</p>
                             </div>
                           );
                         } else {
@@ -3409,71 +3305,42 @@ export default function App() {
 
             {/* Address & Coordinators */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div className="glass-card">
+                <h3 style={{ fontSize: '1.35rem', color: 'white', marginBottom: '12.25px' }}>{info.contact_sec_title || 'Organizing Secretariat'}</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
+                  <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <MapPin size={20} className="text-blue-400" style={{ flexShrink: 0 }} />
+                    <span style={{ whiteSpace: 'pre-line' }}>
+                      {info.secretariat_address || 'Department of EEE / ECE,\nSri Ramakrishna Engineering College,\nVattamalaipalayam, N.G.G.O Colony Post,\nCoimbatore, Tamilnadu - 641022, India.'}
+                    </span>
+                  </div>
+                  
+                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                    <Mail size={18} className="text-blue-400" />
+                    <a href={`mailto:${info.secretariat_email || 'aectsd2027@srec.ac.in'}`} style={{ color: '#60a5fa', textDecoration: 'none' }}>{info.secretariat_email || 'aectsd2027@srec.ac.in'}</a>
+                  </div>
 
+                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                    <Phone size={18} className="text-blue-400" />
+                    <span>{info.secretariat_phone || '+91 (422) 2461588 / 2460088'}</span>
+                  </div>
+                </div>
+              </div>
 
               {/* Coordinators */}
               <div className="glass-card">
                 <h3 style={{ fontSize: '1.35rem', color: 'white', marginBottom: '1.25rem' }}>{info.contact_coord_title || 'Conference Coordinators'}</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  {coordinators.map((coord, cidx) => {
-                    const coordEmail = coord.email || (() => {
-                      const n = coord.name.toLowerCase();
-                      if (n.includes('karpagam')) return 'karpagam.vilvanathan@srec.ac.in';
-                      if (n.includes('jansi')) return 'jansi.sankar@srec.ac.in';
-                      if (n.includes('jagadeeswari')) return 'jagadeeswari.m@srec.ac.in';
-                      if (n.includes('grace selvarani')) return 'graceselvarani.a@srec.ac.in';
-                      return '';
-                    })();
-                    
-                    const coordImg = coord.image_url || getCoordinatorImage(coord.name) || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(coord.name)}&backgroundColor=0f52ba,06b6d4,f58220`;
-
-                    return (
-                      <div key={cidx} style={{ 
-                        background: 'rgba(255,255,255,0.02)', 
-                        padding: '1.25rem', 
-                        borderRadius: '0.75rem', 
-                        border: '1px solid rgba(255,255,255,0.04)',
-                        display: 'flex',
-                        gap: '1.25rem',
-                        alignItems: 'center'
-                      }}>
-                        <div style={{ 
-                          width: '64px', 
-                          height: '64px', 
-                          borderRadius: '50%', 
-                          overflow: 'hidden', 
-                          border: '2px solid rgba(255,255,255,0.1)',
-                          flexShrink: 0,
-                          background: 'rgba(255,255,255,0.05)'
-                        }}>
-                          <img 
-                            src={coordImg} 
-                            alt={coord.name} 
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(coord.name)}&backgroundColor=0f52ba,06b6d4,f58220`;
-                            }}
-                          />
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', minWidth: 0 }}>
-                          <h4 style={{ fontSize: '1.15rem', color: 'white', margin: 0, fontWeight: 700 }}>{coord.name}</h4>
-                          <span style={{ fontSize: '0.7rem', color: '#f59e0b', fontWeight: 800, textTransform: 'uppercase', lineHeight: '1.3' }}>{coord.role}</span>
-                          
-                          {coordEmail && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
-                              <Mail size={12} style={{ color: '#60a5fa' }} />
-                              <a href={`mailto:${coordEmail}`} style={{ color: '#60a5fa', textDecoration: 'none', wordBreak: 'break-all' }}>{coordEmail}</a>
-                            </div>
-                          )}
-                          
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                            <Phone size={12} style={{ color: '#60a5fa' }} />
-                            <a href={`tel:${coord.phone}`} style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>{coord.phone}</a>
-                          </div>
-                        </div>
+                <div className="grid-2-col" style={{ gap: '1rem' }}>
+                  {coordinators.map((coord, cidx) => (
+                    <div key={cidx} style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '0.5rem', border: '1px solid rgba(255,255,255,0.04)' }}>
+                      <span style={{ fontSize: '0.75rem', color: '#f59e0b', fontWeight: 800, textTransform: 'uppercase' }}>{coord.role}</span>
+                      <h4 style={{ fontSize: '1.05rem', color: 'white', margin: '0.25rem 0' }}>{coord.name}</h4>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                        <Phone size={12} />
+                        <span>{coord.phone}</span>
                       </div>
-                    );
-                  })}
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -4103,6 +3970,7 @@ export default function App() {
                                 setRegEmail('');
                                 setRegPhone('');
                                 setRegScreenshot(null);
+                                setRegPaymentUrl('');
                                 setRegRegisterForTour(false);
                                 setRegPreferredTourPlace('');
                                 setShowRegValidation(false);
@@ -4266,17 +4134,17 @@ export default function App() {
                               )}
                             </div>
 
-                            {/* Screenshot */}
+                            {/* Screenshot or URL */}
                             <div>
-                              <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>Upload Payment Screenshot (Max 10MB)*</label>
+                              <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>Upload Payment Screenshot or enter payment proof URL</label>
                               <div 
                                 style={{
-                                  border: showRegValidation && !regScreenshot ? '2px dashed #ef4444' : '2px dashed #cbd5e1',
+                                  border: showRegValidation && !regScreenshot && !regPaymentUrl ? '2px dashed #ef4444' : '2px dashed #cbd5e1',
                                   borderRadius: '0.5rem',
                                   padding: '1rem',
                                   textAlign: 'center',
                                   cursor: 'pointer',
-                                  background: showRegValidation && !regScreenshot ? 'rgba(239, 68, 68, 0.05)' : '#f8fafc',
+                                  background: showRegValidation && !regScreenshot && !regPaymentUrl ? 'rgba(239, 68, 68, 0.05)' : '#f8fafc',
                                   transition: 'all 0.2s ease',
                                 }}
                                 onDragOver={(e) => e.preventDefault()}
@@ -4310,6 +4178,20 @@ export default function App() {
                                   </div>
                                 )}
                               </div>
+
+                              <input
+                                id="reg_payment_url"
+                                type="url"
+                                value={regPaymentUrl}
+                                onChange={(e) => setRegPaymentUrl(e.target.value)}
+                                placeholder="Or paste payment proof URL here"
+                                className={`form-input ${showRegValidation && !regScreenshot && !regPaymentUrl ? 'is-invalid' : ''}`}
+                                style={{ marginTop: '0.75rem', width: '100%', padding: '0.4rem 0.6rem', fontSize: '0.8rem' }}
+                                title="Payment proof URL"
+                              />
+                              <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
+                                Provide either an uploaded file or a public URL for your payment receipt.
+                              </span>
                             </div>
 
                             {regError && (
@@ -4871,22 +4753,18 @@ export default function App() {
                                           )}
                                         </td>
                                         <td>
-                                          {reg.screenshot_name && reg.screenshot_name !== 'no_file' ? (() => {
-                                            const cleanName = getFilenameFromUrl(reg.screenshot_name);
-                                            const displayName = cleanName.length > 25 ? cleanName.substring(0, 22) + '...' : cleanName;
-                                            return (
-                                              <button
-                                                type="button"
-                                                onClick={() => setPreviewImage(reg.screenshot_name)}
-                                                className="screenshot-badge"
-                                                style={{ background: 'none', border: '1px solid #bfdbfe', cursor: 'pointer', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-                                                title={`${cleanName} (Size: ${Math.round(Number(reg.screenshot_size || 0) / 1024)} KB)`}
-                                              >
-                                                <Eye size={12} />
-                                                {displayName}
-                                              </button>
-                                            );
-                                          })() : (
+                                          {reg.screenshot_name && reg.screenshot_name !== 'no_file' ? (
+                                            <button
+                                              type="button"
+                                              onClick={() => setPreviewImage(reg.screenshot_name)}
+                                              className="screenshot-badge"
+                                              style={{ background: 'none', border: '1px solid #bfdbfe', cursor: 'pointer' }}
+                                              title={`Size: ${Math.round(Number(reg.screenshot_size || 0) / 1024)} KB`}
+                                            >
+                                              <Eye size={12} />
+                                              {reg.screenshot_name}
+                                            </button>
+                                          ) : (
                                             <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>No attachments</span>
                                           )}
                                         </td>
@@ -4949,21 +4827,16 @@ export default function App() {
                                     <div className="admin-mobile-card-row">
                                       <span className="admin-mobile-card-label">Receipt:</span>
                                       <span className="admin-mobile-card-value">
-                                        {reg.screenshot_name && reg.screenshot_name !== 'no_file' ? (() => {
-                                          const cleanName = getFilenameFromUrl(reg.screenshot_name);
-                                          const displayName = cleanName.length > 25 ? cleanName.substring(0, 22) + '...' : cleanName;
-                                          return (
-                                            <button
-                                              type="button"
-                                              onClick={() => setPreviewImage(reg.screenshot_name)}
-                                              className="screenshot-badge"
-                                              style={{ background: 'none', border: '1px solid #bfdbfe', cursor: 'pointer', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-                                              title={cleanName}
-                                            >
-                                              <Eye size={12} /> {displayName}
-                                            </button>
-                                          );
-                                        })() : (
+                                        {reg.screenshot_name && reg.screenshot_name !== 'no_file' ? (
+                                          <button
+                                            type="button"
+                                            onClick={() => setPreviewImage(reg.screenshot_name)}
+                                            className="screenshot-badge"
+                                            style={{ background: 'none', border: '1px solid #bfdbfe', cursor: 'pointer' }}
+                                          >
+                                            <Eye size={12} /> {reg.screenshot_name}
+                                          </button>
+                                        ) : (
                                           <span style={{ color: '#94a3b8' }}>No attachment</span>
                                         )}
                                       </span>
@@ -5670,94 +5543,16 @@ export default function App() {
 
                               <div className="admin-form-row">
                                 <div className="admin-form-group">
-                                  <label htmlFor="committee_role">Role / Position Title</label>
-                                  <select
+                                  <label htmlFor="committee_role">Role / Position Title (e.g. Patron, General Chair)</label>
+                                  <input 
                                     id="committee_role"
+                                    type="text" 
                                     className="form-input"
-                                    value={(() => {
-                                      const knownRoles = ['Chief Patron','Patron','General Chair','Conference Chair','Session Chair','Program and Finance Chair','Program and Finance Committee Member','Publication Chair','Publication Committee Member','Local Arrangements Chair','Local Arrangements Committee Member','Registration Chair','Registration Committee Member','Conference Pre-Tutorial Sessions Chair','Pre-Tutorial Sessions Committee Member','Technical Review Committee Convener','Technical Review Committee Member','Outreach and Promotion Committee Convener','Outreach and Promotion Committee Member','Website and Social Media Promotion Committee Chair','Website and Social Media Promotion Committee Member','Hospitality Committee Convener','Hospitality Committee Member','Member','Advisory Committee Member'];
-                                      const v = editingCommittee.role || '';
-                                      return knownRoles.includes(v) ? v : (v ? '__custom__' : '');
-                                    })()}
-                                    onChange={(e) => {
-                                      if (e.target.value !== '__custom__') {
-                                        setEditingCommittee({ ...editingCommittee, role: e.target.value });
-                                      }
-                                    }}
+                                    value={editingCommittee.role || ''}
+                                    onChange={(e) => setEditingCommittee({ ...editingCommittee, role: e.target.value })}
+                                    placeholder="Leave blank if standard member"
                                     title="Role / Position Title"
-                                    style={{ cursor: 'pointer' }}
-                                  >
-                                    <option value="">— Standard Member / No Role —</option>
-                                    <optgroup label="Patrons">
-                                      <option value="Chief Patron">Chief Patron</option>
-                                      <option value="Patron">Patron</option>
-                                    </optgroup>
-                                    <optgroup label="General Chairs">
-                                      <option value="General Chair">General Chair</option>
-                                    </optgroup>
-                                    <optgroup label="Conference Leadership">
-                                      <option value="Conference Chair">Conference Chair</option>
-                                      <option value="Session Chair">Session Chair</option>
-                                    </optgroup>
-                                    <optgroup label="Program & Finance">
-                                      <option value="Program and Finance Chair">Program and Finance Chair</option>
-                                      <option value="Program and Finance Committee Member">Program and Finance Committee Member</option>
-                                    </optgroup>
-                                    <optgroup label="Publication">
-                                      <option value="Publication Chair">Publication Chair</option>
-                                      <option value="Publication Committee Member">Publication Committee Member</option>
-                                    </optgroup>
-                                    <optgroup label="Local Arrangements">
-                                      <option value="Local Arrangements Chair">Local Arrangements Chair</option>
-                                      <option value="Local Arrangements Committee Member">Local Arrangements Committee Member</option>
-                                    </optgroup>
-                                    <optgroup label="Registration">
-                                      <option value="Registration Chair">Registration Chair</option>
-                                      <option value="Registration Committee Member">Registration Committee Member</option>
-                                    </optgroup>
-                                    <optgroup label="Pre-Tutorial Sessions">
-                                      <option value="Conference Pre-Tutorial Sessions Chair">Conference Pre-Tutorial Sessions Chair</option>
-                                      <option value="Pre-Tutorial Sessions Committee Member">Pre-Tutorial Sessions Committee Member</option>
-                                    </optgroup>
-                                    <optgroup label="Technical Review">
-                                      <option value="Technical Review Committee Convener">Technical Review Committee Convener</option>
-                                      <option value="Technical Review Committee Member">Technical Review Committee Member</option>
-                                    </optgroup>
-                                    <optgroup label="Outreach">
-                                      <option value="Outreach and Promotion Committee Convener">Outreach and Promotion Committee Convener</option>
-                                      <option value="Outreach and Promotion Committee Member">Outreach and Promotion Committee Member</option>
-                                    </optgroup>
-                                    <optgroup label="Website & Social Media">
-                                      <option value="Website and Social Media Promotion Committee Chair">Website and Social Media Promotion Committee Chair</option>
-                                      <option value="Website and Social Media Promotion Committee Member">Website and Social Media Promotion Committee Member</option>
-                                    </optgroup>
-                                    <optgroup label="Hospitality">
-                                      <option value="Hospitality Committee Convener">Hospitality Committee Convener</option>
-                                      <option value="Hospitality Committee Member">Hospitality Committee Member</option>
-                                    </optgroup>
-                                    <optgroup label="Advisory">
-                                      <option value="Advisory Committee Member">Advisory Committee Member</option>
-                                    </optgroup>
-                                    <optgroup label="Other">
-                                      <option value="Member">Member</option>
-                                      <option value="__custom__">Custom (type below)...</option>
-                                    </optgroup>
-                                  </select>
-                                  {(() => {
-                                    const knownRoles = ['Chief Patron','Patron','General Chair','Conference Chair','Session Chair','Program and Finance Chair','Program and Finance Committee Member','Publication Chair','Publication Committee Member','Local Arrangements Chair','Local Arrangements Committee Member','Registration Chair','Registration Committee Member','Conference Pre-Tutorial Sessions Chair','Pre-Tutorial Sessions Committee Member','Technical Review Committee Convener','Technical Review Committee Member','Outreach and Promotion Committee Convener','Outreach and Promotion Committee Member','Website and Social Media Promotion Committee Chair','Website and Social Media Promotion Committee Member','Hospitality Committee Convener','Hospitality Committee Member','Member','Advisory Committee Member'];
-                                    const v = editingCommittee.role || '';
-                                    const isCustom = v && !knownRoles.includes(v);
-                                    return isCustom ? (
-                                      <input
-                                        type="text"
-                                        className="form-input"
-                                        value={editingCommittee.role || ''}
-                                        onChange={(e) => setEditingCommittee({ ...editingCommittee, role: e.target.value })}
-                                        placeholder="Enter custom role..."
-                                        style={{ marginTop: '0.5rem' }}
-                                      />
-                                    ) : null;
-                                  })()}
+                                  />
                                 </div>
                                 <div className="admin-form-group">
                                   <label htmlFor="committee_desc">Institution / Bio Description</label>
